@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="01_App">
+      <UniqueIdentifier>{c800cffd-4505-4761-931f-5bbbddad1ae2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20_Shader">
+      <UniqueIdentifier>{894cd025-77d0-4765-b215-c301f2f828d8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>01_App</Filter>
+    </ClCompile>
+    <ClCompile Include="TriangleApp.cpp">
+      <Filter>01_App</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="TriangleApp.h">
+      <Filter>01_App</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="BasicPixelShader.hlsl">
+      <Filter>20_Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVertexShader.hlsl">
+      <Filter>20_Shader</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>
