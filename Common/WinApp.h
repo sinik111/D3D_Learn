@@ -18,15 +18,14 @@ protected:
 	std::wstring m_className = L"DefaultClassName";
 	std::wstring m_windowName = L"DefaultWindowName";
 
-	CoInitializer m_coInitializer;
-
-	// default settings
 	UINT m_classStyle = CS_HREDRAW | CS_VREDRAW;
 	DWORD m_windowStyle = WS_OVERLAPPEDWINDOW;
 	int m_x = CW_USEDEFAULT;
 	int m_y = CW_USEDEFAULT;
 	int m_width = 800;
 	int m_height = 600;
+
+	CoInitializer m_coInitializer;
 
 public:
 	virtual ~WinApp() = default;
