@@ -40,7 +40,7 @@ void TriangleApp::Render()
 	m_d3d11DeviceContext->OMSetRenderTargets(1, m_d3d11RenderTargetView.GetAddressOf(), nullptr);
 #endif // USE_FLIPMODE
 
-	Color color(0.9f, 1.0f, 0.9f, 1.0f);
+	Color color(0.9f, 0.9f, 1.0f, 1.0f);
 
 	m_d3d11DeviceContext->ClearRenderTargetView(m_d3d11RenderTargetView.Get(), color);
 
