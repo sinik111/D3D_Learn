@@ -9,8 +9,6 @@
     <ClInclude Include="WinApp.h">
       <Filter>01_App</Filter>
     </ClInclude>
-    <ClInclude Include="framework.h" />
-    <ClInclude Include="pch.h" />
     <ClInclude Include="CoInitializer.h">
       <Filter>01_App</Filter>
     </ClInclude>
@@ -19,6 +17,5 @@
     <ClCompile Include="WinApp.cpp">
       <Filter>01_App</Filter>
     </ClCompile>
-    <ClCompile Include="pch.cpp" />
   </ItemGroup>
 </Project>

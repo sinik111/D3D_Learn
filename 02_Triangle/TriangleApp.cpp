@@ -2,13 +2,11 @@
 
 #include <comdef.h>
 #include <d3dcompiler.h>
-#include <directxtk/DDSTextureLoader.h>
-#include <directxtk/WICTextureLoader.h>
 #include <directxtk/SimpleMath.h>
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
-#pragma comment(lib,"d3dcompiler.lib")
+#pragma comment(lib, "d3dcompiler.lib")
 
 using namespace DirectX::SimpleMath;
 using Microsoft::WRL::ComPtr;
