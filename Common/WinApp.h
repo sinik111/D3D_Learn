@@ -4,6 +4,7 @@
 #include <string>
 
 #include "CoInitializer.h"
+#include "GraphicsDevice.h"
 
 class WinApp
 {
@@ -26,6 +27,7 @@ protected:
 	int m_height = 600;
 
 	CoInitializer m_coInitializer;
+	GraphicsDevice m_graphicsDevice;
 
 public:
 	virtual ~WinApp() = default;

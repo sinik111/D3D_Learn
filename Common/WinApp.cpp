@@ -1,4 +1,5 @@
 #include "WinApp.h"
+#include "GraphicsDevice.h"
 
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -20,7 +21,7 @@ void WinApp::Initialize()
 
 	RegisterClassExW(&wc);
 
-	RECT clientRect{ 0, 0, (LONG)m_width, (LONG)m_height };
+	RECT clientRect{ 0, 0, static_cast<LONG>(m_width), static_cast<LONG>(m_height) };
 
 	AdjustWindowRect(&clientRect, m_windowStyle, FALSE);
 
@@ -40,6 +41,8 @@ void WinApp::Initialize()
 
 	ShowWindow(m_hWnd, SW_SHOW);
 	UpdateWindow(m_hWnd);
+
+	m_graphicsDevice.Initialize(m_hWnd, static_cast<UINT>(m_width), static_cast<UINT>(m_height));
 }
 
 void WinApp::Shutdown()

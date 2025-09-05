@@ -12,9 +12,15 @@
     <ClInclude Include="CoInitializer.h">
       <Filter>01_App</Filter>
     </ClInclude>
+    <ClInclude Include="GraphicsDevice.h">
+      <Filter>01_App</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinApp.cpp">
+      <Filter>01_App</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsDevice.cpp">
       <Filter>01_App</Filter>
     </ClCompile>
   </ItemGroup>
