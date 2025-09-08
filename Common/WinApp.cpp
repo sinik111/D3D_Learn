@@ -1,6 +1,9 @@
 #include "WinApp.h"
 #include "GraphicsDevice.h"
 
+#include "Input.h"
+#include "MyTime.h"
+
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 void WinApp::Initialize()
@@ -47,7 +50,7 @@ void WinApp::Initialize()
 
 void WinApp::Shutdown()
 {
-
+	OnShutdown();
 }
 
 void WinApp::Run()
@@ -72,14 +75,49 @@ void WinApp::Run()
 	}
 }
 
-void WinApp::MessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+void WinApp::Update()
+{
+	MyTime::Update();
+	Input::Update();
+
+	OnUpdate();
+}
+
+void WinApp::Render()
+{
+	m_camera.Update();
+
+	OnRender();
+}
+
+void WinApp::OnUpdate()
+{
+
+}
+
+void WinApp::OnRender()
+{
+
+}
+
+void WinApp::OnShutdown()
+{
+
+}
+
+LRESULT WinApp::MessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
+
+	default:
+		return DefWindowProcW(hWnd, uMsg, wParam, lParam);
 	}
+
+	return 0;
 }
 
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -100,7 +138,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	if (winApp != nullptr)
 	{
-		winApp->MessageProc(hWnd, uMsg, wParam, lParam);
+		return winApp->MessageProc(hWnd, uMsg, wParam, lParam);
 	}
 
 	return DefWindowProcW(hWnd, uMsg, wParam, lParam);

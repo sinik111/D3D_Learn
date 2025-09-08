@@ -4,6 +4,9 @@
     <Filter Include="01_App">
       <UniqueIdentifier>{d8bd80c7-a49e-427a-8e79-f3645e126be3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02_Module">
+      <UniqueIdentifier>{9de7fa9d-d5cf-4249-bc0b-a2a6ca8af840}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WinApp.h">
@@ -15,6 +18,15 @@
     <ClInclude Include="GraphicsDevice.h">
       <Filter>01_App</Filter>
     </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>02_Module</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>02_Module</Filter>
+    </ClInclude>
+    <ClInclude Include="MyTime.h">
+      <Filter>02_Module</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinApp.cpp">
@@ -22,6 +34,15 @@
     </ClCompile>
     <ClCompile Include="GraphicsDevice.cpp">
       <Filter>01_App</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>02_Module</Filter>
+    </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>02_Module</Filter>
+    </ClCompile>
+    <ClCompile Include="MyTime.cpp">
+      <Filter>02_Module</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

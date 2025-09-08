@@ -20,6 +20,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_d3d11DeviceContext;
 	Microsoft::WRL::ComPtr<IDXGISwapChain1> m_dxgiSwapChain;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_d3d11RenderTargetView;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_d3d11DepthStencilView;
 
 	HWND m_hWnd = nullptr;
 	UINT m_width = 0;

@@ -5,6 +5,7 @@
 
 #include "CoInitializer.h"
 #include "GraphicsDevice.h"
+#include "Camera.h"
 
 class WinApp
 {
@@ -28,6 +29,7 @@ protected:
 
 	CoInitializer m_coInitializer;
 	GraphicsDevice m_graphicsDevice;
+	Camera m_camera;
 
 public:
 	virtual ~WinApp() = default;
@@ -38,12 +40,17 @@ public:
 
 	void Run();
 
-protected:
-	virtual void Update() = 0;
-	virtual void Render() = 0;
+private:
+	void Update();
+	void Render();
 
 protected:
-	virtual void MessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	virtual void OnUpdate();
+	virtual void OnRender();
+	virtual void OnShutdown();
+
+protected:
+	virtual LRESULT MessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	friend LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
 };

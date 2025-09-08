@@ -18,8 +18,7 @@ public:
 	void Initialize() override;
 
 private:
-	void Update() override;
-	void Render() override;
+	void OnRender() override;
 
 private:
 	void CreateTriangle();

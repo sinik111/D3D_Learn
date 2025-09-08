@@ -19,6 +19,9 @@ void GraphicsDevice::Initialize(HWND hWnd, UINT width, UINT height)
 	m_width = width;
 	m_height = height;
 
+
+	// Device, DeviceContext
+
 	UINT d3dCreationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 #ifdef _DEBUG
 	d3dCreationFlags |= D3D11_CREATE_DEVICE_DEBUG;
@@ -47,6 +50,8 @@ void GraphicsDevice::Initialize(HWND hWnd, UINT width, UINT height)
 		&m_d3d11DeviceContext
 	);
 
+
+	// SwapChain
 
 	UINT dxgiFactoryCreationFlags = 0;
 #ifdef _DEBUG
@@ -84,6 +89,8 @@ void GraphicsDevice::Initialize(HWND hWnd, UINT width, UINT height)
 	);
 
 
+	// RenderTargetView
+
 	ComPtr<ID3D11Texture2D> backBufferTexture;
 	m_dxgiSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), &backBufferTexture);
 	m_d3d11Device->CreateRenderTargetView(backBufferTexture.Get(), nullptr, &m_d3d11RenderTargetView);
@@ -91,6 +98,9 @@ void GraphicsDevice::Initialize(HWND hWnd, UINT width, UINT height)
 #ifndef USE_FLIPMODE
 	m_d3d11DeviceContext->OMSetRenderTargets(1, m_d3d11RenderTargetView.GetAddressOf(), nullptr);
 #endif // USE_FLIPMODE
+
+
+	// Viewport
 
 	D3D11_VIEWPORT viewport{};
 	viewport.TopLeftX = 0;
@@ -101,6 +111,32 @@ void GraphicsDevice::Initialize(HWND hWnd, UINT width, UINT height)
 	viewport.MaxDepth = 1.0f;
 
 	m_d3d11DeviceContext->RSSetViewports(1, &viewport);
+
+
+	// Depth, Stencil View
+
+	D3D11_TEXTURE2D_DESC depthStencilDesc{};
+	depthStencilDesc.Width = m_width;
+	depthStencilDesc.Height = m_height;
+	depthStencilDesc.MipLevels = 1;
+	depthStencilDesc.ArraySize = 1;
+	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthStencilDesc.SampleDesc.Count = 1;
+	depthStencilDesc.SampleDesc.Quality = 0;
+	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthStencilDesc.CPUAccessFlags = 0;
+	depthStencilDesc.MiscFlags = 0;
+
+	ComPtr<ID3D11Texture2D> depthStencilTexture;
+	m_d3d11Device->CreateTexture2D(&depthStencilDesc, nullptr, &depthStencilTexture);
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc{};
+	depthStencilViewDesc.Format = depthStencilDesc.Format;
+	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	depthStencilViewDesc.Texture2D.MipSlice = 0;
+
+	m_d3d11Device->CreateDepthStencilView(depthStencilTexture.Get(), &depthStencilViewDesc, &m_d3d11DepthStencilView);
 }
 
 Microsoft::WRL::ComPtr<ID3D11Device> GraphicsDevice::GetDevice() const
@@ -126,10 +162,11 @@ Microsoft::WRL::ComPtr<ID3D11RenderTargetView> GraphicsDevice::GetRenderTargetVi
 void GraphicsDevice::BeginDraw(const Color& clearColor)
 {
 #ifdef USE_FLIPMODE
-	m_d3d11DeviceContext->OMSetRenderTargets(1, m_d3d11RenderTargetView.GetAddressOf(), nullptr);
+	m_d3d11DeviceContext->OMSetRenderTargets(1, m_d3d11RenderTargetView.GetAddressOf(), m_d3d11DepthStencilView.Get());
 #endif // USE_FLIPMODE
 
 	m_d3d11DeviceContext->ClearRenderTargetView(m_d3d11RenderTargetView.Get(), clearColor);
+	m_d3d11DeviceContext->ClearDepthStencilView(m_d3d11DepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
 void GraphicsDevice::EndDraw()

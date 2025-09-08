@@ -19,12 +19,7 @@ void TriangleApp::Initialize()
 	CreateTriangle();
 }
 
-void TriangleApp::Update()
-{
-
-}
-
-void TriangleApp::Render()
+void TriangleApp::OnRender()
 {
 	m_graphicsDevice.BeginDraw({ 0.9f, 0.9f, 1.0f, 1.0f });
 

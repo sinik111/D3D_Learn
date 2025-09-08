@@ -9,12 +9,7 @@ void SwapChainApp::Initialize()
 	WinApp::Initialize();
 }
 
-void SwapChainApp::Update()
-{
-
-}
-
-void SwapChainApp::Render()
+void SwapChainApp::OnRender()
 {
 	m_graphicsDevice.BeginDraw({ 0.9f, 1.0f, 0.9f, 1.0f });
 

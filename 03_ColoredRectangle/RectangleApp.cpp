@@ -20,12 +20,7 @@ void RectangleApp::Initialize()
 	CreateRectangle();
 }
 
-void RectangleApp::Update()
-{
-
-}
-
-void RectangleApp::Render()
+void RectangleApp::OnRender()
 {
 	m_graphicsDevice.BeginDraw({ 1.0f, 0.9f, 0.9f, 1.0f });
 
