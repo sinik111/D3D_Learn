@@ -79,7 +79,7 @@ void TransformApp::OnRender()
 
 	m_camera.GetViewMatrix(m_view);
 
-	m_projection = Matrix::CreatePerspectiveFieldOfView(
+	m_projection = DirectX::XMMatrixPerspectiveFovLH(
 		DirectX::XMConvertToRadians(m_camera.GetFOV()),
 		(float)m_width / m_height,
 		m_camera.GetNear(),
@@ -355,18 +355,18 @@ void TransformApp::InitializeScene()
 	);
 	
 	WORD indices[]{
-		0, 1, 2,
-		0, 2, 3,
-		0, 3, 4,
-		0, 4, 5,
-		0, 5, 6,
-		0, 6, 1,
-		7, 2, 1,
-		7, 3, 2,
-		7, 4, 3,
-		7, 5, 4,
-		7, 6, 5,
-		7, 1, 6
+		0, 2, 1,
+		0, 3, 2,
+		0, 4, 3,
+		0, 5, 4,
+		0, 6, 5,
+		0, 1, 6,
+		7, 1, 2,
+		7, 2, 3,
+		7, 3, 4,
+		7, 4, 5,
+		7, 5, 6,
+		7, 6, 1,
 	};
 
 	m_indexCount = ARRAYSIZE(indices);
