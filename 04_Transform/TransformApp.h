@@ -6,14 +6,6 @@
 
 #include "../Common/WinApp.h"
 
-namespace DirectX
-{
-	namespace SimpleMath
-	{
-		struct Matrix;
-	}
-}
-
 class TransformApp :
 	public WinApp
 {

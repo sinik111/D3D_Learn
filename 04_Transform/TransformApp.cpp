@@ -154,7 +154,7 @@ void TransformApp::RenderImGui()
 	Vector3 cameraPosition = m_camera.GetPosition();
 	float cameraPositionBuffer[3]{ cameraPosition.x, cameraPosition.y, cameraPosition.z };
 
-	ImGui::DragFloat3("Position", cameraPositionBuffer);
+	ImGui::DragFloat3("Position", cameraPositionBuffer, 0.1f);
 
 	m_camera.SetPosition({ cameraPositionBuffer[0], cameraPositionBuffer[1], cameraPositionBuffer[2] });
 
@@ -169,7 +169,7 @@ void TransformApp::RenderImGui()
 	ImGui::PushID(2);
 	float cameraFov = m_camera.GetFOV();
 
-	ImGui::DragFloat("FOV", &cameraFov, 1.0f, 1.0f, 120.0f);
+	ImGui::DragFloat("FOV", &cameraFov, 0.5f, 1.0f, 120.0f);
 
 	m_camera.SetFOV(cameraFov);
 
@@ -211,7 +211,7 @@ void TransformApp::RenderImGui()
 	ImGui::Text("First");
 	float firstPositionBuffer[3]{ m_firstPosition.x, m_firstPosition.y, m_firstPosition.z };
 
-	ImGui::DragFloat3("Position", firstPositionBuffer);
+	ImGui::DragFloat3("Position", firstPositionBuffer, 0.1f);
 
 	m_firstPosition = { firstPositionBuffer[0], firstPositionBuffer[1], firstPositionBuffer[2] };
 
@@ -227,7 +227,7 @@ void TransformApp::RenderImGui()
 	ImGui::Text("Second");
 	float secondPositionBuffer[3]{ m_secondPosition.x, m_secondPosition.y, m_secondPosition.z };
 
-	ImGui::DragFloat3("Position", secondPositionBuffer);
+	ImGui::DragFloat3("Position", secondPositionBuffer, 0.1f);
 
 	m_secondPosition = { secondPositionBuffer[0], secondPositionBuffer[1], secondPositionBuffer[2] };
 
@@ -243,7 +243,7 @@ void TransformApp::RenderImGui()
 	ImGui::Text("Third");
 	float thirdPositionBuffer[3]{ m_thirdPosition.x, m_thirdPosition.y, m_thirdPosition.z };
 
-	ImGui::DragFloat3("Position", thirdPositionBuffer);
+	ImGui::DragFloat3("Position", thirdPositionBuffer, 0.1f);
 
 	m_thirdPosition = { thirdPositionBuffer[0], thirdPositionBuffer[1], thirdPositionBuffer[2] };
 
