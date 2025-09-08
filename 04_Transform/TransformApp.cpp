@@ -282,35 +282,35 @@ void TransformApp::InitializeScene()
 	Vertex vertices[]{
 		{
 			Vector3{ 0.0f, 1.0f, 0.0f },
-			Vector4{ 1.0f, 0.0f, 0.0f, 1.0f }
+			Vector4{ 1.0f, 1.0f, 1.0f, 1.0f }
 		},
 		{
 			Vector3{ 0.5f, 0.0f, 0.0f },
-			Vector4{ 0.0f, 1.0f, 0.0f, 1.0f }
+			Vector4{ 1.0f, 0.0f, 0.0f, 1.0f }
 		},
 		{
 			Vector3{ std::cos(DirectX::XM_2PI * 1 / 6) * 0.5f, 0.0f, std::sin(DirectX::XM_2PI * 1 / 6) * 0.5f},
-			Vector4{ 0.0f, 1.0f, 1.0f, 1.0f }
-		},
-		{
-			Vector3{ std::cos(DirectX::XM_2PI * 2 / 6) * 0.5f, 0.0f, std::sin(DirectX::XM_2PI * 2 / 6) * 0.5f },
 			Vector4{ 1.0f, 0.5f, 0.0f, 1.0f }
 		},
 		{
-			Vector3{ -0.5f, 0.0f, 0.0f },
-			Vector4{ 0.0f, 0.5f, 1.0f, 1.0f }
-		},
-		{
-			Vector3{ std::cos(DirectX::XM_2PI * 4 / 6) * 0.5f, 0.0f, std::sin(DirectX::XM_2PI * 4 / 6) * 0.5f },
+			Vector3{ std::cos(DirectX::XM_2PI * 2 / 6) * 0.5f, 0.0f, std::sin(DirectX::XM_2PI * 2 / 6) * 0.5f },
 			Vector4{ 1.0f, 1.0f, 0.0f, 1.0f }
 		},
 		{
+			Vector3{ -0.5f, 0.0f, 0.0f },
+			Vector4{ 0.0f, 1.0f, 0.0f, 1.0f }
+		},
+		{
+			Vector3{ std::cos(DirectX::XM_2PI * 4 / 6) * 0.5f, 0.0f, std::sin(DirectX::XM_2PI * 4 / 6) * 0.5f },
+			Vector4{ 0.0f, 0.0f, 1.0f, 1.0f }
+		},
+		{
 			Vector3{ std::cos(DirectX::XM_2PI * 5 / 6) * 0.5f, 0.0f, std::sin(DirectX::XM_2PI * 5 / 6) * 0.5f },
-			Vector4{ 0.5f, 0.5f, 1.0f, 1.0f }
+			Vector4{ 0.5f, 0.0f, 1.0f, 1.0f }
 		},
 		{
 			Vector3{ 0.0f, -1.0f, 0.0f },
-			Vector4{ 0.0f, 0.0f, 1.0f, 1.0f }
+			Vector4{ 0.0f, 0.0f, 0.0f, 1.0f }
 		}
 	};
 
