@@ -12,6 +12,11 @@ Vector3 Camera::GetRotation() const
 	return m_rotation;
 }
 
+Matrix Camera::GetWorldMatrix() const
+{
+	return m_world;
+}
+
 void Camera::GetViewMatrix(Matrix& out) const
 {
 	Vector3 eye = m_world.Translation();

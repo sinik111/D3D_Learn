@@ -4,6 +4,7 @@
 #include <d3d11.h>
 #include <dxgi1_3.h>
 #include <string>
+#include <directxtk/SimpleMath.h>
 
 namespace DirectX
 {

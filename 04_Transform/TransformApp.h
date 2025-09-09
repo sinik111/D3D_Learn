@@ -3,6 +3,7 @@
 #include <wrl/client.h>
 #include <d3d11.h>
 #include <dxgi1_3.h>
+#include <directxtk/SimpleMath.h>
 
 #include "../Common/WinApp.h"
 

@@ -19,6 +19,7 @@ private:
 public:
 	Vector3 GetPosition() const;
 	Vector3 GetRotation() const;
+	Matrix GetWorldMatrix() const;
 	void GetViewMatrix(Matrix& out) const;
 	float GetFOV() const;
 	float GetNear() const;

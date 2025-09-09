@@ -1,6 +1,5 @@
 #include "TransformApp.h"
 
-#include <directxtk/SimpleMath.h>
 #include <cmath>
 #include <imgui.h>
 #include <imgui_impl_win32.h>
@@ -77,13 +76,59 @@ void TransformApp::OnRender()
 {
 	// view, projection setting
 
-	m_camera.GetViewMatrix(m_view);
+	//m_camera.GetViewMatrix(m_view);
 
-	m_projection = DirectX::XMMatrixPerspectiveFovLH(
-		DirectX::XMConvertToRadians(m_camera.GetFOV()),
-		(float)m_width / m_height,
-		m_camera.GetNear(),
-		m_camera.GetFar());
+	//m_projection = DirectX::XMMatrixPerspectiveFovLH(
+	//	DirectX::XMConvertToRadians(m_camera.GetFOV()),
+	//	(float)m_width / m_height,
+	//	m_camera.GetNear(),
+	//	m_camera.GetFar());
+	
+	// view matrix
+	Matrix cameraWorld = m_camera.GetWorldMatrix();
+
+	Vector3 eye = m_camera.GetPosition();
+
+	Vector3 up = cameraWorld.Up();
+	up.Normalize();
+	Vector3 viewAxisZ = -cameraWorld.Forward(); // viewAxisZ
+	viewAxisZ.Normalize();
+
+	//up cross viewAxisZ
+	Vector3 viewAxisX = Vector3(
+		up.y * viewAxisZ.z - up.z * viewAxisZ.y,
+		up.z * viewAxisZ.x - up.x * viewAxisZ.z,
+		up.x * viewAxisZ.y - up.y * viewAxisZ.x
+	);
+
+	// viewAxisZ cross viewAxisX 
+	Vector3 viewAxisY = Vector3(
+		viewAxisZ.y * viewAxisX.z - viewAxisZ.z * viewAxisX.y,
+		viewAxisZ.z * viewAxisX.x - viewAxisZ.x * viewAxisX.z,
+		viewAxisZ.x * viewAxisX.y - viewAxisZ.y * viewAxisX.x
+	);
+
+	m_view = Matrix{
+		viewAxisX.x, viewAxisX.y, viewAxisX.z, 0.0f,
+		viewAxisY.x, viewAxisY.y, viewAxisY.z, 0.0f,
+		viewAxisZ.x, viewAxisZ.y, viewAxisZ.z, 0.0f,
+		-eye.x, -eye.y, -eye.z, 1.0f
+	};
+
+
+	// projection matrix
+
+	float aspectRatio = (float)m_width / m_height;
+	float nearz = m_camera.GetNear();
+	float farz = m_camera.GetFar();
+	float fovY = m_camera.GetFOV() / 360 * DirectX::XM_2PI;
+
+	m_projection = Matrix{
+		1 / aspectRatio * std::tan(fovY / 2), 0.0f, 0.0f, 0.0f,
+		0.0f, 1 / std::tan(fovY / 2), 0.0f, 0.0f,
+		0.0f, 0.0f, farz / (farz - nearz), 1.0f,
+		0.0f, 0.0f, -farz * nearz / (farz - nearz), 0.0f
+	};
 
 
 	m_graphicsDevice.BeginDraw({ 0.5f, 0.7f, 0.9f, 1.0f });
@@ -406,7 +451,7 @@ void TransformApp::InitializeScene()
 
 	m_camera.GetViewMatrix(m_view);
 
-	m_projection = Matrix::CreatePerspectiveFieldOfView(
+	m_projection = DirectX::XMMatrixPerspectiveFovLH(
 		DirectX::XMConvertToRadians(m_camera.GetFOV()),
 		(float)m_width / m_height,
 		m_camera.GetNear(),
