@@ -124,7 +124,7 @@ void TransformApp::OnRender()
 	float fovY = m_camera.GetFOV() / 360 * DirectX::XM_2PI;
 
 	m_projection = Matrix{
-		1 / aspectRatio * std::tan(fovY / 2), 0.0f, 0.0f, 0.0f,
+		1 / (aspectRatio * std::tan(fovY / 2)), 0.0f, 0.0f, 0.0f,
 		0.0f, 1 / std::tan(fovY / 2), 0.0f, 0.0f,
 		0.0f, 0.0f, farz / (farz - nearz), 1.0f,
 		0.0f, 0.0f, -farz * nearz / (farz - nearz), 0.0f
