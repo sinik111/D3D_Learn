@@ -143,30 +143,24 @@ void TransformApp::OnRender()
 	deviceContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
 	deviceContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
 
-	ConstantBuffer cb1{};
-	cb1.world = m_world1.Transpose();
-	cb1.view = m_view.Transpose();
-	cb1.projection = m_projection.Transpose();
+	ConstantBuffer cb{};
+	cb.world = m_world1.Transpose();
+	cb.view = m_view.Transpose();
+	cb.projection = m_projection.Transpose();
 
-	deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb1, 0, 0);
-
-	deviceContext->DrawIndexed(m_indexCount, 0, 0);
-
-	ConstantBuffer cb2{};
-	cb2.world = m_world2.Transpose();
-	cb2.view = m_view.Transpose();
-	cb2.projection = m_projection.Transpose();
-
-	deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb2, 0, 0);
+	deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
 
 	deviceContext->DrawIndexed(m_indexCount, 0, 0);
 
-	ConstantBuffer cb3{};
-	cb3.world = m_world3.Transpose();
-	cb3.view = m_view.Transpose();
-	cb3.projection = m_projection.Transpose();
+	cb.world = m_world2.Transpose();
 
-	deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb3, 0, 0);
+	deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+
+	deviceContext->DrawIndexed(m_indexCount, 0, 0);
+
+	cb.world = m_world3.Transpose();
+
+	deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
 
 	deviceContext->DrawIndexed(m_indexCount, 0, 0);
 
