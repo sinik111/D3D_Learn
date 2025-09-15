@@ -190,7 +190,7 @@ void LightingApp::RenderImGui()
 
 	if (ImGui::Button("Reset"))
 	{
-		m_scale = { 4.0f, 8.0f, 4.0f };
+		m_scale = { 3.0f, 6.0f, 3.0f };
 	}
 
 	ImGui::PopID(); // 7
@@ -205,7 +205,7 @@ void LightingApp::RenderImGui()
 
 	if (ImGui::Button("Reset"))
 	{
-		m_rotation = { 0.0f, 0.0f, 0.0f };
+		m_rotation = { 30.0f, 60.0f, 0.0f };
 	}
 
 	ImGui::PopID(); // 6

@@ -6,14 +6,6 @@
 #include <string>
 #include <directxtk/SimpleMath.h>
 
-namespace DirectX
-{
-	namespace SimpleMath
-	{
-		struct Color;
-	}
-}
-
 class GraphicsDevice
 {
 private:

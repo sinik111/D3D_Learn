@@ -9,7 +9,6 @@
 #pragma comment(lib, "d3dcompiler.lib")
 
 using Microsoft::WRL::ComPtr;
-using DirectX::SimpleMath::Color;
 
 #define USE_FLIPMODE
 
@@ -159,7 +158,7 @@ Microsoft::WRL::ComPtr<ID3D11RenderTargetView> GraphicsDevice::GetRenderTargetVi
 	return m_d3d11RenderTargetView;
 }
 
-void GraphicsDevice::BeginDraw(const Color& clearColor)
+void GraphicsDevice::BeginDraw(const DirectX::SimpleMath::Color& clearColor)
 {
 #ifdef USE_FLIPMODE
 	m_d3d11DeviceContext->OMSetRenderTargets(1, m_d3d11RenderTargetView.GetAddressOf(), m_d3d11DepthStencilView.Get());
