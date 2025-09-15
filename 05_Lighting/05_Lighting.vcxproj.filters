@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="01_App">
+      <UniqueIdentifier>{41e7fd7a-fff2-4092-a943-13f35cbc69fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20_Shader">
+      <UniqueIdentifier>{bb55d3f8-d1d8-41dd-b9f7-84f6439dd1b5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>01_App</Filter>
+    </ClCompile>
+    <ClCompile Include="LightingApp.cpp">
+      <Filter>01_App</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="LightingApp.h">
+      <Filter>01_App</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="LightingPixelShader.hlsl">
+      <Filter>20_Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="LightingVertexShader.hlsl">
+      <Filter>20_Shader</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shared.hlsli">
+      <Filter>20_Shader</Filter>
+    </None>
+  </ItemGroup>
+</Project>

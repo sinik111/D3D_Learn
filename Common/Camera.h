@@ -12,7 +12,7 @@ private:
 	Vector3 m_rotation{ 0.0f, 0.0f, 0.0f };
 	Matrix m_world = Matrix::Identity;
 
-	float m_fov = 90.0f;
+	float m_fov = 50.0f;
 	float m_near = 0.01f;
 	float m_far = 100.0f;
 
