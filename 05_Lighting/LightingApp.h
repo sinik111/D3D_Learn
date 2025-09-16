@@ -17,13 +17,34 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> m_vertexShader;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> m_pixelShader;
+
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> m_skyboxVertexShader;
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> m_skyboxPixelShader;
+
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_skyboxInputLayout;
+
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_vertexBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_indexBuffer;
+
+	Microsoft::WRL::ComPtr<ID3D11Buffer> m_skyboxVertexBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> m_skyboxIndexBuffer;
+
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_constantBuffer;
+
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_crystalTextureRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_skyboxTextureRV;
+
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> m_samplerState;
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_rasterizerState;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_depthStencilState;
+
 	UINT m_vertexBufferStride = 0;
-	UINT m_vertexBufferOffset = 0;
 	UINT m_indexCount = 0;
+
+	UINT m_skyboxIndexCount = 0;
+
+	UINT m_vertexBufferOffset = 0;
 
 	Matrix m_world;
 	Matrix m_view;
@@ -51,6 +72,8 @@ private:
 private:
 	void InitializeImGui();
 	void InitializeScene();
+	void CreateCrystal();
+	void CreateSkyBox();
 
 	void ShutdownImGui();
 

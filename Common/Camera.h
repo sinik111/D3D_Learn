@@ -16,7 +16,12 @@ private:
 	float m_near = 0.01f;
 	float m_far = 100.0f;
 
+	float m_speed = 20.0f;
+	float m_rotateSpeed = 0.1f;
+
 public:
+	Vector3 GetForward() const;
+	Vector3 GetRight() const;
 	Vector3 GetPosition() const;
 	Vector3 GetRotation() const;
 	Matrix GetWorldMatrix() const;
@@ -32,4 +37,5 @@ public:
 	void SetFar(float f);
 
 	void Update();
+	void ProcessInput();
 };

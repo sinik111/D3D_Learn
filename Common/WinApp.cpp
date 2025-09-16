@@ -1,6 +1,9 @@
 #include "WinApp.h"
 #include "GraphicsDevice.h"
 
+#include <directXTK/Mouse.h>
+#include <directXTK/Keyboard.h>
+
 #include "Input.h"
 #include "MyTime.h"
 
@@ -46,6 +49,7 @@ void WinApp::Initialize()
 	UpdateWindow(m_hWnd);
 
 	m_graphicsDevice.Initialize(m_hWnd, static_cast<UINT>(m_width), static_cast<UINT>(m_height));
+	Input::Initialize(m_hWnd);
 }
 
 void WinApp::Shutdown()
@@ -69,9 +73,11 @@ void WinApp::Run()
 			TranslateMessage(&msg);
 			DispatchMessageW(&msg);
 		}
-
-		Update();
-		Render();
+		else
+		{
+			Update();
+			Render();
+		}
 	}
 }
 
@@ -111,6 +117,32 @@ LRESULT WinApp::MessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_DESTROY:
 		PostQuitMessage(0);
+		break;
+
+	case WM_ACTIVATEAPP:
+		DirectX::Keyboard::ProcessMessage(uMsg, wParam, lParam);
+		DirectX::Mouse::ProcessMessage(uMsg, wParam, lParam);
+		break;
+
+	case WM_INPUT:
+	case WM_MOUSEMOVE:
+	case WM_LBUTTONDOWN:
+	case WM_LBUTTONUP:
+	case WM_RBUTTONDOWN:
+	case WM_RBUTTONUP:
+	case WM_MBUTTONDOWN:
+	case WM_MBUTTONUP:
+	case WM_MOUSEWHEEL:
+	case WM_XBUTTONDOWN:
+	case WM_XBUTTONUP:
+	case WM_MOUSEHOVER:
+		DirectX::Mouse::ProcessMessage(uMsg, wParam, lParam);
+		break;
+
+	case WM_KEYDOWN:
+	case WM_KEYUP:
+	case WM_SYSKEYUP:
+		DirectX::Keyboard::ProcessMessage(uMsg, wParam, lParam);
 		break;
 
 	default:

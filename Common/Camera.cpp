@@ -1,6 +1,19 @@
 #include "Camera.h"
 
+#include "Input.h"
+#include "MyTime.h"
+
 using namespace DirectX::SimpleMath;
+
+Vector3 Camera::GetForward() const
+{
+	return -m_world.Forward();
+}
+
+Vector3 Camera::GetRight() const
+{
+	return m_world.Right();
+}
 
 Vector3 Camera::GetPosition() const
 {
@@ -68,6 +81,65 @@ void Camera::SetFar(float f)
 
 void Camera::Update()
 {
+	ProcessInput();
+
 	m_world = Matrix::CreateFromYawPitchRoll(m_rotation) *
 		Matrix::CreateTranslation(m_position);
+}
+
+void Camera::ProcessInput()
+{
+	using namespace DirectX;
+	using Keys = DirectX::Keyboard::Keys;
+
+	const Vector3 forward = -m_world.Forward();
+	const Vector3 right = m_world.Right();
+	const Vector3 up = m_world.Up();
+
+	Vector3 inputVector{ 0.0f, 0.0f, 0.0f };
+
+	if (Input::IsKeyHeld(Keys::W))
+	{
+		inputVector += forward;
+	}
+	else if (Input::IsKeyHeld(Keys::S))
+	{
+		inputVector -= forward;
+	}
+
+	if (Input::IsKeyHeld(Keys::D))
+	{
+		inputVector += right;
+	}
+	else if (Input::IsKeyHeld(Keys::A))
+	{
+		inputVector -= right;
+	}
+
+	if (Input::IsKeyHeld(Keys::Q))
+	{
+		inputVector += up;
+	}
+	else if (Input::IsKeyHeld(Keys::E))
+	{
+		inputVector -= up;
+	}
+
+	inputVector.Normalize();
+
+	m_position += inputVector * m_speed * MyTime::DeltaTime();
+
+	if (Input::IsMouseHeld(Input::Button::RIGHT))
+	{
+		Input::SetMouseMode(Mouse::Mode::MODE_RELATIVE);
+
+		Vector2 mouseDelta = Input::GetMouseDelta();
+
+		m_rotation.x += XMConvertToRadians(mouseDelta.y * m_rotateSpeed);
+		m_rotation.y += XMConvertToRadians(mouseDelta.x * m_rotateSpeed);
+	}
+	else
+	{
+		Input::SetMouseMode(Mouse::Mode::MODE_ABSOLUTE);
+	}
 }

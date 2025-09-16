@@ -9,6 +9,7 @@ PS_INPUT main(VS_INPUT input)
     output.pos = mul(output.pos, projection);
     
     output.norm = normalize(mul(input.norm, (float3x3) normalMatrix));
+    output.tex = input.tex;
     
     return output;
 }
