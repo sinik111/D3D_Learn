@@ -156,22 +156,31 @@ void LightingApp::RenderImGui()
 	Vector3 cameraPosition = m_camera.GetPosition();
 	float cameraPositionBuffer[3]{ cameraPosition.x, cameraPosition.y, cameraPosition.z };
 
-	ImGui::DragFloat3("Position##1", cameraPositionBuffer, 0.1f);
+	if (ImGui::DragFloat3("Position##1", cameraPositionBuffer, 0.1f))
+	{
+		m_camera.SetPosition({ cameraPositionBuffer[0], cameraPositionBuffer[1], cameraPositionBuffer[2] });
+	}
 
-	m_camera.SetPosition({ cameraPositionBuffer[0], cameraPositionBuffer[1], cameraPositionBuffer[2] });
+	Vector3 cameraRotation = m_camera.GetRotation();
+	float cameraRotationBuffer[2]{ DirectX::XMConvertToDegrees(cameraRotation.y), DirectX::XMConvertToDegrees(cameraRotation.x) };
 
+	if (ImGui::DragFloat2("Yaw Pitch##1", cameraRotationBuffer))
+	{
+		m_camera.SetRotation({ DirectX::XMConvertToRadians(cameraRotationBuffer[1]), DirectX::XMConvertToRadians(cameraRotationBuffer[0]), cameraRotation.z });
+	}
 
 	if (ImGui::Button("Reset##1"))
 	{
 		m_camera.SetPosition({ 0.0f, 0.0f, -10.0f });
+		m_camera.SetRotation({ 0.0f, 0.0f, 0.0f });
 	}
 
 	float cameraFov = m_camera.GetFOV();
 
-	ImGui::DragFloat("FOV", &cameraFov, 0.5f, 1.0f, 120.0f);
-
-	m_camera.SetFOV(cameraFov);
-
+	if (ImGui::DragFloat("FOV", &cameraFov, 0.5f, 1.0f, 120.0f))
+	{
+		m_camera.SetFOV(cameraFov);
+	}
 
 	if (ImGui::Button("Reset##2"))
 	{
@@ -181,12 +190,12 @@ void LightingApp::RenderImGui()
 	float cameraNear = m_camera.GetNear();
 	float cameraFar = m_camera.GetFar();
 
-	ImGui::DragFloat("Near", &cameraNear, 1.0f, 0.01f, cameraFar - 10);
-	ImGui::DragFloat("Far", &cameraFar, 1.0f, cameraNear + 10, 1000.f);
-
-	m_camera.SetNear(cameraNear);
-	m_camera.SetFar(cameraFar);
-
+	if (ImGui::DragFloat("Near", &cameraNear, 1.0f, 0.01f, cameraFar - 10) ||
+		ImGui::DragFloat("Far", &cameraFar, 1.0f, cameraNear + 10, 1000.f))
+	{
+		m_camera.SetNear(cameraNear);
+		m_camera.SetFar(cameraFar);
+	}
 
 	if (ImGui::Button("Reset##3"))
 	{
@@ -200,10 +209,11 @@ void LightingApp::RenderImGui()
 
 	float objectScaleBuffer[3]{ m_scale.x, m_scale.y, m_scale.z };
 
-	ImGui::DragFloat3("Scale", objectScaleBuffer, 0.1f);
-
-	m_scale = { objectScaleBuffer[0], objectScaleBuffer[1], objectScaleBuffer[2] };
-
+	if (ImGui::DragFloat3("Scale", objectScaleBuffer, 0.1f))
+	{
+		m_scale = { objectScaleBuffer[0], objectScaleBuffer[1], objectScaleBuffer[2] };
+	}
+	
 	if (ImGui::Button("Reset##4"))
 	{
 		m_scale = { 3.0f, 6.0f, 3.0f };
@@ -211,10 +221,11 @@ void LightingApp::RenderImGui()
 
 	float objectRotationBuffer[2]{ m_rotation.x, m_rotation.y };
 
-	ImGui::DragFloat2("Rotation(x, y)##1", objectRotationBuffer, 0.1f);
-
-	m_rotation = { objectRotationBuffer[0], objectRotationBuffer[1], m_rotation.z };
-
+	if (ImGui::DragFloat2("Rotation(x, y)##1", objectRotationBuffer, 0.1f))
+	{
+		m_rotation = { objectRotationBuffer[0], objectRotationBuffer[1], m_rotation.z };
+	}
+	
 	if (ImGui::Button("Reset##5"))
 	{
 		m_rotation = { 30.0f, 60.0f, 0.0f };
@@ -222,9 +233,10 @@ void LightingApp::RenderImGui()
 
 	float positionBuffer[3]{ m_position.x, m_position.y, m_position.z };
 
-	ImGui::DragFloat3("Position##2", positionBuffer, 0.1f);
-
-	m_position = { positionBuffer[0], positionBuffer[1], positionBuffer[2] };
+	if (ImGui::DragFloat3("Position##2", positionBuffer, 0.1f))
+	{
+		m_position = { positionBuffer[0], positionBuffer[1], positionBuffer[2] };
+	}
 
 	if (ImGui::Button("Reset##6"))
 	{
@@ -236,9 +248,10 @@ void LightingApp::RenderImGui()
 	ImGui::SeparatorText("Light");
 
 	float lightRotationBuffer[2]{ m_lightRotation.x, m_lightRotation.y };
-	ImGui::DragFloat2("Rotation(x, y)##2", lightRotationBuffer, 0.5f);
-
-	m_lightRotation = { lightRotationBuffer[0], lightRotationBuffer[1], m_lightRotation.z };
+	if (ImGui::DragFloat2("Rotation(x, y)##2", lightRotationBuffer, 0.5f))
+	{
+		m_lightRotation = { lightRotationBuffer[0], lightRotationBuffer[1], m_lightRotation.z };
+	}
 
 	if (ImGui::Button("Reset##7"))
 	{
@@ -246,9 +259,10 @@ void LightingApp::RenderImGui()
 	}
 
 	float lightColorBuffer[3]{ m_lightColor.x, m_lightColor.y, m_lightColor.z };
-	ImGui::ColorEdit3("Color", lightColorBuffer);
-
-	m_lightColor = { lightColorBuffer[0], lightColorBuffer[1], lightColorBuffer[2], 1.0f };
+	if (ImGui::ColorEdit3("Color", lightColorBuffer))
+	{
+		m_lightColor = { lightColorBuffer[0], lightColorBuffer[1], lightColorBuffer[2], 1.0f };
+	}
 
 	if (ImGui::Button("Reset##8"))
 	{
