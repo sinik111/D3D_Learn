@@ -9,7 +9,7 @@
 	- Skybox가 카메라의 모든 방향을 둘러싸기 위해 카메라가 Skybox 내부에 위치함.
 	  카메라가 Skybox 내부에서 안쪽 면을 봐야함.
 	  안쪽에서 삼각형 면을 보면 인덱스 순서가 뒤집혀있기 때문에 뒷면 Culling 됨.
-	   Rasterizer의 기본 앞면 인덱스 순서인 시계 방향을 반시계 방향으로 바꿔줌.
+	  Rasterizer의 기본 앞면 인덱스 순서인 시계 방향을 반시계 방향으로 바꿔줌.
 
 	  // Rasterizer state 생성
 
@@ -36,13 +36,14 @@
 	- 배경이기 때문에 모든 오브젝트보다 멀리 그려져야함.
 	  픽셀이 그려질지 말지는 출력 병합기 단계(Output Merger Stage)에서 Depth test로 결정됨.
 	  Skybox가 다른 오브젝트에 가려서 그려지지 않게 하려면 Depth가 가장 커야함.
-	   카메라를 감싸고 있는 작은 큐브이기 때문에 깊이값을 직접 변경해줘야함.
+	  카메라를 감싸고 있는 작은 큐브이기 때문에 깊이값을 직접 변경해줘야함.
 
 	  output.pos = mul(float4(input.pos, 1.0f), world);
 	  output.pos = mul(output.pos, view);
 	  output.pos = mul(output.pos, projection).xyww;
 
-	  NDC 좌표계에서 x, y, z 를 w로 나눌 때 z'가 가장 큰 값인 1이 될 수 있게 z를 w로 바꿔 넣어줌.
+	  NDC 좌표계에서 x, y, z 를 w로 나눌 때 z'가 가장 큰 값인 1이 되어야 함.
+	  월드, 뷰, 투영 행렬을 곱한 결과에서 z를 w로 바꿔줌.
 	  
 	  // DepthStencil State 생성
 
@@ -51,12 +52,12 @@
 	  depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO; // 깊이 값 기록안함
 
 	  // 근데 이거는 D3D11_DEPTH_WRITE_MASK_ALL으로 해도 괜찮은 거 같은데 잘 모르겠음.
-	   //  Depth buffer를 1.0f Clear 해주고 Skybox의 깊이 값도 1.0f 라서 기록 하든 안하든 같은 거 같은데.
+	  // Depth buffer를 1.0f Clear 해주고 Skybox의 깊이 값도 1.0f 라서 기록 하든 안하든 같은 거 아닌가..
 
 	  depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL; // 새로운 픽셀의 깊이가 같거나 작으면 통과
 
-	   // 예를 들면 기존에 그려져있는 오브젝트의 깊이 값이 0.5f일때 Skybox의 깊이 값은 1.0f라서 안그려짐.
-	  // EQUAL을 하는 이유는 Depth가 전부 가장 큰 1.0f로 초기화 되어있기 때문에 EQUAL을 주지 않으면 통과가 안되어서 안그려짐.
+	  // 예를 들면 기존에 그려져있는 오브젝트의 깊이 값이 0.5f일때 Skybox의 깊이 값은 1.0f라서 안그려짐.
+	  // EQUAL을 하는 이유는 Depth buffer가 전부 가장 큰 1.0f로 초기화 되어있기 때문에 EQUAL을 주지 않으면 통과가 안되어서 안그려짐.
 
 	  device->CreateDepthStencilState(&depthStencilDesc, &m_depthStencilState);
 
@@ -76,7 +77,7 @@
 	  TextureCube texCubeDiffuse : register(t1);
 	  
 	  // vertex shader
-	  output.originPos = input.pos;
+	  output.originPos = input.pos; // 변환 하지 않은 로컬 좌표를 그대로 넘겨줌.
 
 	  // pixel shader
 	  return texCubeDiffuse.Sample(samLinear, input.originPos);

@@ -1,6 +1,6 @@
 #include "Shared.hlsli"
 
-PS_SKYBOX_INPUT main(VS_INPUT input)
+PS_SKYBOX_INPUT main(VS_SKYBOX_INPUT input)
 {
     PS_SKYBOX_INPUT output = (PS_SKYBOX_INPUT) 0;
 	

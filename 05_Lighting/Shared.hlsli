@@ -28,6 +28,11 @@ struct PS_INPUT
     float2 tex : TEXCOORD1;
 };
 
+struct VS_SKYBOX_INPUT
+{
+    float3 pos : POSITION;
+};
+
 struct PS_SKYBOX_INPUT
 {
     float4 pos : SV_Position;

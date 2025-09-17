@@ -498,35 +498,14 @@ void LightingApp::CreateSkyBox()
 
 	Vertex vertices[] =
 	{
-		{ Vector3{ -1.0f, 1.0f, -1.0f },	Vector3{ 0.0f, 1.0f, 0.0f },	Vector2(1.0f, 0.0f) }, // Normal Y +	 
-		{ Vector3{ 1.0f, 1.0f, -1.0f },		Vector3{ 0.0f, 1.0f, 0.0f },	Vector2(0.0f, 0.0f) },
-		{ Vector3{ 1.0f, 1.0f, 1.0f },		Vector3{ 0.0f, 1.0f, 0.0f },	Vector2(0.0f, 1.0f) },
-		{ Vector3{ -1.0f, 1.0f, 1.0f },		Vector3{ 0.0f, 1.0f, 0.0f },	Vector2(1.0f, 1.0f) },
-
-		{ Vector3{ -1.0f, -1.0f, -1.0f },	Vector3{ 0.0f, -1.0f, 0.0f },	Vector2(0.0f, 0.0f) }, // Normal Y -		
-		{ Vector3{ 1.0f, -1.0f, -1.0f },	Vector3{ 0.0f, -1.0f, 0.0f },	Vector2(1.0f, 0.0f) },
-		{ Vector3{ 1.0f, -1.0f, 1.0f },		Vector3{ 0.0f, -1.0f, 0.0f },	Vector2(1.0f, 1.0f) },
-		{ Vector3{ -1.0f, -1.0f, 1.0f },	Vector3{ 0.0f, -1.0f, 0.0f },	Vector2(0.0f, 1.0f) },
-
-		{ Vector3{ -1.0f, -1.0f, 1.0f },	Vector3{ -1.0f, 0.0f, 0.0f },	Vector2(0.0f, 1.0f) }, // Normal X -
-		{ Vector3{ -1.0f, -1.0f, -1.0f },	Vector3{ -1.0f, 0.0f, 0.0f },	Vector2(1.0f, 1.0f) },
-		{ Vector3{ -1.0f, 1.0f, -1.0f },	Vector3{ -1.0f, 0.0f, 0.0f },	Vector2(1.0f, 0.0f) },
-		{ Vector3{ -1.0f, 1.0f, 1.0f },		Vector3{ -1.0f, 0.0f, 0.0f },	Vector2(0.0f, 0.0f) },
-
-		{ Vector3{ 1.0f, -1.0f, 1.0f },		Vector3{ 1.0f, 0.0f, 0.0f },	Vector2(1.0f, 1.0f) }, // Normal X +
-		{ Vector3{ 1.0f, -1.0f, -1.0f },	Vector3{ 1.0f, 0.0f, 0.0f },	Vector2(0.0f, 1.0f) },
-		{ Vector3{ 1.0f, 1.0f, -1.0f },		Vector3{ 1.0f, 0.0f, 0.0f },	Vector2(0.0f, 0.0f) },
-		{ Vector3{ 1.0f, 1.0f, 1.0f },		Vector3{ 1.0f, 0.0f, 0.0f },	Vector2(1.0f, 0.0f) },
-
-		{ Vector3{ -1.0f, -1.0f, -1.0f },	Vector3{ 0.0f, 0.0f, -1.0f },	Vector2(0.0f, 1.0f) }, // Normal Z -
-		{ Vector3{ 1.0f, -1.0f, -1.0f },	Vector3{ 0.0f, 0.0f, -1.0f },	Vector2(1.0f, 1.0f) },
-		{ Vector3{ 1.0f, 1.0f, -1.0f },		Vector3{ 0.0f, 0.0f, -1.0f },	Vector2(1.0f, 0.0f) },
-		{ Vector3{ -1.0f, 1.0f, -1.0f },	Vector3{ 0.0f, 0.0f, -1.0f },	Vector2(0.0f, 0.0f) },
-
-		{ Vector3{ -1.0f, -1.0f, 1.0f },	Vector3{ 0.0f, 0.0f, 1.0f },	Vector2(1.0f, 1.0f) }, // Normal Z +
-		{ Vector3{ 1.0f, -1.0f, 1.0f },		Vector3{ 0.0f, 0.0f, 1.0f },	Vector2(0.0f, 1.0f) },
-		{ Vector3{ 1.0f, 1.0f, 1.0f },		Vector3{ 0.0f, 0.0f, 1.0f },	Vector2(0.0f, 0.0f) },
-		{ Vector3{ -1.0f, 1.0f, 1.0f },		Vector3{ 0.0f, 0.0f, 1.0f },	Vector2(1.0f, 0.0f) },
+		{ Vector3{ -0.5f, 0.5f, -0.5f } },
+		{ Vector3{ 0.5f, 0.5f, -0.5f } },
+		{ Vector3{ -0.5f, -0.5f, -0.5f } },
+		{ Vector3{ 0.5f, -0.5f, -0.5f } },
+		{ Vector3{ 0.5f, 0.5f, 0.5f } },
+		{ Vector3{ -0.5f, 0.5f, 0.5f } },
+		{ Vector3{ 0.5f, -0.5f, 0.5f } },
+		{ Vector3{ -0.5f, -0.5f, 0.5f } },
 	};
 
 	D3D11_BUFFER_DESC vertexBufferDesc{};
@@ -544,9 +523,7 @@ void LightingApp::CreateSkyBox()
 
 	D3D11_INPUT_ELEMENT_DESC layout[]{
 		// SemanticName , SemanticIndex , Format , InputSlot , AlignedByteOffset , InputSlotClass , InstanceDataStepRate
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
 	ComPtr<ID3DBlob> vertexShaderBuffer;
@@ -571,18 +548,18 @@ void LightingApp::CreateSkyBox()
 
 	WORD indices[] =
 	{
-		3, 1, 0,
+		0, 1, 2,
 		2, 1, 3,
-		6, 4, 5,
-		7, 4, 6,
-		11, 9, 8,
-		10, 9, 11,
-		14, 12, 13,
-		15, 12, 14,
-		19, 17, 16,
-		18, 17, 19,
-		22, 20, 21,
-		23, 20, 22
+		1, 4, 3,
+		3, 4, 6,
+		4, 5, 6,
+		6, 5, 7,
+		5, 0, 7,
+		7, 0, 2,
+		5, 4, 0,
+		0, 4, 1,
+		2, 3, 7,
+		7, 3, 6
 	};
 
 	m_skyboxIndexCount = ARRAYSIZE(indices);
