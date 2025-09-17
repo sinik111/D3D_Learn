@@ -270,7 +270,7 @@ void LightingApp::RenderImGui()
 
 	if (ImGui::Button("Reset"))
 	{
-		m_lightRotation = { -45.0f, 45.0f, 0.0f };
+		m_lightRotation = { -35.0f, 145.0f, 0.0f };
 	}
 
 	ImGui::PopID(); // 9

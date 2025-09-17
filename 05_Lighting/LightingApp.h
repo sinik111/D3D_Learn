@@ -56,7 +56,7 @@ private:
 
 	Matrix m_lightRotationMatrix;
 	const Vector4 m_originalLightDir{ 0.0f, -1.0f, 0.0f, 0.0f };
-	Vector3 m_lightRotation{ -45.0f, 45.0f, 0.0f };
+	Vector3 m_lightRotation{ -35.0f, 145.0f, 0.0f };
 	Vector4 m_lightColor{ 1.0f, 1.0f, 1.0f, 1.0f };
 
 public:
