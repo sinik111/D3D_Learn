@@ -60,6 +60,10 @@ private:
 	Vector3 m_lightRotation{ -35.0f, 145.0f, 0.0f };
 	Vector4 m_lightColor{ 1.0f, 1.0f, 1.0f, 1.0f };
 
+	Vector4 m_ambientColor{ 0.1f, 0.1f, 0.1f, 1.0f };
+	Vector4 m_specularColor{ 1.0f, 1.0f, 1.0f, 1.0f };
+	float m_shininess = 1000.0f;
+
 public:
 	void Initialize() override;
 

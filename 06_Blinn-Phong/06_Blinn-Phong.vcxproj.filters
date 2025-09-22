@@ -17,10 +17,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="LightingPixelShader.hlsl">
+    <FxCompile Include="BlinnPhongPixelShader.hlsl">
       <Filter>20_Shader</Filter>
     </FxCompile>
-    <FxCompile Include="LightingVertexShader.hlsl">
+    <FxCompile Include="BlinnPhongVertexShader.hlsl">
       <Filter>20_Shader</Filter>
     </FxCompile>
     <FxCompile Include="SkyboxPixelShader.hlsl">

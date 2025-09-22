@@ -12,6 +12,10 @@ cbuffer ConstantBuffer : register(b0)
     
     float4 lightDir;
     float4 lightColor;
+    float4 cameraPos;
+    float4 ambientColor;
+    float4 specularColor;
+    float4 shininess;
 }
 
 struct VS_INPUT
@@ -26,6 +30,7 @@ struct PS_INPUT
     float4 pos : SV_Position;
     float3 norm : TEXCOORD0;
     float2 tex : TEXCOORD1;
+    float3 viewDir : TEXCOORD2;
 };
 
 struct VS_SKYBOX_INPUT

@@ -130,11 +130,11 @@
     <ClInclude Include="BlinnPhongApp.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="LightingPixelShader.hlsl">
+    <FxCompile Include="BlinnPhongPixelShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="LightingVertexShader.hlsl" />
+    <FxCompile Include="BlinnPhongVertexShader.hlsl" />
     <FxCompile Include="SkyboxPixelShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>

@@ -32,6 +32,10 @@ struct ConstantBuffer
 
 	Vector4 lightDirection;
 	Vector4 lightColor;
+	Vector4 cameraPos;
+	Vector4 ambientColor;
+	Vector4 specularColor;
+	Vector4 shininess;
 };
 
 void BlinnPhongApp::Initialize()
@@ -90,6 +94,10 @@ void BlinnPhongApp::OnRender()
 	cb.projection = m_projection.Transpose();
 	cb.lightDirection = m_lightDirection;
 	cb.lightColor = m_lightColor;
+	cb.cameraPos = Vector4(m_camera.GetPosition());
+	cb.ambientColor = m_ambientColor;
+	cb.specularColor = m_specularColor;
+	cb.shininess = Vector4(m_shininess);
 
 
 	// crystal
@@ -108,8 +116,6 @@ void BlinnPhongApp::OnRender()
 
 	deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
 	deviceContext->DrawIndexed(m_indexCount, 0, 0);
-
-
 
 
 	// skybox
@@ -274,6 +280,39 @@ void BlinnPhongApp::RenderImGui()
 		m_lightColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 	}
 
+	float ambientColortBuffer[3]{ m_ambientColor.x, m_ambientColor.y, m_ambientColor.z };
+	if (ImGui::ColorEdit3("AmbientColor", ambientColortBuffer))
+	{
+		m_ambientColor = { ambientColortBuffer[0], ambientColortBuffer[1], ambientColortBuffer[2], 1.0f };
+	}
+
+	if (ImGui::Button("Reset##9"))
+	{
+		m_ambientColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+	}
+
+	float specularColortBuffer[3]{ m_specularColor.x, m_specularColor.y, m_specularColor.z };
+	if (ImGui::ColorEdit3("SpecularColor", specularColortBuffer))
+	{
+		m_specularColor = { specularColortBuffer[0], specularColortBuffer[1], specularColortBuffer[2], 1.0f };
+	}
+
+	if (ImGui::Button("Reset##10"))
+	{
+		m_specularColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	}
+
+	float shininessBuffer = m_shininess;
+	if (ImGui::DragFloat("Shininess", &shininessBuffer, 5.0f, 1.0f, 10000.0f))
+	{
+		m_shininess = shininessBuffer;
+	}
+
+	if (ImGui::Button("Reset##11"))
+	{
+		m_shininess = 1000.0f;
+	}
+
 	ImGui::End();
 
 	ImGui::Render();
@@ -431,7 +470,7 @@ void BlinnPhongApp::CreateCrystal()
 	};
 
 	ComPtr<ID3DBlob> vertexShaderBuffer;
-	GraphicsDevice::CompileShaderFromFile(L"LightingVertexShader.hlsl", "main", "vs_4_0", vertexShaderBuffer);
+	GraphicsDevice::CompileShaderFromFile(L"BlinnPhongVertexShader.hlsl", "main", "vs_4_0", vertexShaderBuffer);
 
 	device->CreateInputLayout(
 		layout,
@@ -461,7 +500,7 @@ void BlinnPhongApp::CreateCrystal()
 
 
 	ComPtr<ID3DBlob> pixelShaderBuffer;
-	GraphicsDevice::CompileShaderFromFile(L"LightingPixelShader.hlsl", "main", "ps_4_0", pixelShaderBuffer);
+	GraphicsDevice::CompileShaderFromFile(L"BlinnPhongPixelShader.hlsl", "main", "ps_4_0", pixelShaderBuffer);
 
 	device->CreatePixelShader(
 		pixelShaderBuffer->GetBufferPointer(),
