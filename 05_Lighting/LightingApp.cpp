@@ -57,6 +57,8 @@ void LightingApp::OnUpdate()
 	m_lightRotationMatrix =
 		Matrix::CreateRotationX(DirectX::XMConvertToRadians(m_lightRotation.x)) *
 		Matrix::CreateRotationY(DirectX::XMConvertToRadians(m_lightRotation.y));
+
+	m_lightDirection = DirectX::XMVector2TransformNormal(m_originalLightDir, m_lightRotationMatrix);
 }
 
 bool m_show_demo_window = true;
@@ -86,7 +88,7 @@ void LightingApp::OnRender()
 	ConstantBuffer cb{};
 	cb.view = m_view.Transpose();
 	cb.projection = m_projection.Transpose();
-	cb.lightDirection = DirectX::XMVector2TransformNormal(m_originalLightDir, m_lightRotationMatrix);
+	cb.lightDirection = m_lightDirection;
 	cb.lightColor = m_lightColor;
 
 
@@ -252,6 +254,9 @@ void LightingApp::RenderImGui()
 	{
 		m_lightRotation = { lightRotationBuffer[0], lightRotationBuffer[1], m_lightRotation.z };
 	}
+
+	float lightDirectionBuffer[3]{ m_lightDirection.x, m_lightDirection.y, m_lightDirection.z };
+	ImGui::InputFloat3("Direction", lightDirectionBuffer);
 
 	if (ImGui::Button("Reset##7"))
 	{
