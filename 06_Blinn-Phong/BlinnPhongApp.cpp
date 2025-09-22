@@ -270,7 +270,7 @@ void BlinnPhongApp::RenderImGui()
 	}
 
 	float lightColorBuffer[3]{ m_lightColor.x, m_lightColor.y, m_lightColor.z };
-	if (ImGui::ColorEdit3("Color", lightColorBuffer))
+	if (ImGui::ColorEdit3("DiffuseColor", lightColorBuffer))
 	{
 		m_lightColor = { lightColorBuffer[0], lightColorBuffer[1], lightColorBuffer[2], 1.0f };
 	}
