@@ -10,9 +10,9 @@ cbuffer ConstantBuffer : register(b0)
     matrix projection;
     matrix normalMatrix;
     
-    float4 lightDir;
-    float4 lightColor;
     float4 cameraPos;
+    float4 lightDir;
+    float4 diffuseColor;
     float4 ambientColor;
     float4 specularColor;
     float4 shininess;

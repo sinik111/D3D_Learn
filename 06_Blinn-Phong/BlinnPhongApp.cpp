@@ -30,9 +30,9 @@ struct ConstantBuffer
 	Matrix projection;
 	Matrix normalMatrix;
 
-	Vector4 lightDirection;
-	Vector4 lightColor;
 	Vector4 cameraPos;
+	Vector4 lightDirection;
+	Vector4 diffuseColor;
 	Vector4 ambientColor;
 	Vector4 specularColor;
 	Vector4 shininess;
@@ -93,7 +93,7 @@ void BlinnPhongApp::OnRender()
 	cb.view = m_view.Transpose();
 	cb.projection = m_projection.Transpose();
 	cb.lightDirection = m_lightDirection;
-	cb.lightColor = m_lightColor;
+	cb.diffuseColor = m_lightColor;
 	cb.cameraPos = Vector4(m_camera.GetPosition());
 	cb.ambientColor = m_ambientColor;
 	cb.specularColor = m_specularColor;
