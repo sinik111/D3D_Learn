@@ -4,17 +4,20 @@ float4 main(PS_INPUT input) : SV_Target
 {
     float4 texColor = texDiffuse.Sample(samLinear, input.tex);
     
-    float4 ambient = texColor * ambientColor;
+    float3 norm = normalize(input.norm);
+    float3 viewDir = normalize(cameraPos.xyz - input.worldPos);
     
-    float diffuseScalar = max(dot((float3) -lightDir, input.norm), 0.0f);
+    // ambient
+    float4 ambient = texColor * materialAmbient * ambientLightColor;
     
-    float4 diffuse = texColor * diffuseColor * diffuseScalar;
+    // diffuse
+    float diffuseScalar = max(dot(-lightDir.xyz, norm), 0.0f);
+    float4 diffuse = texColor * lightColor * diffuseScalar;
     
-    float3 halfVector = normalize((float3) -lightDir + input.viewDir);
-    
-    float specularScalar = max(dot(halfVector, input.norm), 0.0f);
-    
-    float4 specular = specularColor * pow(specularScalar, (float) shininess);
+    // specular
+    float3 halfVector = normalize(-lightDir.xyz + viewDir);
+    float specularScalar = max(dot(halfVector, norm), 0.0f);
+    float4 specular = materialSpecular * lightColor * pow(specularScalar, shininess.x);
     
     float4 finalColor = saturate(diffuse + ambient + specular);
     

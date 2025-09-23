@@ -5,7 +5,7 @@ PS_INPUT main(VS_INPUT input)
     PS_INPUT output = (PS_INPUT)0;
     
     float4 worldPos = mul(float4(input.pos, 1.0f), world);
-    output.viewDir = normalize((float3) cameraPos - (float3) worldPos);
+    output.worldPos = worldPos.xyz;
     
     output.pos = worldPos;
     output.pos = mul(output.pos, view);
