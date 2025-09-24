@@ -164,12 +164,8 @@ void BlinnPhongApp::RenderImGui()
 	ImGui::SeparatorText("Camera");
 
 	Vector3 cameraPosition = m_camera.GetPosition();
-	float cameraPositionBuffer[3]{ cameraPosition.x, cameraPosition.y, cameraPosition.z };
 
-	if (ImGui::DragFloat3("Position##1", cameraPositionBuffer, 0.1f))
-	{
-		m_camera.SetPosition({ cameraPositionBuffer[0], cameraPositionBuffer[1], cameraPositionBuffer[2] });
-	}
+	ImGui::DragFloat3("Position##1", &cameraPosition.x, 0.1f);
 
 	Vector3 cameraRotation = m_camera.GetRotation();
 	float cameraRotationBuffer[2]{ DirectX::XMConvertToDegrees(cameraRotation.y), DirectX::XMConvertToDegrees(cameraRotation.x) };
@@ -209,44 +205,17 @@ void BlinnPhongApp::RenderImGui()
 
 	ImGui::SeparatorText("Object");
 
-	float objectScaleBuffer[3]{ m_scale.x, m_scale.y, m_scale.z };
+	ImGui::DragFloat3("Scale", &m_scale.x, 0.1f);
 
-	if (ImGui::DragFloat3("Scale", objectScaleBuffer, 0.1f))
-	{
-		m_scale = { objectScaleBuffer[0], objectScaleBuffer[1], objectScaleBuffer[2] };
-	}
-
-	float objectRotationBuffer[2]{ m_rotation.x, m_rotation.y };
-
-	if (ImGui::DragFloat2("Rotation(x, y)##1", objectRotationBuffer, 0.1f))
-	{
-		m_rotation = { objectRotationBuffer[0], objectRotationBuffer[1], m_rotation.z };
-	}
+	ImGui::DragFloat2("Rotation(x, y)##1", &m_rotation.x, 0.1f);
 	
-	float positionBuffer[3]{ m_position.x, m_position.y, m_position.z };
+	ImGui::DragFloat3("Position##2", &m_position.x, 0.1f);
 
-	if (ImGui::DragFloat3("Position##2", positionBuffer, 0.1f))
-	{
-		m_position = { positionBuffer[0], positionBuffer[1], positionBuffer[2] };
-	}
+	ImGui::ColorEdit3("Ambient", &m_materialAmbient.x);
 
-	float ambientBuffer[3]{ m_materialAmbient.x, m_materialAmbient.y, m_materialAmbient.z };
-	if (ImGui::ColorEdit3("Ambient", ambientBuffer))
-	{
-		m_materialAmbient = { ambientBuffer[0], ambientBuffer[1], ambientBuffer[2], 1.0f };
-	}
+	ImGui::ColorEdit3("Specular", &m_materialSpecular.x);
 
-	float specularBuffer[3]{ m_materialSpecular.x, m_materialSpecular.y, m_materialSpecular.z };
-	if (ImGui::ColorEdit3("Specular", specularBuffer))
-	{
-		m_materialSpecular = { specularBuffer[0], specularBuffer[1], specularBuffer[2], 1.0f };
-	}
-
-	float shininessBuffer = m_shininess;
-	if (ImGui::DragFloat("Shininess", &shininessBuffer, 5.0f, 1.0f, 10000.0f))
-	{
-		m_shininess = shininessBuffer;
-	}
+	ImGui::DragFloat("Shininess", &m_shininess, 5.0f, 1.0f, 10000.0f);
 
 	if (ImGui::Button("Reset##2"))
 	{
@@ -262,26 +231,13 @@ void BlinnPhongApp::RenderImGui()
 
 	ImGui::SeparatorText("Light");
 
-	float lightRotationBuffer[2]{ m_lightRotation.x, m_lightRotation.y };
-	if (ImGui::DragFloat2("Rotation(x, y)##2", lightRotationBuffer, 0.5f))
-	{
-		m_lightRotation = { lightRotationBuffer[0], lightRotationBuffer[1], m_lightRotation.z };
-	}
+	ImGui::DragFloat2("Rotation(x, y)##2", &m_lightRotation.x, 0.5f);
 
-	float lightDirectionBuffer[3]{ m_lightDirection.x, m_lightDirection.y, m_lightDirection.z };
-	ImGui::InputFloat3("Direction", lightDirectionBuffer, "%.3f", ImGuiInputTextFlags_ReadOnly);
+	ImGui::InputFloat3("Direction", &m_lightDirection.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
 
-	float lightColorBuffer[3]{ m_lightColor.x, m_lightColor.y, m_lightColor.z };
-	if (ImGui::ColorEdit3("DirectLightColor", lightColorBuffer))
-	{
-		m_lightColor = { lightColorBuffer[0], lightColorBuffer[1], lightColorBuffer[2], 1.0f };
-	}
+	ImGui::ColorEdit3("DirectLightColor", &m_lightColor.x);
 
-	float ambientLightColorBuffer[3]{ m_ambientLightColor.x, m_ambientLightColor.y, m_ambientLightColor.z };
-	if (ImGui::ColorEdit3("AmbientLightColor", ambientLightColorBuffer))
-	{
-		m_ambientLightColor = { ambientLightColorBuffer[0], ambientLightColorBuffer[1], ambientLightColorBuffer[2], 1.0f };
-	}
+	ImGui::ColorEdit3("AmbientLightColor", &m_ambientLightColor.x);
 
 	if (ImGui::Button("Reset##3"))
 	{
