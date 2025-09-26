@@ -16,7 +16,7 @@ float4 main(PS_INPUT input) : SV_Target
     
     // specular
     float3 halfVector = normalize(-lightDir.xyz + viewDir);
-    float specularScalar = max(dot(halfVector, norm), 0.0f);
+    float specularScalar = max(dot(halfVector, norm), 0.0f) * step(0.0000001f, diffuseScalar);
     float4 specular = materialSpecular * lightColor * pow(specularScalar, shininess.x);
     
     float4 finalColor = saturate(diffuse + ambient + specular);
