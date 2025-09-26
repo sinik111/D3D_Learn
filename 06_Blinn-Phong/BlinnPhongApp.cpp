@@ -206,15 +206,10 @@ void BlinnPhongApp::RenderImGui()
 	ImGui::SeparatorText("Object");
 
 	ImGui::DragFloat3("Scale", &m_scale.x, 0.1f);
-
 	ImGui::DragFloat2("Rotation(x, y)##1", &m_rotation.x, 0.1f);
-	
 	ImGui::DragFloat3("Position##2", &m_position.x, 0.1f);
-
 	ImGui::ColorEdit3("Ambient", &m_materialAmbient.x);
-
 	ImGui::ColorEdit3("Specular", &m_materialSpecular.x);
-
 	ImGui::DragFloat("Shininess", &m_shininess, 5.0f, 1.0f, 10000.0f);
 
 	if (ImGui::Button("Reset##2"))
@@ -232,11 +227,8 @@ void BlinnPhongApp::RenderImGui()
 	ImGui::SeparatorText("Light");
 
 	ImGui::DragFloat2("Rotation(x, y)##2", &m_lightRotation.x, 0.5f);
-
 	ImGui::InputFloat3("Direction", &m_lightDirection.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
-
 	ImGui::ColorEdit3("DirectLightColor", &m_lightColor.x);
-
 	ImGui::ColorEdit3("AmbientLightColor", &m_ambientLightColor.x);
 
 	if (ImGui::Button("Reset##3"))
