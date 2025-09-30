@@ -17,6 +17,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "05_Lighting", "05_Lighting\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "06_Blinn-Phong", "06_Blinn-Phong\06_Blinn-Phong.vcxproj", "{694D50AD-69F2-4541-AD01-1C5B7E9B554B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "07_NormalMapping", "07_NormalMapping\07_NormalMapping.vcxproj", "{C65712E4-B9C4-470D-88D9-C6EA5925B178}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -81,6 +83,14 @@ Global
 		{694D50AD-69F2-4541-AD01-1C5B7E9B554B}.Release|x64.Build.0 = Release|x64
 		{694D50AD-69F2-4541-AD01-1C5B7E9B554B}.Release|x86.ActiveCfg = Release|Win32
 		{694D50AD-69F2-4541-AD01-1C5B7E9B554B}.Release|x86.Build.0 = Release|Win32
+		{C65712E4-B9C4-470D-88D9-C6EA5925B178}.Debug|x64.ActiveCfg = Debug|x64
+		{C65712E4-B9C4-470D-88D9-C6EA5925B178}.Debug|x64.Build.0 = Debug|x64
+		{C65712E4-B9C4-470D-88D9-C6EA5925B178}.Debug|x86.ActiveCfg = Debug|Win32
+		{C65712E4-B9C4-470D-88D9-C6EA5925B178}.Debug|x86.Build.0 = Debug|Win32
+		{C65712E4-B9C4-470D-88D9-C6EA5925B178}.Release|x64.ActiveCfg = Release|x64
+		{C65712E4-B9C4-470D-88D9-C6EA5925B178}.Release|x64.Build.0 = Release|x64
+		{C65712E4-B9C4-470D-88D9-C6EA5925B178}.Release|x86.ActiveCfg = Release|Win32
+		{C65712E4-B9C4-470D-88D9-C6EA5925B178}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

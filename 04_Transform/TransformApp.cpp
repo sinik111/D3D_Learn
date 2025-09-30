@@ -70,8 +70,6 @@ void TransformApp::OnUpdate()
 	} * m_world2;
 }
 
-bool m_show_demo_window = true;
-
 void TransformApp::OnRender()
 {
 	// view, projection setting

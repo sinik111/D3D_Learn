@@ -58,7 +58,7 @@ void LightingApp::OnUpdate()
 		Matrix::CreateRotationX(DirectX::XMConvertToRadians(m_lightRotation.x)) *
 		Matrix::CreateRotationY(DirectX::XMConvertToRadians(m_lightRotation.y));
 
-	m_lightDirection = DirectX::XMVector2TransformNormal(m_originalLightDir, m_lightRotationMatrix);
+	m_lightDirection = DirectX::XMVector3TransformNormal(m_originalLightDir, m_lightRotationMatrix);
 }
 
 bool m_show_demo_window = true;

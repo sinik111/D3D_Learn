@@ -16,7 +16,7 @@ private:
 	float m_near = 0.01f;
 	float m_far = 100.0f;
 
-	float m_speed = 20.0f;
+	float m_speed = 10.0f;
 	float m_rotateSpeed = 0.1f;
 
 public:

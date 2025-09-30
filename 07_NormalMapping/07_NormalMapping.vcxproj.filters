@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="01_App">
+      <UniqueIdentifier>{220cbfa2-2898-4c8d-bfe8-caa060149374}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="20_Shader">
+      <UniqueIdentifier>{a91b9575-0734-4723-92af-10769aa7b442}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="SkyboxPixelShader.hlsl">
+      <Filter>20_Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="SkyboxVertexShader.hlsl">
+      <Filter>20_Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="BlinnPhongPixelShader.hlsl">
+      <Filter>20_Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="BlinnPhongVertexShader.hlsl">
+      <Filter>20_Shader</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="NormalMappingApp.h">
+      <Filter>01_App</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>01_App</Filter>
+    </ClCompile>
+    <ClCompile Include="NormalMappingApp.cpp">
+      <Filter>01_App</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shared.hlsli">
+      <Filter>20_Shader</Filter>
+    </None>
+  </ItemGroup>
+</Project>
