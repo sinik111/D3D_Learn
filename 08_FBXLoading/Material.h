@@ -12,6 +12,7 @@ struct TextureSRVs
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> normalTextureSRV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> specularTextureSRV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> emissiveTextureSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> opacityTextureSRV;
 };
 
 class Material

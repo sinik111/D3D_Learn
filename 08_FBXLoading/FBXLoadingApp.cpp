@@ -129,6 +129,7 @@ void FBXLoadingApp::OnRender()
 		deviceContext->PSSetShaderResources(1, 1, textureSRVs.normalTextureSRV.GetAddressOf());
 		deviceContext->PSSetShaderResources(2, 1, textureSRVs.specularTextureSRV.GetAddressOf());
 		deviceContext->PSSetShaderResources(3, 1, textureSRVs.emissiveTextureSRV.GetAddressOf());
+		deviceContext->PSSetShaderResources(4, 1, textureSRVs.opacityTextureSRV.GetAddressOf());
 
 		cb.world = m_world;
 		cb.normalMatrix = m_world.Invert().Transpose().Transpose();

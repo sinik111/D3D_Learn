@@ -57,6 +57,17 @@ Material::Material(const Microsoft::WRL::ComPtr<ID3D11Device>& device, aiMateria
 	{
 		m_textureSRVs.emissiveTextureSRV = s_defaultTextureSRVs->emissiveTextureSRV;
 	}
+
+	if (aiReturn_SUCCESS == material->GetTexture(aiTextureType_OPACITY, 0, &path))
+	{
+		std::wstring fileName = fs::path(ToWideCharStr(path.C_Str())).filename();
+
+		DirectX::CreateWICTextureFromFile(device.Get(), fileName.c_str(), nullptr, &m_textureSRVs.opacityTextureSRV);
+	}
+	else
+	{
+		m_textureSRVs.opacityTextureSRV = s_defaultTextureSRVs->opacityTextureSRV;
+	}
 }
 
 const TextureSRVs& Material::GetTextureSRVs() const
@@ -72,12 +83,14 @@ void Material::CreateDefaultTextureSRV(const Microsoft::WRL::ComPtr<ID3D11Device
 		Normal,
 		Specular,
 		Emissive,
+		Opacity,
 		Max
 	};
 
 	unsigned char diffuseData[]{ 255, 255, 255, 255 };
 	unsigned char normalData[]{ 128, 128, 255, 255 };
-	unsigned char blackData[]{ 0, 0, 0, 0 };
+	unsigned char blackData[]{ 0, 0, 0, 255 };
+	unsigned char whiteData[]{ 255, 255, 255, 255 };
 
 	s_defaultTextureSRVs = new TextureSRVs;
 
@@ -109,6 +122,9 @@ void Material::CreateDefaultTextureSRV(const Microsoft::WRL::ComPtr<ID3D11Device
 		case Emissive:
 			subData.pSysMem = blackData;
 			break;
+		case Opacity:
+			subData.pSysMem = whiteData;
+			break;
 		}
 
 		subData.SysMemPitch = 4;
@@ -136,6 +152,9 @@ void Material::CreateDefaultTextureSRV(const Microsoft::WRL::ComPtr<ID3D11Device
 			break;
 		case Emissive:
 			device->CreateShaderResourceView(texture.Get(), &srvDesc, &s_defaultTextureSRVs->emissiveTextureSRV);
+			break;
+		case Opacity:
+			device->CreateShaderResourceView(texture.Get(), &srvDesc, &s_defaultTextureSRVs->opacityTextureSRV);
 			break;
 		}
 	}
