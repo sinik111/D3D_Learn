@@ -13,8 +13,8 @@ private:
 	Matrix m_world = Matrix::Identity;
 
 	float m_fov = 50.0f;
-	float m_near = 0.01f;
-	float m_far = 100.0f;
+	float m_near = 1.0f;
+	float m_far = 1000.0f;
 
 	float m_speed = 10.0f;
 	float m_rotateSpeed = 0.1f;
@@ -29,12 +29,14 @@ public:
 	float GetFOV() const;
 	float GetNear() const;
 	float GetFar() const;
+	float GetSpeed() const;
 
 	void SetPosition(const Vector3& position);
 	void SetRotation(const Vector3& rotation);
 	void SetFOV(float degree);
 	void SetNear(float n);
 	void SetFar(float f);
+	void SetSpeed(float speed);
 
 	void Update();
 	void ProcessInput();

@@ -54,6 +54,11 @@ float Camera::GetFar() const
 	return m_far;
 }
 
+float Camera::GetSpeed() const
+{
+	return m_speed;
+}
+
 void Camera::SetPosition(const Vector3& position)
 {
 	m_position = position;
@@ -77,6 +82,11 @@ void Camera::SetNear(float n)
 void Camera::SetFar(float f)
 {
 	m_far = f;
+}
+
+void Camera::SetSpeed(float speed)
+{
+	m_speed = speed;
 }
 
 void Camera::Update()

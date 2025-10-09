@@ -27,6 +27,9 @@
     <ClInclude Include="MyTime.h">
       <Filter>02_Module</Filter>
     </ClInclude>
+    <ClInclude Include="Helper.h">
+      <Filter>02_Module</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinApp.cpp">
@@ -42,6 +45,9 @@
       <Filter>02_Module</Filter>
     </ClCompile>
     <ClCompile Include="MyTime.cpp">
+      <Filter>02_Module</Filter>
+    </ClCompile>
+    <ClCompile Include="Helper.cpp">
       <Filter>02_Module</Filter>
     </ClCompile>
   </ItemGroup>

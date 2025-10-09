@@ -4,8 +4,61 @@
     <Filter Include="01_App">
       <UniqueIdentifier>{7635fac4-fcd0-40e0-a904-fbdbc0d5c6a9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02_Shader">
+    <Filter Include="02_Model">
+      <UniqueIdentifier>{2247c7b1-87c2-4fc6-8e11-a8af5f6ef9f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03_Shader">
       <UniqueIdentifier>{0ac6e839-8298-424a-ae40-69a99aaacdee}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="BlinnPhongVertexShader.hlsl">
+      <Filter>03_Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="BlinnPhongPixelShader.hlsl">
+      <Filter>03_Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="SkyboxPixelShader.hlsl">
+      <Filter>03_Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="SkyboxVertexShader.hlsl">
+      <Filter>03_Shader</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>01_App</Filter>
+    </ClCompile>
+    <ClCompile Include="FBXLoadingApp.cpp">
+      <Filter>01_App</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>02_Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>02_Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>02_Model</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="FBXLoadingApp.h">
+      <Filter>01_App</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>02_Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>02_Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>02_Model</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shared.hlsli">
+      <Filter>03_Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>
