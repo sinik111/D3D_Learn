@@ -17,7 +17,7 @@ float4 main(PS_INPUT input) : SV_Target
     float3x3 tbnMatrix = float3x3(tan, binorm, norm);
     
     float3 texNorm = DecodeNormal(texNormColor.rgb);
-    float3 worldNorm = mul(texNorm, tbnMatrix);
+    float3 worldNorm = normalize(mul(texNorm, tbnMatrix));
     
     // ambient
     float4 ambient = texDiffColor * materialAmbient * ambientLightColor;

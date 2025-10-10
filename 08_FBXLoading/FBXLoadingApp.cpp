@@ -107,6 +107,30 @@ void FBXLoadingApp::OnRender()
 	cb.lightDirection = m_lightDirection;
 	cb.lightColor = m_lightColor;
 	cb.ambientLightColor = m_ambientLightColor;
+	cb.materialAmbient = m_materialAmbient;
+	cb.materialSpecular = m_materialSpecular;
+	cb.shininess = Vector4(m_shininess);
+
+	// skybox
+	deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(), &m_vertexBufferStride, &m_vertexBufferOffset);
+	deviceContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+
+	deviceContext->IASetInputLayout(m_skyboxInputLayout.Get());
+	deviceContext->VSSetShader(m_skyboxVertexShader.Get(), nullptr, 0);
+	deviceContext->PSSetShader(m_skyboxPixelShader.Get(), nullptr, 0);
+	deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
+	deviceContext->PSSetShaderResources(0, 1, m_skyboxTextureRV.GetAddressOf());
+	deviceContext->RSSetState(m_rasterizerState.Get());
+	deviceContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
+
+	Matrix skyboxWorld = Matrix::CreateRotationY(DirectX::XMConvertToRadians(-90)) *
+		Matrix::CreateTranslation(m_camera.GetPosition());
+	cb.world = skyboxWorld.Transpose();
+
+	deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+	deviceContext->DrawIndexed(m_indexCount, 0, 0);
+	deviceContext->RSSetState(nullptr);
+	deviceContext->OMSetDepthStencilState(nullptr, 0);
 
 	// model
 	const auto& meshes = m_model->GetMeshes();
@@ -136,7 +160,7 @@ void FBXLoadingApp::OnRender()
 
 		float blendFactor[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
 
-		//deviceContext->OMSetBlendState(m_blendState.Get(), blendFactor, 0xFFFFFFFF);
+		deviceContext->OMSetBlendState(m_blendState.Get(), blendFactor, 0xFFFFFFFF);
 
 		deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
 		deviceContext->DrawIndexed(mesh.GetIndexCount(), 0, 0);
@@ -144,45 +168,26 @@ void FBXLoadingApp::OnRender()
 		//deviceContext->OMSetBlendState(nullptr, nullptr, 0);
 	}
 
+	//// cube
+	//deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(), &m_vertexBufferStride, &m_vertexBufferOffset);
+	//deviceContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
 
-	// cube
-	deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(), &m_vertexBufferStride, &m_vertexBufferOffset);
-	deviceContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+	//deviceContext->IASetInputLayout(m_inputLayout.Get());
+	//deviceContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
+	//deviceContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
+	//deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
+	//deviceContext->PSSetShaderResources(0, 1, m_cubeDiffuseRV.GetAddressOf());
+	//deviceContext->PSSetShaderResources(1, 1, m_cubeNormalRV.GetAddressOf());
+	//deviceContext->PSSetShaderResources(2, 1, m_cubeSpecularRV.GetAddressOf());
 
-	deviceContext->IASetInputLayout(m_inputLayout.Get());
-	deviceContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
-	deviceContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
-	deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
-	deviceContext->PSSetShaderResources(0, 1, m_cubeDiffuseRV.GetAddressOf());
-	deviceContext->PSSetShaderResources(1, 1, m_cubeNormalRV.GetAddressOf());
-	deviceContext->PSSetShaderResources(2, 1, m_cubeSpecularRV.GetAddressOf());
+	//cb.world = m_world.Transpose();
+	//cb.normalMatrix = m_world.Invert().Transpose().Transpose();
+	//cb.materialAmbient = m_materialAmbient;
+	//cb.materialSpecular = m_materialSpecular;
+	//cb.shininess = Vector4(m_shininess);
 
-	cb.world = m_world.Transpose();
-	cb.normalMatrix = m_world.Invert().Transpose().Transpose();
-	cb.materialAmbient = m_materialAmbient;
-	cb.materialSpecular = m_materialSpecular;
-	cb.shininess = Vector4(m_shininess);
-
-	deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
-	deviceContext->DrawIndexed(m_indexCount, 0, 0);
-
-	// skybox
-	deviceContext->IASetInputLayout(m_skyboxInputLayout.Get());
-	deviceContext->VSSetShader(m_skyboxVertexShader.Get(), nullptr, 0);
-	deviceContext->PSSetShader(m_skyboxPixelShader.Get(), nullptr, 0);
-	deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
-	deviceContext->PSSetShaderResources(0, 1, m_skyboxTextureRV.GetAddressOf());
-	deviceContext->RSSetState(m_rasterizerState.Get());
-	deviceContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
-
-	Matrix skyboxWorld = Matrix::CreateRotationY(DirectX::XMConvertToRadians(-90)) *
-		Matrix::CreateTranslation(m_camera.GetPosition());
-	cb.world = skyboxWorld.Transpose();
-
-	deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
-	deviceContext->DrawIndexed(m_indexCount, 0, 0);
-	deviceContext->RSSetState(nullptr);
-	deviceContext->OMSetDepthStencilState(nullptr, 0);
+	//deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+	//deviceContext->DrawIndexed(m_indexCount, 0, 0);
 
 	RenderImGui();
 
@@ -314,7 +319,10 @@ void FBXLoadingApp::InitializeScene()
 {
 	auto device = m_graphicsDevice.GetDevice();
 
+	//m_model = std::make_unique<Model>(device, "Tree.fbx");
 	m_model = std::make_unique<Model>(device, "zeldaPosed001.fbx");
+	//m_model = std::make_unique<Model>(device, "Character.fbx");
+	//m_model = std::make_unique<Model>(device, "Arissa.fbx");
 
 	m_vertexBufferStride = sizeof(Vertex);
 

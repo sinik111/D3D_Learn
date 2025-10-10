@@ -117,7 +117,7 @@ void Material::CreateDefaultTextureSRV(const Microsoft::WRL::ComPtr<ID3D11Device
 			subData.pSysMem = normalData;
 			break;
 		case Specular:
-			subData.pSysMem = blackData;
+			subData.pSysMem = whiteData;
 			break;
 		case Emissive:
 			subData.pSysMem = blackData;

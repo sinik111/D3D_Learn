@@ -13,6 +13,8 @@ float4 main(PS_INPUT input) : SV_Target
     float4 texSpecColor = texSpecular.Sample(samLinear, input.tex);
     float4 texOpacColor = texOpacity.Sample(samLinear, input.tex);
     
+    clip(texOpacColor.a - 0.5f);
+    
     // emissive
     float4 emissive = texEmissive.Sample(samLinear, input.tex);
     
@@ -23,14 +25,14 @@ float4 main(PS_INPUT input) : SV_Target
     float3x3 tbnMatrix = float3x3(tan, binorm, norm);
     
     float3 texNorm = DecodeNormal(texNormColor.rgb);
-    float3 worldNorm = mul(texNorm, tbnMatrix);
+    float3 worldNorm = normalize(mul(texNorm, tbnMatrix));
     
     // ambient
-    float4 ambient = texDiffColor * texOpacColor * materialAmbient * ambientLightColor;
+    float4 ambient = texDiffColor * materialAmbient * ambientLightColor;
     
     // diffuse
     float diffuseScalar = max(dot(worldNorm, -lightDir.xyz), 0.0f);
-    float4 diffuse = texDiffColor * texOpacColor * lightColor * diffuseScalar;
+    float4 diffuse = texDiffColor * lightColor * diffuseScalar;
     
     // specular
     float3 viewDir = normalize(cameraPos.xyz - input.worldPos);
@@ -39,6 +41,7 @@ float4 main(PS_INPUT input) : SV_Target
     float4 specular = texSpecColor * materialSpecular * lightColor * pow(specularScalar, shininess.x);
     
     float4 finalColor = saturate(diffuse + ambient + specular + emissive);
+    finalColor.a = texOpacColor.a;
     
     return finalColor;
 }
