@@ -129,7 +129,44 @@ void FBXLoadingApp::OnRender()
 	{
 		if (model.GetName() == L"zeldaPosed001")
 		{
+			for (size_t i = 0; i < m_instanceDatas.size(); ++i)
+			{
+				const auto& meshes = model.GetMeshes();
+				const auto& materials = model.GetMaterials();
 
+				for (const auto& mesh : meshes)
+				{
+					const auto& material = materials[mesh.GetMaterialIndex()];
+
+					deviceContext->IASetInputLayout(m_inputLayout.Get());
+					deviceContext->IASetVertexBuffers(0, 1, mesh.GetVertexBuffer().GetAddressOf(), &m_vertexBufferStride, &m_vertexBufferOffset);
+					deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R16_UINT, 0);
+
+					deviceContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
+					deviceContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
+
+					const auto& textureSRVs = material.GetTextureSRVs();
+
+					deviceContext->PSSetShaderResources(0, 1, textureSRVs.diffuseTextureSRV.GetAddressOf());
+					deviceContext->PSSetShaderResources(1, 1, textureSRVs.normalTextureSRV.GetAddressOf());
+					deviceContext->PSSetShaderResources(2, 1, textureSRVs.specularTextureSRV.GetAddressOf());
+					deviceContext->PSSetShaderResources(3, 1, textureSRVs.emissiveTextureSRV.GetAddressOf());
+					deviceContext->PSSetShaderResources(4, 1, textureSRVs.opacityTextureSRV.GetAddressOf());
+
+					cb.world = m_instanceDatas[i].world.Transpose();
+					cb.normalMatrix = model.GetWorld().Invert().Transpose().Transpose();
+
+					float blendFactor[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
+
+					deviceContext->OMSetBlendState(m_blendState.Get(), blendFactor, 0xFFFFFFFF);
+
+					deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+					deviceContext->DrawIndexed(mesh.GetIndexCount(), 0, 0);
+					//deviceContext->DrawIndexedInstanced()
+
+					deviceContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+				}
+			}
 		}
 
 		const auto& meshes = model.GetMeshes();
@@ -243,7 +280,7 @@ void FBXLoadingApp::RenderImGui()
 	float cameraFar = m_camera.GetFar();
 
 	if (ImGui::DragFloat("Near", &cameraNear, 1.0f, 0.01f, cameraFar - 10) ||
-		ImGui::DragFloat("Far", &cameraFar, 1.0f, cameraNear + 10, 1000.f))
+		ImGui::DragFloat("Far", &cameraFar, 1.0f, cameraNear + 10, 100000.f))
 	{
 		m_camera.SetNear(cameraNear);
 		m_camera.SetFar(cameraFar);
@@ -301,6 +338,8 @@ void FBXLoadingApp::RenderImGui()
 		m_ambientLightColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 	}
 
+	ImGui::Text("%d", ImGui::GetFrameHeight());
+
 	ImGui::End();
 
 	ImGui::Render();
@@ -345,6 +384,10 @@ void FBXLoadingApp::InitializeScene()
 		m_models.emplace_back(device, fbxFileNames[i], Matrix::CreateTranslation(position));
 	}
 
+	UINT maxInstances = (m_maxShells * 2 + 1) * (m_maxShells * 2 + 1);
+
+	m_instanceDatas.reserve(maxInstances);
+
 	const float x = 100.0f;
 	const float y = 100.0f;
 
@@ -355,18 +398,32 @@ void FBXLoadingApp::InitializeScene()
 
 	for (UINT i = m_startShell; i <= m_currentShells; ++i)
 	{
-		const Vector3 rightFront{ (i + 1) * 100.0f, 0.0f, (i + 1) * 100.f };
-		const Vector3 rightBack{ (i + 1) * 100.0f, 0.0f, (i + 1) * -100.f };
-		const Vector3 leftBack{ (i + 1) * -100.0f, 0.0f, (i + 1) * -100.f };
-		const Vector3 leftFront{ (i + 1) * -100.0f, 0.0f, (i + 1) * 100.f };
-		const UINT sideCount = i * 2 - 1;
+		const int numDivide = i * 2 - 1;
 
+		const Vector3 rightFront{ (i + 1) * x, 0.0f, (i + 1) * y };
+		const Vector3 rightBack{ (i + 1) * x, 0.0f, (i + 1) * -y };
+		const Vector3 leftBack{ (i + 1) * -x, 0.0f, (i + 1) * -y };
+		const Vector3 leftFront{ (i + 1) * -x, 0.0f, (i + 1) * y };
 
-		for (int j = 0; j < sideCount; ++j)
+		const Vector3 verticalDelta = (rightBack - rightFront) / (float)numDivide;
+		const Vector3 horizontalDelta = (leftFront - rightFront) / (float)numDivide;
+
+		Vector3 p1 = rightFront;
+		Vector3 p2 = rightBack;
+		Vector3 p3 = leftBack;
+		Vector3 p4 = leftFront;
+
+		for (int j = 0; j < numDivide; ++j)
 		{
-			//(float)j / sideCount
+			p1 += verticalDelta;
+			p2 += horizontalDelta;
+			p3 += -verticalDelta;
+			p4 += -horizontalDelta;
 
-
+			m_instanceDatas.emplace_back(Matrix::CreateTranslation(p1));
+			m_instanceDatas.emplace_back(Matrix::CreateTranslation(p2));
+			m_instanceDatas.emplace_back(Matrix::CreateTranslation(p3));
+			m_instanceDatas.emplace_back(Matrix::CreateTranslation(p4));
 		}
 	}
 
@@ -602,9 +659,6 @@ void FBXLoadingApp::InitializeScene()
 	device->CreateBuffer(&constantBufferDesc, nullptr, &m_constantBuffer);
 
 	// instance buffer
-
-	UINT maxInstances = (m_maxShells * 2 + 1) * (m_maxShells * 2 + 1);
-
 	D3D11_BUFFER_DESC instanceBufferDesc{};
 	instanceBufferDesc.ByteWidth = maxInstances * sizeof(InstanceData);
 	instanceBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;

@@ -12,6 +12,12 @@
 struct InstanceData
 {
 	DirectX::SimpleMath::Matrix world;
+
+	InstanceData(DirectX::SimpleMath::Matrix world)
+		: world{ world }
+	{
+
+	}
 };
 
 class FBXLoadingApp :
@@ -57,7 +63,7 @@ private:
 	UINT m_vertexBufferOffset = 0;
 	UINT m_indexCount = 0;
 	const UINT m_maxShells = 50;
-	UINT m_currentShells = 10;
+	UINT m_currentShells = 20;
 	UINT m_startShell = 4;
 
 	Matrix m_world;
