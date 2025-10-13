@@ -20,15 +20,6 @@ using Microsoft::WRL::ComPtr;
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-//struct Vertex
-//{
-//	Vector3 position;
-//	Vector2 tex;
-//	Vector3 normal;
-//	Vector3 tangent;
-//	Vector3 binormal;
-//};
-
 struct ConstantBuffer
 {
 	Matrix world;
@@ -54,6 +45,7 @@ void FBXLoadingApp::Initialize()
 	WinApp::Initialize();
 
 	m_camera.SetSpeed(100.0f);
+	m_camera.SetPosition({ 0.0f, 0.0f, -100.0f });
 
 	Material::CreateDefaultTextureSRV(m_graphicsDevice.GetDevice());
 
@@ -133,61 +125,72 @@ void FBXLoadingApp::OnRender()
 	deviceContext->OMSetDepthStencilState(nullptr, 0);
 
 	// model
-	const auto& meshes = m_model->GetMeshes();
-	const auto& materials = m_model->GetMaterials();
-
-	for (const auto& mesh : meshes)
+	for (const auto& model : m_models)
 	{
-		const auto& material = materials[mesh.GetMaterialIndex()];
+		if (model.GetName() == L"zeldaPosed001")
+		{
 
-		deviceContext->IASetInputLayout(m_inputLayout.Get());
-		deviceContext->IASetVertexBuffers(0, 1, mesh.GetVertexBuffer().GetAddressOf(), &m_vertexBufferStride, &m_vertexBufferOffset);
-		deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R16_UINT, 0);
+		}
 
-		deviceContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
-		deviceContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
+		const auto& meshes = model.GetMeshes();
+		const auto& materials = model.GetMaterials();
 
-		const auto& textureSRVs = material.GetTextureSRVs();
+		for (const auto& mesh : meshes)
+		{
+			const auto& material = materials[mesh.GetMaterialIndex()];
 
-		deviceContext->PSSetShaderResources(0, 1, textureSRVs.diffuseTextureSRV.GetAddressOf());
-		deviceContext->PSSetShaderResources(1, 1, textureSRVs.normalTextureSRV.GetAddressOf());
-		deviceContext->PSSetShaderResources(2, 1, textureSRVs.specularTextureSRV.GetAddressOf());
-		deviceContext->PSSetShaderResources(3, 1, textureSRVs.emissiveTextureSRV.GetAddressOf());
-		deviceContext->PSSetShaderResources(4, 1, textureSRVs.opacityTextureSRV.GetAddressOf());
+			deviceContext->IASetInputLayout(m_inputLayout.Get());
+			deviceContext->IASetVertexBuffers(0, 1, mesh.GetVertexBuffer().GetAddressOf(), &m_vertexBufferStride, &m_vertexBufferOffset);
+			deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R16_UINT, 0);
 
-		cb.world = m_world;
-		cb.normalMatrix = m_world.Invert().Transpose().Transpose();
+			deviceContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
+			deviceContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
 
-		float blendFactor[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
+			const auto& textureSRVs = material.GetTextureSRVs();
 
-		deviceContext->OMSetBlendState(m_blendState.Get(), blendFactor, 0xFFFFFFFF);
+			deviceContext->PSSetShaderResources(0, 1, textureSRVs.diffuseTextureSRV.GetAddressOf());
+			deviceContext->PSSetShaderResources(1, 1, textureSRVs.normalTextureSRV.GetAddressOf());
+			deviceContext->PSSetShaderResources(2, 1, textureSRVs.specularTextureSRV.GetAddressOf());
+			deviceContext->PSSetShaderResources(3, 1, textureSRVs.emissiveTextureSRV.GetAddressOf());
+			deviceContext->PSSetShaderResources(4, 1, textureSRVs.opacityTextureSRV.GetAddressOf());
 
-		deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
-		deviceContext->DrawIndexed(mesh.GetIndexCount(), 0, 0);
+			cb.world = model.GetWorld().Transpose();
+			cb.normalMatrix = model.GetWorld().Invert().Transpose().Transpose();
 
-		//deviceContext->OMSetBlendState(nullptr, nullptr, 0);
+			float blendFactor[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
+
+			deviceContext->OMSetBlendState(m_blendState.Get(), blendFactor, 0xFFFFFFFF);
+
+			deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+			deviceContext->DrawIndexed(mesh.GetIndexCount(), 0, 0);
+			//deviceContext->DrawIndexedInstanced()
+
+			deviceContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+		}
 	}
 
-	//// cube
-	//deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(), &m_vertexBufferStride, &m_vertexBufferOffset);
-	//deviceContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+	// cube
+	deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(), &m_vertexBufferStride, &m_vertexBufferOffset);
+	deviceContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
 
-	//deviceContext->IASetInputLayout(m_inputLayout.Get());
-	//deviceContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
-	//deviceContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
-	//deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
-	//deviceContext->PSSetShaderResources(0, 1, m_cubeDiffuseRV.GetAddressOf());
-	//deviceContext->PSSetShaderResources(1, 1, m_cubeNormalRV.GetAddressOf());
-	//deviceContext->PSSetShaderResources(2, 1, m_cubeSpecularRV.GetAddressOf());
+	deviceContext->IASetInputLayout(m_inputLayout.Get());
+	deviceContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
+	deviceContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
+	deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
 
-	//cb.world = m_world.Transpose();
-	//cb.normalMatrix = m_world.Invert().Transpose().Transpose();
-	//cb.materialAmbient = m_materialAmbient;
-	//cb.materialSpecular = m_materialSpecular;
-	//cb.shininess = Vector4(m_shininess);
+	const auto& defaultTextureSRVs = Material::GetDefaultTextureSRVs();
 
-	//deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
-	//deviceContext->DrawIndexed(m_indexCount, 0, 0);
+	deviceContext->PSSetShaderResources(0, 1, m_cubeDiffuseRV.GetAddressOf());
+	deviceContext->PSSetShaderResources(1, 1, m_cubeNormalRV.GetAddressOf());
+	deviceContext->PSSetShaderResources(2, 1, m_cubeSpecularRV.GetAddressOf());
+	deviceContext->PSSetShaderResources(3, 1, defaultTextureSRVs.emissiveTextureSRV.GetAddressOf());
+	deviceContext->PSSetShaderResources(4, 1, defaultTextureSRVs.opacityTextureSRV.GetAddressOf());
+
+	cb.world = m_world.Transpose();
+	cb.normalMatrix = m_world.Invert().Transpose().Transpose();
+
+	deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+	deviceContext->DrawIndexed(m_indexCount, 0, 0);
 
 	RenderImGui();
 
@@ -247,14 +250,14 @@ void FBXLoadingApp::RenderImGui()
 	}
 
 	float cameraSpeed = m_camera.GetSpeed();
-	if (ImGui::InputFloat("Speed", &cameraSpeed))
+	if (ImGui::DragFloat("Speed", &cameraSpeed, 0.1f, 2.0f, 200.0f))
 	{
 		m_camera.SetSpeed(cameraSpeed);
 	}
 
 	if (ImGui::Button("Reset##1"))
 	{
-		m_camera.SetPosition({ 0.0f, 0.0f, -10.0f });
+		m_camera.SetPosition({ 0.0f, 0.0f, -100.0f });
 		m_camera.SetRotation({ 0.0f, 0.0f, 0.0f });
 		m_camera.SetFOV(50.0f);
 		m_camera.SetNear(1.0f);
@@ -274,12 +277,12 @@ void FBXLoadingApp::RenderImGui()
 
 	if (ImGui::Button("Reset##2"))
 	{
-		m_scale = { 1.0f, 1.0f, 1.0f };
+		m_scale = { 50.0f, 50.0f, 50.0f };
 		m_rotation = { 0.0f, 0.0f, 0.0f };
 		m_position = { 0.0f, 0.0f, 0.0f };
 		m_materialAmbient = { 1.0f, 1.0f, 1.0f, 1.0f };
 		m_materialSpecular = { 1.0f, 1.0f, 1.0f, 1.0f };
-		m_shininess = 32.0f;
+		m_shininess = 64.0f;
 	}
 
 	ImGui::NewLine();
@@ -293,7 +296,7 @@ void FBXLoadingApp::RenderImGui()
 
 	if (ImGui::Button("Reset##3"))
 	{
-		m_lightRotation = { -90.0f, 0.0f, 0.0f };
+		m_lightRotation = { -75.0f, 25.0f, 0.0f };
 		m_lightColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 		m_ambientLightColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 	}
@@ -319,10 +322,53 @@ void FBXLoadingApp::InitializeScene()
 {
 	auto device = m_graphicsDevice.GetDevice();
 
-	//m_model = std::make_unique<Model>(device, "Tree.fbx");
-	m_model = std::make_unique<Model>(device, "zeldaPosed001.fbx");
-	//m_model = std::make_unique<Model>(device, "Character.fbx");
-	//m_model = std::make_unique<Model>(device, "Arissa.fbx");
+	const char* fbxFileNames[]{
+		"Tree.fbx",
+		"zeldaPosed001.fbx",
+		"Character.fbx",
+		"Arissa.fbx",
+		"box.fbx",
+		"cerberus.fbx",
+		"Monkey.fbx",
+		"Vampire_SkinningTest.fbx"
+	};
+
+	const size_t numFBXs = ARRAYSIZE(fbxFileNames);
+	const float radian = DirectX::XM_2PI / numFBXs;
+	const float radius = 300.0f;
+
+	m_models.reserve(numFBXs);
+
+	for (size_t i = 0; i < numFBXs; ++i)
+	{
+		Vector3 position{ radius * std::cos(radian * i), 0.0f, radius * std::sin(radian * i) };
+		m_models.emplace_back(device, fbxFileNames[i], Matrix::CreateTranslation(position));
+	}
+
+	const float x = 100.0f;
+	const float y = 100.0f;
+
+	int index = 3;
+	// (n + 1) * 4
+	// (n + 1) * 100, (n + 1) * 100
+	// i / (n * 2 - 1)
+
+	for (UINT i = m_startShell; i <= m_currentShells; ++i)
+	{
+		const Vector3 rightFront{ (i + 1) * 100.0f, 0.0f, (i + 1) * 100.f };
+		const Vector3 rightBack{ (i + 1) * 100.0f, 0.0f, (i + 1) * -100.f };
+		const Vector3 leftBack{ (i + 1) * -100.0f, 0.0f, (i + 1) * -100.f };
+		const Vector3 leftFront{ (i + 1) * -100.0f, 0.0f, (i + 1) * 100.f };
+		const UINT sideCount = i * 2 - 1;
+
+
+		for (int j = 0; j < sideCount; ++j)
+		{
+			//(float)j / sideCount
+
+
+		}
+	}
 
 	m_vertexBufferStride = sizeof(Vertex);
 
@@ -513,6 +559,40 @@ void FBXLoadingApp::InitializeScene()
 		DirectX::CreateWICTextureFromFile(device.Get(), L"Bricks059_Specular.png", nullptr, &m_cubeSpecularRV);
 	}
 
+	// instancing
+	{
+		D3D11_INPUT_ELEMENT_DESC layout[]{
+			// SemanticName , SemanticIndex , Format , InputSlot , AlignedByteOffset , InputSlotClass , InstanceDataStepRate
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "BINORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "WORLD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 56, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+			{ "WORLD", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 56, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+			{ "WORLD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 56, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+			{ "WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 56, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+		};
+
+		ComPtr<ID3DBlob> vertexShaderBuffer;
+		GraphicsDevice::CompileShaderFromFile(L"InstancingVertexShader.hlsl", "main", "vs_4_0", vertexShaderBuffer);
+
+		device->CreateInputLayout(
+			layout,
+			ARRAYSIZE(layout),
+			vertexShaderBuffer->GetBufferPointer(),
+			vertexShaderBuffer->GetBufferSize(),
+			&m_instancingInputLayout
+		);
+
+		device->CreateVertexShader(
+			vertexShaderBuffer->GetBufferPointer(),
+			vertexShaderBuffer->GetBufferSize(),
+			nullptr,
+			&m_instancingVertexShader
+		);
+	}
+
 	// constant buffer
 	D3D11_BUFFER_DESC constantBufferDesc{};
 	constantBufferDesc.ByteWidth = sizeof(ConstantBuffer);
@@ -520,6 +600,18 @@ void FBXLoadingApp::InitializeScene()
 	constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 
 	device->CreateBuffer(&constantBufferDesc, nullptr, &m_constantBuffer);
+
+	// instance buffer
+
+	UINT maxInstances = (m_maxShells * 2 + 1) * (m_maxShells * 2 + 1);
+
+	D3D11_BUFFER_DESC instanceBufferDesc{};
+	instanceBufferDesc.ByteWidth = maxInstances * sizeof(InstanceData);
+	instanceBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	instanceBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	instanceBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+	device->CreateBuffer(&instanceBufferDesc, nullptr, &m_instanceBuffer);
 
 	// sampler
 	D3D11_SAMPLER_DESC samplerDesc{};
@@ -550,6 +642,8 @@ void FBXLoadingApp::InitializeScene()
 	blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 
 	device->CreateBlendState(&blendDesc, &m_blendState);
+
+	// 
 
 
 	m_world = Matrix::Identity;

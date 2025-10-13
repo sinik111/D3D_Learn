@@ -24,6 +24,9 @@
     <FxCompile Include="SkyboxVertexShader.hlsl">
       <Filter>03_Shader</Filter>
     </FxCompile>
+    <FxCompile Include="InstancingVertexShader.hlsl">
+      <Filter>03_Shader</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">

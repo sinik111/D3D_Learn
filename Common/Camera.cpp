@@ -126,18 +126,25 @@ void Camera::ProcessInput()
 		inputVector -= right;
 	}
 
-	if (Input::IsKeyHeld(Keys::Q))
+	if (Input::IsKeyHeld(Keys::E))
 	{
 		inputVector += up;
 	}
-	else if (Input::IsKeyHeld(Keys::E))
+	else if (Input::IsKeyHeld(Keys::Q))
 	{
 		inputVector -= up;
 	}
 
 	inputVector.Normalize();
 
-	m_position += inputVector * m_speed * MyTime::DeltaTime();
+	float speed = m_speed;
+
+	if (Input::IsKeyHeld(Keys::LeftShift))
+	{
+		speed = m_speed * 2;
+	}
+
+	m_position += inputVector * speed * MyTime::DeltaTime();
 
 	if (Input::IsMouseHeld(Input::Button::RIGHT))
 	{

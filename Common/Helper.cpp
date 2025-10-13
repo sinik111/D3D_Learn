@@ -3,6 +3,15 @@
 #include <Windows.h>
 #include <vector>
 
+#define _CRTDBG_MAP_ALLOC
+#include <cstdlib>
+#include <crtdbg.h>
+
+#include <dxgidebug.h>
+#include <dxgi1_3.h>
+
+#pragma comment(lib, "dxguid.lib")
+
 std::wstring ToWideCharStr(const std::string& multibyteStr)
 {
 	if (multibyteStr.empty())
@@ -65,4 +74,25 @@ std::string ToMultibyteStr(const std::wstring& wideCharStr)
 	);
 
 	return std::string(multibyte.data(), multibyte.size());
+}
+
+LeakCheck::LeakCheck()
+{
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+}
+
+LeakCheck::~LeakCheck()
+{
+	IDXGIDebug1* pDebug = nullptr;
+
+	if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pDebug))))
+	{
+		// 현재 살아있는 DXGI/D3D 객체 출력
+		pDebug->ReportLiveObjects(
+			DXGI_DEBUG_ALL,                 // 모든 DXGI/D3D 컴포넌트
+			DXGI_DEBUG_RLO_ALL              // 전체 리포트 옵션
+		);
+
+		pDebug->Release();
+	}
 }

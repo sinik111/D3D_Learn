@@ -11,6 +11,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 void WinApp::Initialize()
 {
+
 	m_hInstance = GetModuleHandleW(nullptr);
 	m_hCursor = m_hCursor != nullptr ? m_hCursor : LoadCursorW(NULL, IDC_ARROW);
 

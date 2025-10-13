@@ -4,6 +4,10 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include <filesystem>
+
+#include "../Common/Helper.h"
+
 Model::Node::Node(const char* name, Node* parent, unsigned int numChildren, aiNode** children,
 	unsigned int numMeshes, unsigned int* meshes)
 	: m_name{ name }, m_parent{ parent }
@@ -36,7 +40,8 @@ Model::Node::~Node()
 	}
 }
 
-Model::Model(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const char* fileName)
+Model::Model(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const char* fileName, const Matrix& world)
+	: m_world{ world }, m_name{ std::filesystem::path(fileName).stem().c_str() }
 {
 	Assimp::Importer importer;
 
@@ -79,6 +84,11 @@ Model::~Model()
 	delete m_rootNode;
 }
 
+const std::wstring& Model::GetName() const
+{
+	return m_name;
+}
+
 const std::vector<Mesh>& Model::GetMeshes() const
 {
 	return m_meshes;
@@ -87,4 +97,9 @@ const std::vector<Mesh>& Model::GetMeshes() const
 const std::vector<Material>& Model::GetMaterials() const
 {
 	return m_materials;
+}
+
+const Model::Matrix& Model::GetWorld() const
+{
+	return m_world;
 }

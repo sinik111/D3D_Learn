@@ -1,5 +1,7 @@
 #include <windows.h>
 
+#include "../Common/Helper.h"
+
 #include "FBXLoadingApp.h"
 
 int APIENTRY wWinMain(
@@ -8,11 +10,15 @@ int APIENTRY wWinMain(
     _In_ LPWSTR lpCmdLine,
     _In_ int nCmdShow)
 {
-    FBXLoadingApp app;
+#ifdef _DEBUG
+	LeakCheck lc;
+#endif // _DEBUG
 
-    app.Initialize();
+	FBXLoadingApp app;
 
-    app.Run();
+	app.Initialize();
 
-    app.Shutdown();
+	app.Run();
+
+	app.Shutdown();
 }

@@ -30,4 +30,6 @@ public:
 public:
 	static void CreateDefaultTextureSRV(const Microsoft::WRL::ComPtr<ID3D11Device>& device);
 	static void DestroyDefaultTextureSRV();
+
+	static const TextureSRVs& GetDefaultTextureSRVs();
 };

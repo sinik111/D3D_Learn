@@ -47,6 +47,19 @@ struct PS_SKYBOX_INPUT
     float3 originPos : TEXCOORD0;
 };
 
+struct INS_VS_INPUT
+{
+    float3 pos : POSITION;
+    float2 tex : TEXCOORD0;
+    float3 norm : NORMAL;
+    float3 tan : TANGENT;
+    float3 binorm : BINORMAL;
+    
+    float4 world0 : WORLD0;
+    float4 world1 : WORLD1;
+    float4 world2 : WORLD2;
+    float4 world3 : WORLD3;
+};
 
 float3 EncodeNormal(float3 n)
 {

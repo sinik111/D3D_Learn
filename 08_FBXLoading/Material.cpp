@@ -77,6 +77,11 @@ const TextureSRVs& Material::GetTextureSRVs() const
 
 void Material::CreateDefaultTextureSRV(const Microsoft::WRL::ComPtr<ID3D11Device>& device)
 {
+	if (s_defaultTextureSRVs != nullptr)
+	{
+		return;
+	}
+
 	enum TextureType
 	{
 		Diffuse,
@@ -117,7 +122,7 @@ void Material::CreateDefaultTextureSRV(const Microsoft::WRL::ComPtr<ID3D11Device
 			subData.pSysMem = normalData;
 			break;
 		case Specular:
-			subData.pSysMem = whiteData;
+			subData.pSysMem = blackData;
 			break;
 		case Emissive:
 			subData.pSysMem = blackData;
@@ -163,4 +168,11 @@ void Material::CreateDefaultTextureSRV(const Microsoft::WRL::ComPtr<ID3D11Device
 void Material::DestroyDefaultTextureSRV()
 {
 	delete s_defaultTextureSRVs;
+
+	s_defaultTextureSRVs = nullptr;
+}
+
+const TextureSRVs& Material::GetDefaultTextureSRVs()
+{
+	return *s_defaultTextureSRVs;
 }

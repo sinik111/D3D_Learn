@@ -5,7 +5,8 @@
 
 class CoInitializer
 {
-private: // 아무도 생성 못하게 생성자를 private으로 만듦
+//private: // 아무도 생성 못하게 생성자를 private으로 만듦
+public:
 	CoInitializer(DWORD dwCoInit = COINIT_APARTMENTTHREADED)
 	{
 		HRESULT hr = CoInitializeEx(nullptr, dwCoInit);
@@ -20,5 +21,5 @@ private: // 아무도 생성 못하게 생성자를 private으로 만듦
 	CoInitializer(const CoInitializer&) = delete;
 	CoInitializer& operator=(const CoInitializer&) = delete;
 
-	friend class WinApp; // WinApp에서만 생성할 수 있음 
+	//friend class WinApp; // WinApp에서만 생성할 수 있음 
 };

@@ -19,11 +19,11 @@ Mesh::Mesh(const Microsoft::WRL::ComPtr<ID3D11Device>& device, aiMesh* mesh)
 	for (unsigned int i = 0; i < numVertices; ++i)
 	{
 		m_vertices.emplace_back(
-			reinterpret_cast<float*>(&mesh->mVertices[i]),
-			reinterpret_cast<float*>(&mesh->mTextureCoords[0][i]),
-			reinterpret_cast<float*>(&mesh->mNormals[i]),
-			reinterpret_cast<float*>(&mesh->mTangents[i]),
-			reinterpret_cast<float*>(&mesh->mBitangents[i]));
+			&mesh->mVertices[i].x,
+			&mesh->mTextureCoords[0][i].x,
+			&mesh->mNormals[i].x,
+			&mesh->mTangents[i].x,
+			&mesh->mBitangents[i].x);
 	}
 
 	for (unsigned int i = 0; i < numFaces; ++i)
