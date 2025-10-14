@@ -14,3 +14,9 @@ public:
 	LeakCheck();
 	~LeakCheck();
 };
+
+void UpdateFPS();
+
+int GetLastFPS();
+
+float RandomFloat(float min, float max);

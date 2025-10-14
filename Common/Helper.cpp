@@ -12,6 +12,8 @@
 
 #pragma comment(lib, "dxguid.lib")
 
+#include "MyTime.h"
+
 std::wstring ToWideCharStr(const std::string& multibyteStr)
 {
 	if (multibyteStr.empty())
@@ -74,6 +76,38 @@ std::string ToMultibyteStr(const std::wstring& wideCharStr)
 	);
 
 	return std::string(multibyte.data(), multibyte.size());
+}
+
+static MyTime::TimePoint s_lastTimestamp = MyTime::Clock::now();
+static int s_frameCount;
+static int s_lastFPS;
+
+void UpdateFPS()
+{
+	++s_frameCount;
+
+	if (MyTime::GetElapsedSeconds(s_lastTimestamp) > 1.0f)
+	{
+		s_lastTimestamp = MyTime::GetAccumulatedTime(s_lastTimestamp, 1);
+
+		s_lastFPS = s_frameCount;
+
+		s_frameCount = 0;
+	}
+}
+
+int GetLastFPS()
+{
+	return s_lastFPS;
+}
+
+#include <random>
+
+static std::mt19937 gen{ std::random_device{}() };
+
+float RandomFloat(float min, float max)
+{
+	return std::uniform_real_distribution<float>(min, max)(gen);
 }
 
 LeakCheck::LeakCheck()

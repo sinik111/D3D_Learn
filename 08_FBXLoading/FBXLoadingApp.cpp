@@ -8,6 +8,7 @@
 #include <directxtk/DDSTextureLoader.h>
 
 #include "../Common/MyTime.h"
+#include "../Common/Helper.h"
 
 #include "Model.h"
 #include "Mesh.h"
@@ -19,6 +20,11 @@ using Microsoft::WRL::ComPtr;
 #define USE_FLIPMODE
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+const float spaceX = 10.0f;
+const float spaceY = 10.0f;
+const float randMin = 0.1f;
+const float randMax = 0.3f;
 
 struct ConstantBuffer
 {
@@ -45,7 +51,8 @@ void FBXLoadingApp::Initialize()
 	WinApp::Initialize();
 
 	m_camera.SetSpeed(100.0f);
-	m_camera.SetPosition({ 0.0f, 0.0f, -100.0f });
+	m_camera.SetPosition({ 0.0f, 100.0f, -100.0f });
+	m_camera.SetFar(1000000.0f);
 
 	Material::CreateDefaultTextureSRV(m_graphicsDevice.GetDevice());
 
@@ -81,7 +88,7 @@ void FBXLoadingApp::OnRender()
 		m_camera.GetNear(),
 		m_camera.GetFar());
 
-	m_graphicsDevice.BeginDraw({ 0.5f, 0.7f, 0.9f, 1.0f });
+	m_graphicsDevice.BeginDraw({ 1.0f, 0.0f, 1.0f, 1.0f });
 
 	auto deviceContext = m_graphicsDevice.GetDeviceContext();
 
@@ -127,25 +134,39 @@ void FBXLoadingApp::OnRender()
 	// model
 	for (const auto& model : m_models)
 	{
-		if (model.GetName() == L"zeldaPosed001")
+		if (model.GetName() == L"Grass")
 		{
-			for (size_t i = 0; i < m_instanceDatas.size(); ++i)
+			if (m_useInstancing)
 			{
 				const auto& meshes = model.GetMeshes();
 				const auto& materials = model.GetMaterials();
 
+				if (m_changed)
+				{
+					D3D11_MAPPED_SUBRESOURCE mappedResource;
+					deviceContext->Map(m_instanceBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+					memcpy(mappedResource.pData, m_instanceDatas.data(), m_instanceDatas.size() * sizeof(InstanceData));
+					deviceContext->Unmap(m_instanceBuffer.Get(), 0);
+
+					m_changed = false;
+				}
+
+				deviceContext->IASetInputLayout(m_instancingInputLayout.Get());
+				deviceContext->VSSetShader(m_instancingVertexShader.Get(), nullptr, 0);
+				deviceContext->PSSetShader(m_instancingPixelShader.Get(), nullptr, 0);
+
+				deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+
 				for (const auto& mesh : meshes)
 				{
-					const auto& material = materials[mesh.GetMaterialIndex()];
+					ID3D11Buffer* buffers[]{ mesh.GetVertexBuffer().Get(), m_instanceBuffer.Get() };
+					UINT strides[]{ m_vertexBufferStride, sizeof(InstanceData) };
+					UINT offsets[]{ m_vertexBufferOffset, 0 };
 
-					deviceContext->IASetInputLayout(m_inputLayout.Get());
-					deviceContext->IASetVertexBuffers(0, 1, mesh.GetVertexBuffer().GetAddressOf(), &m_vertexBufferStride, &m_vertexBufferOffset);
 					deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R16_UINT, 0);
+					deviceContext->IASetVertexBuffers(0, 2, buffers, strides, offsets);
 
-					deviceContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
-					deviceContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
-
-					const auto& textureSRVs = material.GetTextureSRVs();
+					const auto& textureSRVs = materials[mesh.GetMaterialIndex()].GetTextureSRVs();
 
 					deviceContext->PSSetShaderResources(0, 1, textureSRVs.diffuseTextureSRV.GetAddressOf());
 					deviceContext->PSSetShaderResources(1, 1, textureSRVs.normalTextureSRV.GetAddressOf());
@@ -153,18 +174,40 @@ void FBXLoadingApp::OnRender()
 					deviceContext->PSSetShaderResources(3, 1, textureSRVs.emissiveTextureSRV.GetAddressOf());
 					deviceContext->PSSetShaderResources(4, 1, textureSRVs.opacityTextureSRV.GetAddressOf());
 
-					cb.world = m_instanceDatas[i].world.Transpose();
-					cb.normalMatrix = model.GetWorld().Invert().Transpose().Transpose();
+					deviceContext->DrawIndexedInstanced(mesh.GetIndexCount(), (UINT)m_instanceDatas.size(), 0, 0, 0);
 
-					float blendFactor[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
+				}
+			}
+			else
+			{
+				const auto& meshes = model.GetMeshes();
+				const auto& materials = model.GetMaterials();
 
-					deviceContext->OMSetBlendState(m_blendState.Get(), blendFactor, 0xFFFFFFFF);
+				for (const auto& mesh : meshes)
+				{
+					deviceContext->IASetInputLayout(m_inputLayout.Get());
+					deviceContext->IASetVertexBuffers(0, 1, mesh.GetVertexBuffer().GetAddressOf(), &m_vertexBufferStride, &m_vertexBufferOffset);
+					deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R16_UINT, 0);
 
-					deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
-					deviceContext->DrawIndexed(mesh.GetIndexCount(), 0, 0);
-					//deviceContext->DrawIndexedInstanced()
+					deviceContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
+					deviceContext->PSSetShader(m_instancingPixelShader.Get(), nullptr, 0);
 
-					deviceContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+					const auto& textureSRVs = materials[mesh.GetMaterialIndex()].GetTextureSRVs();
+
+					deviceContext->PSSetShaderResources(0, 1, textureSRVs.diffuseTextureSRV.GetAddressOf());
+					deviceContext->PSSetShaderResources(1, 1, textureSRVs.normalTextureSRV.GetAddressOf());
+					deviceContext->PSSetShaderResources(2, 1, textureSRVs.specularTextureSRV.GetAddressOf());
+					deviceContext->PSSetShaderResources(3, 1, textureSRVs.emissiveTextureSRV.GetAddressOf());
+					deviceContext->PSSetShaderResources(4, 1, textureSRVs.opacityTextureSRV.GetAddressOf());
+
+					for (size_t i = 0; i < m_instanceDatas.size(); ++i)
+					{
+						cb.world = m_instanceDatas[i].world.Transpose();
+						cb.normalMatrix = m_instanceDatas[i].world./*Invert().Transpose().*/Transpose();
+
+						deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+						deviceContext->DrawIndexed(mesh.GetIndexCount(), 0, 0);
+					}
 				}
 			}
 		}
@@ -174,8 +217,6 @@ void FBXLoadingApp::OnRender()
 
 		for (const auto& mesh : meshes)
 		{
-			const auto& material = materials[mesh.GetMaterialIndex()];
-
 			deviceContext->IASetInputLayout(m_inputLayout.Get());
 			deviceContext->IASetVertexBuffers(0, 1, mesh.GetVertexBuffer().GetAddressOf(), &m_vertexBufferStride, &m_vertexBufferOffset);
 			deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R16_UINT, 0);
@@ -183,7 +224,7 @@ void FBXLoadingApp::OnRender()
 			deviceContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
 			deviceContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
 
-			const auto& textureSRVs = material.GetTextureSRVs();
+			const auto& textureSRVs = materials[mesh.GetMaterialIndex()].GetTextureSRVs();
 
 			deviceContext->PSSetShaderResources(0, 1, textureSRVs.diffuseTextureSRV.GetAddressOf());
 			deviceContext->PSSetShaderResources(1, 1, textureSRVs.normalTextureSRV.GetAddressOf());
@@ -194,15 +235,20 @@ void FBXLoadingApp::OnRender()
 			cb.world = model.GetWorld().Transpose();
 			cb.normalMatrix = model.GetWorld().Invert().Transpose().Transpose();
 
-			float blendFactor[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
+			//if (model.GetName() == L"zeldaPosed001")
+			//{
+			//	float blendFactor[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
 
-			deviceContext->OMSetBlendState(m_blendState.Get(), blendFactor, 0xFFFFFFFF);
+			//	deviceContext->OMSetBlendState(m_blendState.Get(), blendFactor, 0xFFFFFFFF);
+			//}
 
 			deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
 			deviceContext->DrawIndexed(mesh.GetIndexCount(), 0, 0);
-			//deviceContext->DrawIndexedInstanced()
 
-			deviceContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+			//if (model.GetName() == L"zeldaPosed001")
+			//{
+			//	deviceContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+			//}
 		}
 	}
 
@@ -333,12 +379,28 @@ void FBXLoadingApp::RenderImGui()
 
 	if (ImGui::Button("Reset##3"))
 	{
-		m_lightRotation = { -75.0f, 25.0f, 0.0f };
+		m_lightRotation = { -40.0f, 25.0f, 0.0f };
 		m_lightColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 		m_ambientLightColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 	}
 
-	ImGui::Text("%d", ImGui::GetFrameHeight());
+	ImGui::Text("%d FPS", GetLastFPS());
+	
+	ImGui::Checkbox("Use Instancing", &m_useInstancing);
+	
+	ImGui::Text("Instance Count: %d", m_instanceDatas.size());
+
+	ImGui::Text("Shell Count: %d\t", m_currentShells);
+	ImGui::SameLine();
+	if (ImGui::ArrowButton("Sub Shell", ImGuiDir_Down))
+	{
+		SubShell();
+	}
+	ImGui::SameLine();
+	if (ImGui::ArrowButton("Add Shell", ImGuiDir_Up))
+	{
+		AddShell();
+	}
 
 	ImGui::End();
 
@@ -362,14 +424,18 @@ void FBXLoadingApp::InitializeScene()
 	auto device = m_graphicsDevice.GetDevice();
 
 	const char* fbxFileNames[]{
-		"Tree.fbx",
 		"zeldaPosed001.fbx",
 		"Character.fbx",
 		"Arissa.fbx",
 		"box.fbx",
+		"Crystal.fbx",
 		"cerberus.fbx",
 		"Monkey.fbx",
-		"Vampire_SkinningTest.fbx"
+		"Vampire_SkinningTest.fbx",
+		"IcoSphere.fbx",
+		"turtle.fbx",
+		"Grass.fbx",
+		"Tree.fbx"
 	};
 
 	const size_t numFBXs = ARRAYSIZE(fbxFileNames);
@@ -380,30 +446,38 @@ void FBXLoadingApp::InitializeScene()
 
 	for (size_t i = 0; i < numFBXs; ++i)
 	{
+		
 		Vector3 position{ radius * std::cos(radian * i), 0.0f, radius * std::sin(radian * i) };
+
+		if (i == 4)
+		{
+			position.y = 100.0f;
+		}
+
+		if (i == 9)
+		{
+			m_models.emplace_back(device, fbxFileNames[i], Matrix::CreateScale(0.5f) * Matrix::CreateTranslation({ 0.0f, 50.0f, 0.0f}));
+
+			continue;
+		}
+
 		m_models.emplace_back(device, fbxFileNames[i], Matrix::CreateTranslation(position));
 	}
 
-	UINT maxInstances = (m_maxShells * 2 + 1) * (m_maxShells * 2 + 1);
+	UINT maxInstances = (m_maxShells * 2) * (m_maxShells * 2);
 
 	m_instanceDatas.reserve(maxInstances);
 
-	const float x = 100.0f;
-	const float y = 100.0f;
-
-	int index = 3;
-	// (n + 1) * 4
-	// (n + 1) * 100, (n + 1) * 100
-	// i / (n * 2 - 1)
+	int index = 1;
 
 	for (UINT i = m_startShell; i <= m_currentShells; ++i)
 	{
 		const int numDivide = i * 2 - 1;
 
-		const Vector3 rightFront{ (i + 1) * x, 0.0f, (i + 1) * y };
-		const Vector3 rightBack{ (i + 1) * x, 0.0f, (i + 1) * -y };
-		const Vector3 leftBack{ (i + 1) * -x, 0.0f, (i + 1) * -y };
-		const Vector3 leftFront{ (i + 1) * -x, 0.0f, (i + 1) * y };
+		const Vector3 rightFront{ i * spaceX, 0.0f, i * spaceY };
+		const Vector3 rightBack{ i * spaceX, 0.0f, i * -spaceY };
+		const Vector3 leftBack{ i * -spaceX, 0.0f, i * -spaceY };
+		const Vector3 leftFront{ i * -spaceX, 0.0f, i * spaceY };
 
 		const Vector3 verticalDelta = (rightBack - rightFront) / (float)numDivide;
 		const Vector3 horizontalDelta = (leftFront - rightFront) / (float)numDivide;
@@ -420,10 +494,10 @@ void FBXLoadingApp::InitializeScene()
 			p3 += -verticalDelta;
 			p4 += -horizontalDelta;
 
-			m_instanceDatas.emplace_back(Matrix::CreateTranslation(p1));
-			m_instanceDatas.emplace_back(Matrix::CreateTranslation(p2));
-			m_instanceDatas.emplace_back(Matrix::CreateTranslation(p3));
-			m_instanceDatas.emplace_back(Matrix::CreateTranslation(p4));
+			m_instanceDatas.emplace_back(Matrix::CreateScale(RandomFloat(randMin, randMax)) * Matrix::CreateRotationY(DirectX::XMConvertToRadians(RandomFloat(0.0f, 360.0f))) * Matrix::CreateTranslation(p1));
+			m_instanceDatas.emplace_back(Matrix::CreateScale(RandomFloat(randMin, randMax)) * Matrix::CreateRotationY(DirectX::XMConvertToRadians(RandomFloat(0.0f, 360.0f))) * Matrix::CreateTranslation(p2));
+			m_instanceDatas.emplace_back(Matrix::CreateScale(RandomFloat(randMin, randMax)) * Matrix::CreateRotationY(DirectX::XMConvertToRadians(RandomFloat(0.0f, 360.0f))) * Matrix::CreateTranslation(p3));
+			m_instanceDatas.emplace_back(Matrix::CreateScale(RandomFloat(randMin, randMax)) * Matrix::CreateRotationY(DirectX::XMConvertToRadians(RandomFloat(0.0f, 360.0f))) * Matrix::CreateTranslation(p4));
 		}
 	}
 
@@ -563,7 +637,7 @@ void FBXLoadingApp::InitializeScene()
 		device->CreateRasterizerState(&rasterizerDesc, &m_rasterizerState);
 
 
-		// DepthStencil State - skybox를 가장 깊이 그리고 깊이 갚을 기록을 안하기 위함
+		// DepthStencil State - skybox를 가장 깊이 그리고 깊이 값을 기록을 안하기 위함
 		D3D11_DEPTH_STENCIL_DESC depthStencilDesc{};
 		depthStencilDesc.DepthEnable = true;
 		depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
@@ -625,10 +699,10 @@ void FBXLoadingApp::InitializeScene()
 			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "BINORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "WORLD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 56, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-			{ "WORLD", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 56, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-			{ "WORLD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 56, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-			{ "WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 56, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+			{ "WORLD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+			{ "WORLD", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+			{ "WORLD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+			{ "WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
 		};
 
 		ComPtr<ID3DBlob> vertexShaderBuffer;
@@ -647,6 +721,16 @@ void FBXLoadingApp::InitializeScene()
 			vertexShaderBuffer->GetBufferSize(),
 			nullptr,
 			&m_instancingVertexShader
+		);
+
+		ComPtr<ID3DBlob> pixelShaderBuffer;
+		GraphicsDevice::CompileShaderFromFile(L"InstancingPixelShader.hlsl", "main", "ps_4_0", pixelShaderBuffer);
+
+		device->CreatePixelShader(
+			pixelShaderBuffer->GetBufferPointer(),
+			pixelShaderBuffer->GetBufferSize(),
+			nullptr,
+			&m_instancingPixelShader
 		);
 	}
 
@@ -726,4 +810,71 @@ LRESULT FBXLoadingApp::MessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 	}
 
 	return WinApp::MessageProc(hWnd, uMsg, wParam, lParam);
+}
+
+void FBXLoadingApp::AddShell()
+{
+	if (m_currentShells >= m_maxShells)
+	{
+		return;
+	}
+
+	++m_currentShells;
+
+	const UINT i = m_currentShells;
+
+	const int numDivide = i * 2 - 1;
+
+	const Vector3 rightFront{ (float)i * spaceX, 0.0f, (float)i * spaceY };
+	const Vector3 rightBack{ (float)i * spaceX, 0.0f, (float)i * -spaceY };
+	const Vector3 leftBack{ (float)i * -spaceX, 0.0f, (float)i * -spaceY };
+	const Vector3 leftFront{ (float)i * -spaceX, 0.0f, (float)i * spaceY };
+
+	const Vector3 verticalDelta = (rightBack - rightFront) / (float)numDivide;
+	const Vector3 horizontalDelta = (leftFront - rightFront) / (float)numDivide;
+
+	Vector3 p1 = rightFront;
+	Vector3 p2 = rightBack;
+	Vector3 p3 = leftBack;
+	Vector3 p4 = leftFront;
+
+	for (int j = 0; j < numDivide; ++j)
+	{
+		p1 += verticalDelta;
+		p2 += horizontalDelta;
+		p3 += -verticalDelta;
+		p4 += -horizontalDelta;
+
+		m_instanceDatas.emplace_back(Matrix::CreateScale(RandomFloat(randMin, randMax)) * Matrix::CreateRotationY(DirectX::XMConvertToRadians(RandomFloat(0.0f, 360.0f))) * Matrix::CreateTranslation(p1));
+		m_instanceDatas.emplace_back(Matrix::CreateScale(RandomFloat(randMin, randMax)) * Matrix::CreateRotationY(DirectX::XMConvertToRadians(RandomFloat(0.0f, 360.0f))) * Matrix::CreateTranslation(p2));
+		m_instanceDatas.emplace_back(Matrix::CreateScale(RandomFloat(randMin, randMax)) * Matrix::CreateRotationY(DirectX::XMConvertToRadians(RandomFloat(0.0f, 360.0f))) * Matrix::CreateTranslation(p3));
+		m_instanceDatas.emplace_back(Matrix::CreateScale(RandomFloat(randMin, randMax)) * Matrix::CreateRotationY(DirectX::XMConvertToRadians(RandomFloat(0.0f, 360.0f))) * Matrix::CreateTranslation(p4));
+	}
+
+	m_changed = true;
+}
+
+void FBXLoadingApp::SubShell()
+{
+	if (m_currentShells <= m_startShell)
+	{
+		return;
+	}
+
+	const UINT shellIndex = m_currentShells;
+	size_t elementsToRemove = (shellIndex * 2 - 1) * 4;
+
+	for (size_t k = 0; k < elementsToRemove; ++k)
+	{
+		if (m_instanceDatas.empty())
+		{
+			break;
+		}
+
+		m_instanceDatas.pop_back();
+	}
+
+	--m_currentShells;
+
+	m_changed = true;
 }

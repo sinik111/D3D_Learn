@@ -35,6 +35,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> m_skyboxPixelShader;
 
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> m_instancingVertexShader;
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> m_instancingPixelShader;
 
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_skyboxInputLayout;
@@ -62,9 +63,9 @@ private:
 	UINT m_vertexBufferStride = 0;
 	UINT m_vertexBufferOffset = 0;
 	UINT m_indexCount = 0;
-	const UINT m_maxShells = 50;
-	UINT m_currentShells = 20;
-	UINT m_startShell = 4;
+	const UINT m_maxShells = 1000;
+	UINT m_currentShells = 100;
+	UINT m_startShell = 1;
 
 	Matrix m_world;
 	Matrix m_view;
@@ -72,17 +73,19 @@ private:
 
 	Vector3 m_scale{ 50.0f, 50.0f, 50.0f };
 	Vector3 m_rotation{ 0.0f, 0.0f, 0.0f };
-	Vector3 m_position{ 0.0f, 0.0f, 0.0f };
+	Vector3 m_position{ 0.0f, 25.0f, 0.0f };
 	Vector4 m_materialAmbient{ 1.0f, 1.0f, 1.0f, 1.0f };
 	Vector4 m_materialSpecular{ 1.0f, 1.0f, 1.0f, 1.0f };
 
 	Matrix m_lightRotationMatrix;
 	const Vector4 m_originalLightDir{ 0.0f, -1.0f, 0.0f, 0.0f };
 	Vector4 m_lightDirection;
-	Vector3 m_lightRotation{ -75.0f, 25.0f, 0.0f };
+	Vector3 m_lightRotation{ -40.0f, 25.0f, 0.0f };
 	Vector4 m_lightColor{ 1.0f, 1.0f, 1.0f, 1.0f };
 	Vector4 m_ambientLightColor{ 0.1f, 0.1f, 0.1f, 1.0f };
 	float m_shininess = 64.0f;
+	bool m_useInstancing = true;
+	bool m_changed = true;
 
 public:
 	void Initialize() override;
@@ -101,4 +104,7 @@ private:
 	void ShutdownImGui();
 
 	LRESULT MessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+
+	void AddShell();
+	void SubShell();
 };

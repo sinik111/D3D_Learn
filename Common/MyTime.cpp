@@ -1,27 +1,40 @@
 #include "MyTime.h"
 
-#include <chrono>
-
-using Clock = std::chrono::high_resolution_clock;
-using TimePoint = std::chrono::time_point<Clock>;
-
-static TimePoint s_previousTime = Clock::now();
-static TimePoint s_currentTime = Clock::now();
-
-static float s_deltaTime = 0.0f;
-
-void MyTime::Update()
+namespace MyTime
 {
-    s_currentTime = Clock::now();
+    static TimePoint s_previousTime = Clock::now();
+    static TimePoint s_currentTime = Clock::now();
 
-    std::chrono::duration<float> duration(s_currentTime - s_previousTime);
+    static float s_deltaTime = 0.0f;
 
-    s_deltaTime = duration.count();
+    void Update()
+    {
+        s_currentTime = Clock::now();
 
-    s_previousTime = s_currentTime;
-}
+        std::chrono::duration<float> duration(s_currentTime - s_previousTime);
 
-float MyTime::DeltaTime()
-{
-    return s_deltaTime;
+        s_deltaTime = duration.count();
+
+        s_previousTime = s_currentTime;
+    }
+
+    float DeltaTime()
+    {
+        return s_deltaTime;
+    }
+
+    TimePoint GetTimestamp()
+    {
+        return Clock::now();
+    }
+
+    TimePoint GetAccumulatedTime(const TimePoint& timePoint, int seconds)
+    {
+        return timePoint + std::chrono::seconds(seconds);
+    }
+
+    float GetElapsedSeconds(const TimePoint& timePoint)
+    {
+        return Duration(Clock::now() - timePoint).count();
+    }
 }

@@ -6,6 +6,7 @@
 
 #include "Input.h"
 #include "MyTime.h"
+#include "Helper.h"
 
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -84,6 +85,7 @@ void WinApp::Run()
 
 void WinApp::Update()
 {
+	UpdateFPS();
 	MyTime::Update();
 	Input::Update();
 
