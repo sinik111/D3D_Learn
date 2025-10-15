@@ -45,13 +45,13 @@ struct ConstantBuffer
 
 void FBXLoadingApp::Initialize()
 {
-	m_width = 1280;
-	m_height = 720;
+	m_width = 1600;
+	m_height = 900;
 
 	WinApp::Initialize();
 
 	m_camera.SetSpeed(100.0f);
-	m_camera.SetPosition({ 0.0f, 100.0f, -100.0f });
+	m_camera.SetPosition({ 0.0f, 70.0f, -200.0f });
 	m_camera.SetFar(1000000.0f);
 
 	Material::CreateDefaultTextureSRV(m_graphicsDevice.GetDevice());
@@ -63,7 +63,7 @@ void FBXLoadingApp::Initialize()
 
 void FBXLoadingApp::OnUpdate()
 {
-	m_world =
+	m_cubeWorld =
 		Matrix::CreateScale(m_scale) *
 		Matrix::CreateRotationX(DirectX::XMConvertToRadians(m_rotation.x)) *
 		Matrix::CreateRotationY(DirectX::XMConvertToRadians(m_rotation.y)) *
@@ -74,6 +74,17 @@ void FBXLoadingApp::OnUpdate()
 		Matrix::CreateRotationY(DirectX::XMConvertToRadians(m_lightRotation.y));
 
 	m_lightDirection = DirectX::XMVector3TransformNormal(m_originalLightDir, m_lightRotationMatrix);
+
+	m_crystalDegree += 45.0f * MyTime::DeltaTime();
+	if (m_crystalDegree > 360.0f)
+	{
+		m_crystalDegree -= 360.0f;
+	}
+
+	m_crystalModel->SetWorld(
+		Matrix::CreateScale(m_crystalScale) *
+		Matrix::CreateRotationY(DirectX::XMConvertToRadians(m_crystalDegree)) * 
+		Matrix::CreateTranslation(m_crystalPosition));
 }
 
 void FBXLoadingApp::OnRender()
@@ -84,7 +95,7 @@ void FBXLoadingApp::OnRender()
 
 	m_projection = DirectX::XMMatrixPerspectiveFovLH(
 		DirectX::XMConvertToRadians(m_camera.GetFOV()),
-		(float)m_width / m_height,
+		static_cast<float>(m_width) / m_height,
 		m_camera.GetNear(),
 		m_camera.GetFar());
 
@@ -93,54 +104,54 @@ void FBXLoadingApp::OnRender()
 	auto deviceContext = m_graphicsDevice.GetDeviceContext();
 
 	// common
-	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	
-	deviceContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
-	deviceContext->PSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
-
 	ConstantBuffer cb{};
 	cb.view = m_view.Transpose();
 	cb.projection = m_projection.Transpose();
-
 	cb.cameraPos = Vector4(m_camera.GetPosition());
 	cb.lightDirection = m_lightDirection;
 	cb.lightColor = m_lightColor;
 	cb.ambientLightColor = m_ambientLightColor;
 	cb.materialAmbient = m_materialAmbient;
 	cb.materialSpecular = m_materialSpecular;
-	cb.shininess = Vector4(m_shininess);
+	cb.shininess = m_shininess;
+
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	deviceContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
+	deviceContext->PSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
+	deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
 
 	// skybox
-	deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(), &m_vertexBufferStride, &m_vertexBufferOffset);
-	deviceContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
-
-	deviceContext->IASetInputLayout(m_skyboxInputLayout.Get());
-	deviceContext->VSSetShader(m_skyboxVertexShader.Get(), nullptr, 0);
-	deviceContext->PSSetShader(m_skyboxPixelShader.Get(), nullptr, 0);
-	deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
-	deviceContext->PSSetShaderResources(0, 1, m_skyboxTextureRV.GetAddressOf());
-	deviceContext->RSSetState(m_rasterizerState.Get());
-	deviceContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
-
-	Matrix skyboxWorld = Matrix::CreateRotationY(DirectX::XMConvertToRadians(-90)) *
+	Matrix skyboxWorld =
+		Matrix::CreateRotationY(DirectX::XMConvertToRadians(-90.0f)) *
 		Matrix::CreateTranslation(m_camera.GetPosition());
 	cb.world = skyboxWorld.Transpose();
 
 	deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+
+	deviceContext->IASetVertexBuffers(0, 1, m_cubeVertexBuffer.GetAddressOf(), &m_vertexBufferStride, &m_vertexBufferOffset);
+	deviceContext->IASetIndexBuffer(m_cubeIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+	deviceContext->IASetInputLayout(m_skyboxInputLayout.Get());
+	deviceContext->VSSetShader(m_skyboxVertexShader.Get(), nullptr, 0);
+	deviceContext->RSSetState(m_rasterizerState.Get());
+	deviceContext->PSSetShader(m_skyboxPixelShader.Get(), nullptr, 0);
+	deviceContext->PSSetShaderResources(0, 1, m_skyboxTextureRV.GetAddressOf());
+	deviceContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
+
 	deviceContext->DrawIndexed(m_indexCount, 0, 0);
+
 	deviceContext->RSSetState(nullptr);
 	deviceContext->OMSetDepthStencilState(nullptr, 0);
 
 	// model
 	for (const auto& model : m_models)
 	{
-		if (model.GetName() == L"Grass")
+		const auto& meshes = model.GetMeshes();
+		const auto& materials = model.GetMaterials();
+
+		if (model.GetName() == L"Grass") // Grass.fbx 로 인스턴싱 테스트
 		{
 			if (m_useInstancing)
 			{
-				const auto& meshes = model.GetMeshes();
-				const auto& materials = model.GetMaterials();
-
 				if (m_changed)
 				{
 					D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -151,54 +162,37 @@ void FBXLoadingApp::OnRender()
 					m_changed = false;
 				}
 
+				deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+
 				deviceContext->IASetInputLayout(m_instancingInputLayout.Get());
 				deviceContext->VSSetShader(m_instancingVertexShader.Get(), nullptr, 0);
 				deviceContext->PSSetShader(m_instancingPixelShader.Get(), nullptr, 0);
 
-				deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
-
 				for (const auto& mesh : meshes)
 				{
 					ID3D11Buffer* buffers[]{ mesh.GetVertexBuffer().Get(), m_instanceBuffer.Get() };
-					UINT strides[]{ m_vertexBufferStride, sizeof(InstanceData) };
-					UINT offsets[]{ m_vertexBufferOffset, 0 };
 
-					deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R16_UINT, 0);
-					deviceContext->IASetVertexBuffers(0, 2, buffers, strides, offsets);
+					auto textureSRVs = materials[mesh.GetMaterialIndex()].GetTextureSRVs().AsRawArray();
 
-					const auto& textureSRVs = materials[mesh.GetMaterialIndex()].GetTextureSRVs();
+					deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
+					deviceContext->IASetVertexBuffers(0, 2, buffers, m_instanceBufferStrides, m_instanceBufferOffsets);
+					deviceContext->PSSetShaderResources(0, static_cast<UINT>(textureSRVs.size()), textureSRVs.data());
 
-					deviceContext->PSSetShaderResources(0, 1, textureSRVs.diffuseTextureSRV.GetAddressOf());
-					deviceContext->PSSetShaderResources(1, 1, textureSRVs.normalTextureSRV.GetAddressOf());
-					deviceContext->PSSetShaderResources(2, 1, textureSRVs.specularTextureSRV.GetAddressOf());
-					deviceContext->PSSetShaderResources(3, 1, textureSRVs.emissiveTextureSRV.GetAddressOf());
-					deviceContext->PSSetShaderResources(4, 1, textureSRVs.opacityTextureSRV.GetAddressOf());
-
-					deviceContext->DrawIndexedInstanced(mesh.GetIndexCount(), (UINT)m_instanceDatas.size(), 0, 0, 0);
-
+					deviceContext->DrawIndexedInstanced(mesh.GetIndexCount(), static_cast<UINT>(m_instanceDatas.size()), 0, 0, 0);
 				}
 			}
 			else
 			{
-				const auto& meshes = model.GetMeshes();
-				const auto& materials = model.GetMaterials();
-
 				for (const auto& mesh : meshes)
 				{
-					deviceContext->IASetInputLayout(m_inputLayout.Get());
+					auto textureSRVs = materials[mesh.GetMaterialIndex()].GetTextureSRVs().AsRawArray();
+
+					deviceContext->IASetInputLayout(m_blinnPhongInputLayout.Get());
 					deviceContext->IASetVertexBuffers(0, 1, mesh.GetVertexBuffer().GetAddressOf(), &m_vertexBufferStride, &m_vertexBufferOffset);
-					deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R16_UINT, 0);
-
-					deviceContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
+					deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
+					deviceContext->VSSetShader(m_blinnPhongVertexShader.Get(), nullptr, 0);
 					deviceContext->PSSetShader(m_instancingPixelShader.Get(), nullptr, 0);
-
-					const auto& textureSRVs = materials[mesh.GetMaterialIndex()].GetTextureSRVs();
-
-					deviceContext->PSSetShaderResources(0, 1, textureSRVs.diffuseTextureSRV.GetAddressOf());
-					deviceContext->PSSetShaderResources(1, 1, textureSRVs.normalTextureSRV.GetAddressOf());
-					deviceContext->PSSetShaderResources(2, 1, textureSRVs.specularTextureSRV.GetAddressOf());
-					deviceContext->PSSetShaderResources(3, 1, textureSRVs.emissiveTextureSRV.GetAddressOf());
-					deviceContext->PSSetShaderResources(4, 1, textureSRVs.opacityTextureSRV.GetAddressOf());
+					deviceContext->PSSetShaderResources(0, static_cast<UINT>(textureSRVs.size()), textureSRVs.data());
 
 					for (size_t i = 0; i < m_instanceDatas.size(); ++i)
 					{
@@ -206,73 +200,46 @@ void FBXLoadingApp::OnRender()
 						cb.normalMatrix = m_instanceDatas[i].world./*Invert().Transpose().*/Transpose();
 
 						deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+
 						deviceContext->DrawIndexed(mesh.GetIndexCount(), 0, 0);
 					}
 				}
 			}
 		}
 
-		const auto& meshes = model.GetMeshes();
-		const auto& materials = model.GetMaterials();
-
 		for (const auto& mesh : meshes)
 		{
-			deviceContext->IASetInputLayout(m_inputLayout.Get());
-			deviceContext->IASetVertexBuffers(0, 1, mesh.GetVertexBuffer().GetAddressOf(), &m_vertexBufferStride, &m_vertexBufferOffset);
-			deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R16_UINT, 0);
-
-			deviceContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
-			deviceContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
-
-			const auto& textureSRVs = materials[mesh.GetMaterialIndex()].GetTextureSRVs();
-
-			deviceContext->PSSetShaderResources(0, 1, textureSRVs.diffuseTextureSRV.GetAddressOf());
-			deviceContext->PSSetShaderResources(1, 1, textureSRVs.normalTextureSRV.GetAddressOf());
-			deviceContext->PSSetShaderResources(2, 1, textureSRVs.specularTextureSRV.GetAddressOf());
-			deviceContext->PSSetShaderResources(3, 1, textureSRVs.emissiveTextureSRV.GetAddressOf());
-			deviceContext->PSSetShaderResources(4, 1, textureSRVs.opacityTextureSRV.GetAddressOf());
-
 			cb.world = model.GetWorld().Transpose();
 			cb.normalMatrix = model.GetWorld().Invert().Transpose().Transpose();
 
-			//if (model.GetName() == L"zeldaPosed001")
-			//{
-			//	float blendFactor[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
-
-			//	deviceContext->OMSetBlendState(m_blendState.Get(), blendFactor, 0xFFFFFFFF);
-			//}
+			auto textureSRVs = materials[mesh.GetMaterialIndex()].GetTextureSRVs().AsRawArray();
 
 			deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
-			deviceContext->DrawIndexed(mesh.GetIndexCount(), 0, 0);
 
-			//if (model.GetName() == L"zeldaPosed001")
-			//{
-			//	deviceContext->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
-			//}
+			deviceContext->IASetInputLayout(m_blinnPhongInputLayout.Get());
+			deviceContext->IASetVertexBuffers(0, 1, mesh.GetVertexBuffer().GetAddressOf(), &m_vertexBufferStride, &m_vertexBufferOffset);
+			deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
+			deviceContext->VSSetShader(m_blinnPhongVertexShader.Get(), nullptr, 0);
+			deviceContext->PSSetShader(m_blinnPhongPixelShader.Get(), nullptr, 0);
+			deviceContext->PSSetShaderResources(0, static_cast<UINT>(textureSRVs.size()), textureSRVs.data());
+
+			deviceContext->DrawIndexed(mesh.GetIndexCount(), 0, 0);
 		}
 	}
 
 	// cube
-	deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(), &m_vertexBufferStride, &m_vertexBufferOffset);
-	deviceContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
-
-	deviceContext->IASetInputLayout(m_inputLayout.Get());
-	deviceContext->VSSetShader(m_vertexShader.Get(), nullptr, 0);
-	deviceContext->PSSetShader(m_pixelShader.Get(), nullptr, 0);
-	deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
-
-	const auto& defaultTextureSRVs = Material::GetDefaultTextureSRVs();
-
-	deviceContext->PSSetShaderResources(0, 1, m_cubeDiffuseRV.GetAddressOf());
-	deviceContext->PSSetShaderResources(1, 1, m_cubeNormalRV.GetAddressOf());
-	deviceContext->PSSetShaderResources(2, 1, m_cubeSpecularRV.GetAddressOf());
-	deviceContext->PSSetShaderResources(3, 1, defaultTextureSRVs.emissiveTextureSRV.GetAddressOf());
-	deviceContext->PSSetShaderResources(4, 1, defaultTextureSRVs.opacityTextureSRV.GetAddressOf());
-
-	cb.world = m_world.Transpose();
-	cb.normalMatrix = m_world.Invert().Transpose().Transpose();
+	cb.world = m_cubeWorld.Transpose();
+	cb.normalMatrix = m_cubeWorld.Invert().Transpose().Transpose();
 
 	deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+
+	deviceContext->IASetVertexBuffers(0, 1, m_cubeVertexBuffer.GetAddressOf(), &m_vertexBufferStride, &m_vertexBufferOffset);
+	deviceContext->IASetIndexBuffer(m_cubeIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+	deviceContext->IASetInputLayout(m_blinnPhongInputLayout.Get());
+	deviceContext->VSSetShader(m_blinnPhongVertexShader.Get(), nullptr, 0);
+	deviceContext->PSSetShader(m_blinnPhongPixelShader.Get(), nullptr, 0);
+	deviceContext->PSSetShaderResources(0, 5, m_cubeTextureSRVs.AsRawArray().data());
+
 	deviceContext->DrawIndexed(m_indexCount, 0, 0);
 
 	RenderImGui();
@@ -356,7 +323,7 @@ void FBXLoadingApp::RenderImGui()
 	ImGui::DragFloat3("Position##2", &m_position.x, 0.1f);
 	ImGui::ColorEdit3("Ambient", &m_materialAmbient.x);
 	ImGui::ColorEdit3("Specular", &m_materialSpecular.x);
-	ImGui::DragFloat("Shininess", &m_shininess, 5.0f, 1.0f, 10000.0f);
+	ImGui::DragFloat("Shininess", &m_shininess.x, 5.0f, 1.0f, 10000.0f);
 
 	if (ImGui::Button("Reset##2"))
 	{
@@ -365,7 +332,7 @@ void FBXLoadingApp::RenderImGui()
 		m_position = { 0.0f, 0.0f, 0.0f };
 		m_materialAmbient = { 1.0f, 1.0f, 1.0f, 1.0f };
 		m_materialSpecular = { 1.0f, 1.0f, 1.0f, 1.0f };
-		m_shininess = 64.0f;
+		m_shininess = { 64.0f, 0.0f, 0.0f, 0.0f };
 	}
 
 	ImGui::NewLine();
@@ -449,14 +416,53 @@ void FBXLoadingApp::InitializeScene()
 		
 		Vector3 position{ radius * std::cos(radian * i), 0.0f, radius * std::sin(radian * i) };
 
-		if (i == 4)
+		if (strcmp(fbxFileNames[i], "Crystal.fbx") == 0)
 		{
-			position.y = 100.0f;
+			position.y = 120.0f;
+			m_crystalPosition = position;
+
+			m_models.emplace_back(device, fbxFileNames[i], Matrix::CreateTranslation(position));
+
+			m_crystalModel = &m_models.back();
+
+			continue;
 		}
 
-		if (i == 9)
+		else if (strcmp(fbxFileNames[i], "turtle.fbx") == 0)
 		{
 			m_models.emplace_back(device, fbxFileNames[i], Matrix::CreateScale(0.5f) * Matrix::CreateTranslation({ 0.0f, 50.0f, 0.0f}));
+
+			continue;
+		}
+		else if (strcmp(fbxFileNames[i], "Monkey.fbx") == 0)
+		{
+			position.y = 100.0f;
+
+			m_models.emplace_back(device, fbxFileNames[i], Matrix::CreateScale(0.5f) * Matrix::CreateTranslation(position));
+
+			continue;
+		}
+		else if (strcmp(fbxFileNames[i], "box.fbx") == 0)
+		{
+			position.y = 35.0f;
+
+			m_models.emplace_back(device, fbxFileNames[i], Matrix::CreateTranslation(position));
+
+			continue;
+		}
+		else if (strcmp(fbxFileNames[i], "IcoSphere.fbx") == 0)
+		{
+			position.y = 50.0f;
+
+			m_models.emplace_back(device, fbxFileNames[i], Matrix::CreateScale(0.5f) * Matrix::CreateTranslation(position));
+
+			continue;
+		}
+		else if (strcmp(fbxFileNames[i], "cerberus.fbx") == 0)
+		{
+			position.y = 100.0f;
+
+			m_models.emplace_back(device, fbxFileNames[i], Matrix::CreateTranslation(position));
 
 			continue;
 		}
@@ -464,23 +470,21 @@ void FBXLoadingApp::InitializeScene()
 		m_models.emplace_back(device, fbxFileNames[i], Matrix::CreateTranslation(position));
 	}
 
-	UINT maxInstances = (m_maxShells * 2) * (m_maxShells * 2);
+	const size_t maxInstances = (m_maxShells * 2) * (m_maxShells * 2);
 
 	m_instanceDatas.reserve(maxInstances);
 
-	int index = 1;
-
-	for (UINT i = m_startShell; i <= m_currentShells; ++i)
+	for (size_t i = m_minShell; i <= m_currentShells; ++i)
 	{
-		const int numDivide = i * 2 - 1;
+		const size_t numDivide = i * 2 - 1;
 
 		const Vector3 rightFront{ i * spaceX, 0.0f, i * spaceY };
 		const Vector3 rightBack{ i * spaceX, 0.0f, i * -spaceY };
 		const Vector3 leftBack{ i * -spaceX, 0.0f, i * -spaceY };
 		const Vector3 leftFront{ i * -spaceX, 0.0f, i * spaceY };
 
-		const Vector3 verticalDelta = (rightBack - rightFront) / (float)numDivide;
-		const Vector3 horizontalDelta = (leftFront - rightFront) / (float)numDivide;
+		const Vector3 verticalDelta = (rightBack - rightFront) / static_cast<float>(numDivide);
+		const Vector3 horizontalDelta = (leftFront - rightFront) / static_cast<float>(numDivide);
 
 		Vector3 p1 = rightFront;
 		Vector3 p2 = rightBack;
@@ -502,6 +506,10 @@ void FBXLoadingApp::InitializeScene()
 	}
 
 	m_vertexBufferStride = sizeof(Vertex);
+	m_instanceBufferStrides[0] = m_vertexBufferStride;
+	m_instanceBufferStrides[1] = sizeof(InstanceData);
+	m_instanceBufferOffsets[0] = m_vertexBufferOffset;
+	m_instanceBufferOffsets[1] = 0;
 
 	// Cube
 
@@ -556,9 +564,9 @@ void FBXLoadingApp::InitializeScene()
 	D3D11_SUBRESOURCE_DATA vertexBufferData{};
 	vertexBufferData.pSysMem = vertices;
 
-	device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &m_vertexBuffer);
+	device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &m_cubeVertexBuffer);
 
-	WORD indices[] =
+	DWORD indices[] =
 	{
 		0, 1, 2,
 		2, 1, 3,
@@ -582,13 +590,13 @@ void FBXLoadingApp::InitializeScene()
 	m_indexCount = ARRAYSIZE(indices);
 
 	D3D11_BUFFER_DESC indexBufferDesc{};
-	indexBufferDesc.ByteWidth = sizeof(WORD) * m_indexCount;
+	indexBufferDesc.ByteWidth = sizeof(DWORD) * m_indexCount;
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 
 	D3D11_SUBRESOURCE_DATA indexBufferData{};
 	indexBufferData.pSysMem = indices;
-	device->CreateBuffer(&indexBufferDesc, &indexBufferData, &m_indexBuffer);
+	device->CreateBuffer(&indexBufferDesc, &indexBufferData, &m_cubeIndexBuffer);
 
 	// Skybox
 	{
@@ -631,15 +639,15 @@ void FBXLoadingApp::InitializeScene()
 		D3D11_RASTERIZER_DESC rasterizerDesc{};
 		rasterizerDesc.CullMode = D3D11_CULL_BACK;
 		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-		rasterizerDesc.DepthClipEnable = true;
-		rasterizerDesc.FrontCounterClockwise = true;
+		rasterizerDesc.DepthClipEnable = TRUE;
+		rasterizerDesc.FrontCounterClockwise = TRUE;
 
 		device->CreateRasterizerState(&rasterizerDesc, &m_rasterizerState);
 
 
 		// DepthStencil State - skybox를 가장 깊이 그리고 깊이 값을 기록을 안하기 위함
 		D3D11_DEPTH_STENCIL_DESC depthStencilDesc{};
-		depthStencilDesc.DepthEnable = true;
+		depthStencilDesc.DepthEnable = TRUE;
 		depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
 		depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 
@@ -650,10 +658,10 @@ void FBXLoadingApp::InitializeScene()
 	{
 		D3D11_INPUT_ELEMENT_DESC layout[]{
 			// SemanticName , SemanticIndex , Format , InputSlot , AlignedByteOffset , InputSlotClass , InstanceDataStepRate
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "BINORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
 
@@ -665,14 +673,14 @@ void FBXLoadingApp::InitializeScene()
 			ARRAYSIZE(layout),
 			vertexShaderBuffer->GetBufferPointer(),
 			vertexShaderBuffer->GetBufferSize(),
-			&m_inputLayout
+			&m_blinnPhongInputLayout
 		);
 
 		device->CreateVertexShader(
 			vertexShaderBuffer->GetBufferPointer(),
 			vertexShaderBuffer->GetBufferSize(),
 			nullptr,
-			&m_vertexShader
+			&m_blinnPhongVertexShader
 		);
 
 		ComPtr<ID3DBlob> pixelShaderBuffer;
@@ -682,24 +690,27 @@ void FBXLoadingApp::InitializeScene()
 			pixelShaderBuffer->GetBufferPointer(),
 			pixelShaderBuffer->GetBufferSize(),
 			nullptr,
-			&m_pixelShader
+			&m_blinnPhongPixelShader
 		);
 
-		DirectX::CreateWICTextureFromFile(device.Get(), L"Bricks059_1K-JPG_Color.jpg", nullptr, &m_cubeDiffuseRV);
-		DirectX::CreateWICTextureFromFile(device.Get(), L"Bricks059_1K-JPG_NormalDX.jpg", nullptr, &m_cubeNormalRV);
-		DirectX::CreateWICTextureFromFile(device.Get(), L"Bricks059_Specular.png", nullptr, &m_cubeSpecularRV);
+		DirectX::CreateWICTextureFromFile(device.Get(), L"Bricks059_1K-JPG_Color.jpg", nullptr, &m_cubeTextureSRVs.diffuseTextureSRV);
+		DirectX::CreateWICTextureFromFile(device.Get(), L"Bricks059_1K-JPG_NormalDX.jpg", nullptr, &m_cubeTextureSRVs.normalTextureSRV);
+		DirectX::CreateWICTextureFromFile(device.Get(), L"Bricks059_Specular.png", nullptr, &m_cubeTextureSRVs.specularTextureSRV);
+		m_cubeTextureSRVs.opacityTextureSRV = Material::GetDefaultTextureSRVs().opacityTextureSRV;
+		m_cubeTextureSRVs.emissiveTextureSRV = Material::GetDefaultTextureSRVs().emissiveTextureSRV;
 	}
 
 	// instancing
 	{
 		D3D11_INPUT_ELEMENT_DESC layout[]{
 			// SemanticName , SemanticIndex , Format , InputSlot , AlignedByteOffset , InputSlotClass , InstanceDataStepRate
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "NORMAL",	  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "BINORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "WORLD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+
+			{ "WORLD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0,  D3D11_INPUT_PER_INSTANCE_DATA, 1 },
 			{ "WORLD", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
 			{ "WORLD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
 			{ "WORLD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
@@ -744,7 +755,7 @@ void FBXLoadingApp::InitializeScene()
 
 	// instance buffer
 	D3D11_BUFFER_DESC instanceBufferDesc{};
-	instanceBufferDesc.ByteWidth = maxInstances * sizeof(InstanceData);
+	instanceBufferDesc.ByteWidth = static_cast<UINT>(maxInstances * sizeof(InstanceData));
 	instanceBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	instanceBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	instanceBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -763,34 +774,13 @@ void FBXLoadingApp::InitializeScene()
 
 	device->CreateSamplerState(&samplerDesc, &m_samplerState);
 
-	// blend
-	D3D11_BLEND_DESC blendDesc{};
-	blendDesc.AlphaToCoverageEnable = FALSE;
-	blendDesc.IndependentBlendEnable = TRUE;
-
-	blendDesc.RenderTarget[0].BlendEnable = TRUE;
-	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-
-	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-	blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-	blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-
-	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-	blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-	blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-
-	device->CreateBlendState(&blendDesc, &m_blendState);
-
-	// 
-
-
-	m_world = Matrix::Identity;
+	m_cubeWorld = Matrix::Identity;
 
 	m_camera.GetViewMatrix(m_view);
 
 	m_projection = DirectX::XMMatrixPerspectiveFovLH(
 		DirectX::XMConvertToRadians(m_camera.GetFOV()),
-		(float)m_width / m_height,
+		static_cast<float>(m_width) / m_height,
 		m_camera.GetNear(),
 		m_camera.GetFar());
 }
@@ -821,17 +811,17 @@ void FBXLoadingApp::AddShell()
 
 	++m_currentShells;
 
-	const UINT i = m_currentShells;
+	const size_t i = m_currentShells;
 
-	const int numDivide = i * 2 - 1;
+	const size_t numDivide = i * 2 - 1;
 
-	const Vector3 rightFront{ (float)i * spaceX, 0.0f, (float)i * spaceY };
-	const Vector3 rightBack{ (float)i * spaceX, 0.0f, (float)i * -spaceY };
-	const Vector3 leftBack{ (float)i * -spaceX, 0.0f, (float)i * -spaceY };
-	const Vector3 leftFront{ (float)i * -spaceX, 0.0f, (float)i * spaceY };
+	const Vector3 rightFront{ i * spaceX, 0.0f, i * spaceY };
+	const Vector3 rightBack{ i * spaceX, 0.0f, i * -spaceY };
+	const Vector3 leftBack{ i * -spaceX, 0.0f, i * -spaceY };
+	const Vector3 leftFront{ i * -spaceX, 0.0f, i * spaceY };
 
-	const Vector3 verticalDelta = (rightBack - rightFront) / (float)numDivide;
-	const Vector3 horizontalDelta = (leftFront - rightFront) / (float)numDivide;
+	const Vector3 verticalDelta = (rightBack - rightFront) / static_cast<float>(numDivide);
+	const Vector3 horizontalDelta = (leftFront - rightFront) / static_cast<float>(numDivide);
 
 	Vector3 p1 = rightFront;
 	Vector3 p2 = rightBack;
@@ -856,12 +846,12 @@ void FBXLoadingApp::AddShell()
 
 void FBXLoadingApp::SubShell()
 {
-	if (m_currentShells <= m_startShell)
+	if (m_currentShells <= m_minShell)
 	{
 		return;
 	}
 
-	const UINT shellIndex = m_currentShells;
+	const size_t shellIndex = m_currentShells;
 	size_t elementsToRemove = (shellIndex * 2 - 1) * 4;
 
 	for (size_t k = 0; k < elementsToRemove; ++k)

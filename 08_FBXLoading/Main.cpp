@@ -17,8 +17,6 @@ int APIENTRY wWinMain(
 	FBXLoadingApp app;
 
 	app.Initialize();
-
 	app.Run();
-
 	app.Shutdown();
 }

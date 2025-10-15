@@ -103,3 +103,8 @@ const Model::Matrix& Model::GetWorld() const
 {
 	return m_world;
 }
+
+void Model::SetWorld(const Matrix& world)
+{
+	m_world = world;
+}

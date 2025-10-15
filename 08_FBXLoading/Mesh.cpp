@@ -48,7 +48,7 @@ Mesh::Mesh(const Microsoft::WRL::ComPtr<ID3D11Device>& device, aiMesh* mesh)
 
 
 	D3D11_BUFFER_DESC indexBufferDesc{};
-	indexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(WORD) * numFaces * 3);
+	indexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(DWORD) * numFaces * 3);
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 

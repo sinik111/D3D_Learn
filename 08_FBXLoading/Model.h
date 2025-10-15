@@ -39,7 +39,7 @@ private:
 
 public:
 	Model(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const char* fileName, const Matrix& world = Matrix::Identity);
-	// todo: move constructor
+	// 이동생성자 필요한데 vector::reserve로 일단 터지진 않음
 	~Model();
 
 public:
@@ -47,4 +47,6 @@ public:
 	const std::vector<Mesh>& GetMeshes() const;
 	const std::vector<Material>& GetMaterials() const;
 	const Matrix& GetWorld() const;
+
+	void SetWorld(const Matrix& world);
 };

@@ -45,7 +45,7 @@ class Mesh
 private:
 	std::string m_name;
 	std::vector<Vertex> m_vertices;
-	std::vector<WORD> m_indices;
+	std::vector<DWORD> m_indices;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_vertexBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_indexBuffer;
 	unsigned int m_materialIndex;

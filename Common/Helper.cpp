@@ -3,6 +3,7 @@
 #include <Windows.h>
 #include <vector>
 
+#ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC
 #include <cstdlib>
 #include <crtdbg.h>
@@ -11,6 +12,7 @@
 #include <dxgi1_3.h>
 
 #pragma comment(lib, "dxguid.lib")
+#endif // _DEBUG
 
 #include "MyTime.h"
 
@@ -25,7 +27,7 @@ std::wstring ToWideCharStr(const std::string& multibyteStr)
 		CP_UTF8,
 		0,
 		multibyteStr.c_str(),
-		(int)multibyteStr.length(),
+		static_cast<int>(multibyteStr.length()),
 		nullptr,
 		0
 	);
@@ -36,7 +38,7 @@ std::wstring ToWideCharStr(const std::string& multibyteStr)
 		CP_UTF8,
 		0,
 		multibyteStr.c_str(),
-		(int)multibyteStr.length(),
+		static_cast<int>(multibyteStr.length()),
 		wide.data(),
 		count
 	);
@@ -55,7 +57,7 @@ std::string ToMultibyteStr(const std::wstring& wideCharStr)
 		CP_UTF8,
 		0,
 		wideCharStr.c_str(),
-		(int)wideCharStr.length(),
+		static_cast<int>(wideCharStr.length()),
 		nullptr,
 		0,
 		nullptr,
@@ -68,7 +70,7 @@ std::string ToMultibyteStr(const std::wstring& wideCharStr)
 		CP_UTF8,
 		0,
 		wideCharStr.c_str(),
-		(int)wideCharStr.length(),
+		static_cast<int>(wideCharStr.length()),
 		multibyte.data(),
 		count,
 		nullptr,
@@ -110,6 +112,7 @@ float RandomFloat(float min, float max)
 	return std::uniform_real_distribution<float>(min, max)(gen);
 }
 
+#ifdef _DEBUG
 LeakCheck::LeakCheck()
 {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
@@ -130,3 +133,4 @@ LeakCheck::~LeakCheck()
 		pDebug->Release();
 	}
 }
+#endif // _DEBUG

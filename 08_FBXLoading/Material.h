@@ -3,6 +3,7 @@
 #include <string>
 #include <d3d11.h>
 #include <wrl/client.h>
+#include <array>
 
 struct aiMaterial;
 
@@ -13,6 +14,17 @@ struct TextureSRVs
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> specularTextureSRV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> emissiveTextureSRV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> opacityTextureSRV;
+
+	std::array<ID3D11ShaderResourceView*, 5> AsRawArray() const
+	{
+		return {
+			diffuseTextureSRV.Get(),
+			normalTextureSRV.Get(),
+			specularTextureSRV.Get(),
+			emissiveTextureSRV.Get(),
+			opacityTextureSRV.Get()
+		};
+	}
 };
 
 class Material
