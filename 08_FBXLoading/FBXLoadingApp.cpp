@@ -89,8 +89,7 @@ void FBXLoadingApp::OnUpdate()
 
 void FBXLoadingApp::OnRender()
 {
-	// view, projection setting
-
+	// camera
 	m_camera.GetViewMatrix(m_view);
 
 	m_projection = DirectX::XMMatrixPerspectiveFovLH(
@@ -99,6 +98,11 @@ void FBXLoadingApp::OnRender()
 		m_camera.GetNear(),
 		m_camera.GetFar());
 
+	m_skyboxWorld =
+		Matrix::CreateRotationY(DirectX::XMConvertToRadians(-90.0f)) *
+		Matrix::CreateTranslation(m_camera.GetPosition());
+
+	// draw
 	m_graphicsDevice.BeginDraw({ 1.0f, 0.0f, 1.0f, 1.0f });
 
 	auto deviceContext = m_graphicsDevice.GetDeviceContext();
@@ -121,10 +125,7 @@ void FBXLoadingApp::OnRender()
 	deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
 
 	// skybox
-	Matrix skyboxWorld =
-		Matrix::CreateRotationY(DirectX::XMConvertToRadians(-90.0f)) *
-		Matrix::CreateTranslation(m_camera.GetPosition());
-	cb.world = skyboxWorld.Transpose();
+	cb.world = m_skyboxWorld.Transpose();
 
 	deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
 
@@ -162,8 +163,6 @@ void FBXLoadingApp::OnRender()
 					m_changed = false;
 				}
 
-				deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
-
 				deviceContext->IASetInputLayout(m_instancingInputLayout.Get());
 				deviceContext->VSSetShader(m_instancingVertexShader.Get(), nullptr, 0);
 				deviceContext->PSSetShader(m_instancingPixelShader.Get(), nullptr, 0);
@@ -183,21 +182,22 @@ void FBXLoadingApp::OnRender()
 			}
 			else
 			{
+				deviceContext->IASetInputLayout(m_blinnPhongInputLayout.Get());
+				deviceContext->VSSetShader(m_blinnPhongVertexShader.Get(), nullptr, 0);
+				deviceContext->PSSetShader(m_instancingPixelShader.Get(), nullptr, 0);
+
 				for (const auto& mesh : meshes)
 				{
 					auto textureSRVs = materials[mesh.GetMaterialIndex()].GetTextureSRVs().AsRawArray();
 
-					deviceContext->IASetInputLayout(m_blinnPhongInputLayout.Get());
 					deviceContext->IASetVertexBuffers(0, 1, mesh.GetVertexBuffer().GetAddressOf(), &m_vertexBufferStride, &m_vertexBufferOffset);
 					deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
-					deviceContext->VSSetShader(m_blinnPhongVertexShader.Get(), nullptr, 0);
-					deviceContext->PSSetShader(m_instancingPixelShader.Get(), nullptr, 0);
 					deviceContext->PSSetShaderResources(0, static_cast<UINT>(textureSRVs.size()), textureSRVs.data());
 
-					for (size_t i = 0; i < m_instanceDatas.size(); ++i)
+					for (const auto& instance : m_instanceDatas)
 					{
-						cb.world = m_instanceDatas[i].world.Transpose();
-						cb.normalMatrix = m_instanceDatas[i].world./*Invert().Transpose().*/Transpose();
+						cb.world = instance.world.Transpose();
+						cb.normalMatrix = instance.world./*Invert().Transpose().*/Transpose();
 
 						deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
 
@@ -206,6 +206,10 @@ void FBXLoadingApp::OnRender()
 				}
 			}
 		}
+
+		deviceContext->IASetInputLayout(m_blinnPhongInputLayout.Get());
+		deviceContext->VSSetShader(m_blinnPhongVertexShader.Get(), nullptr, 0);
+		deviceContext->PSSetShader(m_blinnPhongPixelShader.Get(), nullptr, 0);
 
 		for (const auto& mesh : meshes)
 		{
@@ -216,11 +220,8 @@ void FBXLoadingApp::OnRender()
 
 			deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
 
-			deviceContext->IASetInputLayout(m_blinnPhongInputLayout.Get());
 			deviceContext->IASetVertexBuffers(0, 1, mesh.GetVertexBuffer().GetAddressOf(), &m_vertexBufferStride, &m_vertexBufferOffset);
 			deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
-			deviceContext->VSSetShader(m_blinnPhongVertexShader.Get(), nullptr, 0);
-			deviceContext->PSSetShader(m_blinnPhongPixelShader.Get(), nullptr, 0);
 			deviceContext->PSSetShaderResources(0, static_cast<UINT>(textureSRVs.size()), textureSRVs.data());
 
 			deviceContext->DrawIndexed(mesh.GetIndexCount(), 0, 0);
@@ -453,7 +454,6 @@ void FBXLoadingApp::InitializeScene()
 
 			continue;
 		}
-
 		else if (strcmp(fbxFileNames[i], "turtle.fbx") == 0)
 		{
 			m_models.emplace_back(device, fbxFileNames[i], Matrix::CreateScale(0.5f) * Matrix::CreateTranslation({ 0.0f, 50.0f, 0.0f}));
@@ -524,10 +524,10 @@ void FBXLoadingApp::InitializeScene()
 			p3 += -verticalDelta;
 			p4 += -horizontalDelta;
 
-			m_instanceDatas.emplace_back(Matrix::CreateScale(RandomFloat(randMin, randMax)) * Matrix::CreateRotationY(DirectX::XMConvertToRadians(RandomFloat(0.0f, 360.0f))) * Matrix::CreateTranslation(p1));
-			m_instanceDatas.emplace_back(Matrix::CreateScale(RandomFloat(randMin, randMax)) * Matrix::CreateRotationY(DirectX::XMConvertToRadians(RandomFloat(0.0f, 360.0f))) * Matrix::CreateTranslation(p2));
-			m_instanceDatas.emplace_back(Matrix::CreateScale(RandomFloat(randMin, randMax)) * Matrix::CreateRotationY(DirectX::XMConvertToRadians(RandomFloat(0.0f, 360.0f))) * Matrix::CreateTranslation(p3));
-			m_instanceDatas.emplace_back(Matrix::CreateScale(RandomFloat(randMin, randMax)) * Matrix::CreateRotationY(DirectX::XMConvertToRadians(RandomFloat(0.0f, 360.0f))) * Matrix::CreateTranslation(p4));
+			m_instanceDatas.push_back({ Matrix::CreateScale(RandomFloat(randMin, randMax)) * Matrix::CreateRotationY(DirectX::XMConvertToRadians(RandomFloat(0.0f, 360.0f))) * Matrix::CreateTranslation(p1) });
+			m_instanceDatas.push_back({ Matrix::CreateScale(RandomFloat(randMin, randMax)) * Matrix::CreateRotationY(DirectX::XMConvertToRadians(RandomFloat(0.0f, 360.0f))) * Matrix::CreateTranslation(p2) });
+			m_instanceDatas.push_back({ Matrix::CreateScale(RandomFloat(randMin, randMax)) * Matrix::CreateRotationY(DirectX::XMConvertToRadians(RandomFloat(0.0f, 360.0f))) * Matrix::CreateTranslation(p3) });
+			m_instanceDatas.push_back({ Matrix::CreateScale(RandomFloat(randMin, randMax)) * Matrix::CreateRotationY(DirectX::XMConvertToRadians(RandomFloat(0.0f, 360.0f))) * Matrix::CreateTranslation(p4) });
 		}
 	}
 
@@ -861,10 +861,10 @@ void FBXLoadingApp::AddShell()
 		p3 += -verticalDelta;
 		p4 += -horizontalDelta;
 
-		m_instanceDatas.emplace_back(Matrix::CreateScale(RandomFloat(randMin, randMax)) * Matrix::CreateRotationY(DirectX::XMConvertToRadians(RandomFloat(0.0f, 360.0f))) * Matrix::CreateTranslation(p1));
-		m_instanceDatas.emplace_back(Matrix::CreateScale(RandomFloat(randMin, randMax)) * Matrix::CreateRotationY(DirectX::XMConvertToRadians(RandomFloat(0.0f, 360.0f))) * Matrix::CreateTranslation(p2));
-		m_instanceDatas.emplace_back(Matrix::CreateScale(RandomFloat(randMin, randMax)) * Matrix::CreateRotationY(DirectX::XMConvertToRadians(RandomFloat(0.0f, 360.0f))) * Matrix::CreateTranslation(p3));
-		m_instanceDatas.emplace_back(Matrix::CreateScale(RandomFloat(randMin, randMax)) * Matrix::CreateRotationY(DirectX::XMConvertToRadians(RandomFloat(0.0f, 360.0f))) * Matrix::CreateTranslation(p4));
+		m_instanceDatas.push_back({ Matrix::CreateScale(RandomFloat(randMin, randMax)) * Matrix::CreateRotationY(DirectX::XMConvertToRadians(RandomFloat(0.0f, 360.0f))) * Matrix::CreateTranslation(p1) });
+		m_instanceDatas.push_back({ Matrix::CreateScale(RandomFloat(randMin, randMax)) * Matrix::CreateRotationY(DirectX::XMConvertToRadians(RandomFloat(0.0f, 360.0f))) * Matrix::CreateTranslation(p2) });
+		m_instanceDatas.push_back({ Matrix::CreateScale(RandomFloat(randMin, randMax)) * Matrix::CreateRotationY(DirectX::XMConvertToRadians(RandomFloat(0.0f, 360.0f))) * Matrix::CreateTranslation(p3) });
+		m_instanceDatas.push_back({ Matrix::CreateScale(RandomFloat(randMin, randMax)) * Matrix::CreateRotationY(DirectX::XMConvertToRadians(RandomFloat(0.0f, 360.0f))) * Matrix::CreateTranslation(p4) });
 	}
 
 	m_changed = true;

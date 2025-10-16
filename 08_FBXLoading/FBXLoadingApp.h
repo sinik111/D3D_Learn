@@ -12,12 +12,6 @@
 struct InstanceData
 {
 	DirectX::SimpleMath::Matrix world;
-
-	InstanceData(DirectX::SimpleMath::Matrix world)
-		: world{ world }
-	{
-
-	}
 };
 
 class FBXLoadingApp :
@@ -69,6 +63,7 @@ private:
 	Matrix m_projection;
 
 	Matrix m_cubeWorld;
+	Matrix m_skyboxWorld;
 	Vector3 m_scale{ 50.0f, 50.0f, 50.0f };
 	Vector3 m_rotation{ 0.0f, 0.0f, 0.0f };
 	Vector3 m_position{ 0.0f, 25.0f, 0.0f };
