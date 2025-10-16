@@ -351,23 +351,49 @@ void FBXLoadingApp::RenderImGui()
 		m_ambientLightColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 	}
 
+	ImGui::NewLine();
+	ImGui::SeparatorText("Instancing");
 	ImGui::Text("%d FPS", GetLastFPS());
 	
 	ImGui::Checkbox("Use Instancing", &m_useInstancing);
 	
-	ImGui::Text("Instance Count: %d", m_instanceDatas.size());
+	ImGui::Text("Instance Count: %d / Shell Count: %d", m_instanceDatas.size(), m_currentShells);
 
-	ImGui::Text("Shell Count: %d\t", m_currentShells);
+	ImGui::Text("Change Shell Count");
 	ImGui::SameLine();
-	if (ImGui::ArrowButton("Sub Shell", ImGuiDir_Down))
+	ImGui::Text("-10");
+	ImGui::SameLine();
+	if (ImGui::ArrowButton("Sub Shell -10", ImGuiDir_Down))
+	{
+		for (int i = 0; i < 10; ++i)
+		{
+			SubShell();
+		}
+	}
+	ImGui::SameLine();
+	ImGui::Text("-1");
+	ImGui::SameLine();
+	if (ImGui::ArrowButton("Sub Shell -1", ImGuiDir_Down))
 	{
 		SubShell();
 	}
 	ImGui::SameLine();
-	if (ImGui::ArrowButton("Add Shell", ImGuiDir_Up))
+	if (ImGui::ArrowButton("Add Shell +1", ImGuiDir_Up))
 	{
 		AddShell();
 	}
+	ImGui::SameLine();
+	ImGui::Text("+1");
+	ImGui::SameLine();
+	if (ImGui::ArrowButton("Add Shell +10", ImGuiDir_Up))
+	{
+		for (int i = 0; i < 10; ++i)
+		{
+			AddShell();
+		}
+	}
+	ImGui::SameLine();
+	ImGui::Text("+10");
 
 	ImGui::End();
 

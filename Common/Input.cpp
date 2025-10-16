@@ -1,17 +1,14 @@
 #include "Input.h"
 
-#include <memory>
-
 namespace Input
 {
     using ButtonState = DirectX::Mouse::ButtonStateTracker::ButtonState;
 
     static DirectX::Keyboard s_keyboard;
-    static DirectX::Mouse s_mouse;
-
     static DirectX::Keyboard::State s_keyboardState;
     static DirectX::Keyboard::KeyboardStateTracker s_keyboardStateTracker;
 
+    static DirectX::Mouse s_mouse;
     static DirectX::Mouse::State s_mouseState;
     static DirectX::Mouse::ButtonStateTracker s_mouseStateTracker;
 
