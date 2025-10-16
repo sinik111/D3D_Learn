@@ -6,13 +6,14 @@
 
 namespace Input
 {
-	enum Button
+	enum class Button
 	{
 		LEFT,
 		RIGHT,
 		MIDDLE,
 		SIDE_FRONT,
-		SIDE_BACK
+		SIDE_BACK,
+		MAX
 	};
 
 	void Initialize(HWND hWnd);

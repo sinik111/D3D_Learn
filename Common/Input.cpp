@@ -1,28 +1,47 @@
 #include "Input.h"
 
 #include <memory>
-#include <cassert>
 
-static std::unique_ptr<DirectX::Keyboard> s_keyboard = std::make_unique<DirectX::Keyboard>();
-static std::unique_ptr<DirectX::Mouse> s_mouse = std::make_unique<DirectX::Mouse>();
+namespace Input
+{
+    using ButtonState = DirectX::Mouse::ButtonStateTracker::ButtonState;
 
-static DirectX::Keyboard::State s_keyboardState;
-static DirectX::Keyboard::KeyboardStateTracker s_keyboardStateTracker;
+    static DirectX::Keyboard s_keyboard;
+    static DirectX::Mouse s_mouse;
 
-static DirectX::Mouse::State s_mouseState;
-static DirectX::Mouse::ButtonStateTracker s_mouseStateTracker;
+    static DirectX::Keyboard::State s_keyboardState;
+    static DirectX::Keyboard::KeyboardStateTracker s_keyboardStateTracker;
+
+    static DirectX::Mouse::State s_mouseState;
+    static DirectX::Mouse::ButtonStateTracker s_mouseStateTracker;
+
+    static bool* s_mouseHeldStateTable[static_cast<size_t>(Input::Button::MAX)];
+    static ButtonState* s_mouseStateTable[static_cast<size_t>(Input::Button::MAX)];
+}
 
 void Input::Initialize(HWND hWnd)
 {
-    s_mouse->SetWindow(hWnd);
+    s_mouse.SetWindow(hWnd);
+    
+    s_mouseHeldStateTable[static_cast<size_t>(Input::Button::LEFT)] = &s_mouseState.leftButton;
+    s_mouseHeldStateTable[static_cast<size_t>(Input::Button::RIGHT)] = &s_mouseState.rightButton;
+    s_mouseHeldStateTable[static_cast<size_t>(Input::Button::MIDDLE)] = &s_mouseState.middleButton;
+    s_mouseHeldStateTable[static_cast<size_t>(Input::Button::SIDE_FRONT)] = &s_mouseState.xButton1;
+    s_mouseHeldStateTable[static_cast<size_t>(Input::Button::SIDE_BACK)] = &s_mouseState.xButton2;
+
+    s_mouseStateTable[static_cast<size_t>(Input::Button::LEFT)] = &s_mouseStateTracker.leftButton;
+    s_mouseStateTable[static_cast<size_t>(Input::Button::RIGHT)] = &s_mouseStateTracker.rightButton;
+    s_mouseStateTable[static_cast<size_t>(Input::Button::MIDDLE)] = &s_mouseStateTracker.middleButton;
+    s_mouseStateTable[static_cast<size_t>(Input::Button::SIDE_FRONT)] = &s_mouseStateTracker.xButton1;
+    s_mouseStateTable[static_cast<size_t>(Input::Button::SIDE_BACK)] = &s_mouseStateTracker.xButton2;
 }
 
 void Input::Update()
 {
-    s_keyboardState = s_keyboard->GetState();
+    s_keyboardState = s_keyboard.GetState();
     s_keyboardStateTracker.Update(s_keyboardState);
 
-    s_mouseState = s_mouse->GetState();
+    s_mouseState = s_mouse.GetState();
     s_mouseStateTracker.Update(s_mouseState);
 }
 
@@ -43,95 +62,22 @@ bool Input::IsKeyReleased(DirectX::Keyboard::Keys key)
 
 bool Input::IsMouseHeld(Input::Button button)
 {
-    switch (button)
-    {
-    case Button::LEFT:
-        return s_mouseState.leftButton;
-
-    case Button::RIGHT:
-        return s_mouseState.rightButton;
-
-    case Button::MIDDLE:
-        return s_mouseState.middleButton;
-
-    case Button::SIDE_FRONT:
-        return s_mouseState.xButton1;
-
-    case Button::SIDE_BACK:
-        return s_mouseState.xButton2;
-
-    default:
-        assert(false && "wrong button");
-
-        return false;
-    }
-
-    return false;
+    return *s_mouseHeldStateTable[static_cast<size_t>(button)];
 }
 
 bool Input::IsMousePressed(Input::Button button)
 {
-    using ButtonState = DirectX::Mouse::ButtonStateTracker::ButtonState;
-
-    switch (button)
-    {
-    case Button::LEFT:
-        return s_mouseStateTracker.leftButton == ButtonState::PRESSED;
-
-    case Button::RIGHT:
-        return s_mouseStateTracker.rightButton == ButtonState::PRESSED;
-
-    case Button::MIDDLE:
-        return s_mouseStateTracker.middleButton == ButtonState::PRESSED;
-
-    case Button::SIDE_FRONT:
-        return s_mouseStateTracker.xButton1 == ButtonState::PRESSED;
-
-    case Button::SIDE_BACK:
-        return s_mouseStateTracker.xButton2 == ButtonState::PRESSED;
-
-    default:
-        assert(false && "wrong button");
-
-        return false;
-    }
-
-    return false;
+    return *s_mouseStateTable[static_cast<size_t>(button)] == ButtonState::PRESSED;
 }
 
 bool Input::IsMouseReleased(Input::Button button)
 {
-    using ButtonState = DirectX::Mouse::ButtonStateTracker::ButtonState;
-
-    switch (button)
-    {
-    case Button::LEFT:
-        return s_mouseStateTracker.leftButton == ButtonState::RELEASED;
-
-    case Button::RIGHT:
-        return s_mouseStateTracker.rightButton == ButtonState::RELEASED;
-
-    case Button::MIDDLE:
-        return s_mouseStateTracker.middleButton == ButtonState::RELEASED;
-
-    case Button::SIDE_FRONT:
-        return s_mouseStateTracker.xButton1 == ButtonState::RELEASED;
-
-    case Button::SIDE_BACK:
-        return s_mouseStateTracker.xButton2 == ButtonState::RELEASED;
-
-    default:
-        assert(false && "wrong button");
-
-        return false;
-    }
-
-    return false;
+    return *s_mouseStateTable[static_cast<size_t>(button)] == ButtonState::RELEASED;
 }
 
 void Input::SetMouseMode(DirectX::Mouse::Mode mode)
 {
-    s_mouse->SetMode(mode);
+    s_mouse.SetMode(mode);
 }
 
 DirectX::SimpleMath::Vector2 Input::GetMouseDelta()
@@ -141,7 +87,7 @@ DirectX::SimpleMath::Vector2 Input::GetMouseDelta()
         return { static_cast<float>(s_mouseState.x), static_cast<float>(s_mouseState.y) };
     }
 
-    return { 0, 0 };
+    return { 0.0f, 0.0f };
 }
 
 DirectX::SimpleMath::Vector2 Input::GetMousePosition()
@@ -151,5 +97,5 @@ DirectX::SimpleMath::Vector2 Input::GetMousePosition()
         return { static_cast<float>(s_mouseState.x), static_cast<float>(s_mouseState.y) };
     }
 
-    return { 0, 0 };
+    return { 0.0f, 0.0f };
 }
