@@ -33,11 +33,11 @@ private:
 
 public:
 	SkeletalMesh(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const char* fileName, const Matrix& world = Matrix::Identity);
-	SkeletalMesh(const SkeletalMesh& other);
+	SkeletalMesh(const SkeletalMesh& other) = default;
 	SkeletalMesh(const SkeletalMesh& other, const Matrix& world);
-	SkeletalMesh& operator=(const SkeletalMesh& other);
-	SkeletalMesh(SkeletalMesh&& other);
-	SkeletalMesh& operator=(SkeletalMesh&& other);
+	SkeletalMesh& operator=(const SkeletalMesh& other) = default;
+	SkeletalMesh(SkeletalMesh&& other) noexcept;
+	SkeletalMesh& operator=(SkeletalMesh&& other) noexcept;
 
 public:
 	const std::wstring& GetName() const;

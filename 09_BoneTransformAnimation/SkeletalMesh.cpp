@@ -46,30 +46,28 @@ SkeletalMesh::SkeletalMesh(const Microsoft::WRL::ComPtr<ID3D11Device>& device, c
 	const aiNode* rootNode = scene->mRootNode; // RootNode, Scene 최상위 노드
 	aiAnimation** animation = scene->mAnimations;
 
-	const size_t nodeCount = GetNodeCount(rootNode->mChildren[0]);
+	const aiNode* meshRootNode = rootNode->mChildren[0]; // Mesh의 최상위 노드(주로 pelvis)
+
+	const size_t nodeCount = GetNodeCount(meshRootNode);
 	m_boneInfos->reserve(nodeCount);
 
-	std::queue<aiNode*> nodeQueue; // 상위 노드 순으로 만들기 위한 큐
-	nodeQueue.push(rootNode->mChildren[0]);
+	m_boneInfos->emplace_back(meshRootNode->mTransformation[0], -1); // 루트 index 0
 
-	m_boneInfos->emplace_back(rootNode->mTransformation[0], -1);
-
-	int parentBoneIndex = 0;
+	std::queue<std::pair<aiNode*, int>> nodeQueue; // 상위 노드 순으로 만들기 위한 큐
+	nodeQueue.push({ rootNode->mChildren[0], 0 });
 
 	while (!nodeQueue.empty())
 	{
-		const aiNode* node = nodeQueue.front();
+		auto [ node, parentIndex ] = nodeQueue.front();
 		nodeQueue.pop();
 
 		for (unsigned int i = 0; i < node->mNumChildren; ++i)
 		{
 			aiNode* child = node->mChildren[i];
 
-			m_boneInfos->emplace_back(child->mTransformation[0], parentBoneIndex);
-			nodeQueue.push(child);
+			nodeQueue.push({ child, static_cast<int>(m_boneInfos->size()) });
+			m_boneInfos->emplace_back(child->mTransformation[0], parentIndex);
 		}
-
-		++parentBoneIndex;
 	}
 
 	//m_meshes->reserve(scene->mNumMeshes);
@@ -87,25 +85,36 @@ SkeletalMesh::SkeletalMesh(const Microsoft::WRL::ComPtr<ID3D11Device>& device, c
 	//}
 }
 
-SkeletalMesh::SkeletalMesh(const SkeletalMesh& other)
-{
-}
-
 SkeletalMesh::SkeletalMesh(const SkeletalMesh& other, const Matrix& world)
 {
+	*this = other;
+
+	m_world = world;
 }
 
-SkeletalMesh& SkeletalMesh::operator=(const SkeletalMesh& other)
+SkeletalMesh::SkeletalMesh(SkeletalMesh&& other) noexcept
+	: m_meshes{ std::move(other.m_meshes) }, m_materials{ std::move(other.m_materials) },
+	m_animations{ std::move(other.m_animations) }, m_boneInfos{ std::move(other.m_boneInfos) },
+	m_name{ std::move(other.m_name) }, m_world{ other.m_world }, m_bones{ std::move(other.m_bones) },
+	m_models{ std::move(other.m_models) }
 {
-	return *this;
+
 }
 
-SkeletalMesh::SkeletalMesh(SkeletalMesh&& other)
+SkeletalMesh& SkeletalMesh::operator=(SkeletalMesh&& other) noexcept
 {
-}
+	if (this != &other)
+	{
+		m_meshes = std::move(other.m_meshes);
+		m_materials = std::move(other.m_materials);
+		m_animations = std::move(other.m_animations);
+		m_boneInfos = std::move(other.m_boneInfos);
+		m_name = std::move(other.m_name);
+		m_world = other.m_world;
+		m_bones = std::move(other.m_bones);
+		m_models = std::move(other.m_models);
+	}
 
-SkeletalMesh& SkeletalMesh::operator=(SkeletalMesh&& other)
-{
 	return *this;
 }
 
