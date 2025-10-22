@@ -41,7 +41,7 @@ StaticMesh::Node::~Node()
 }
 
 StaticMesh::StaticMesh(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const char* fileName, const Matrix& world)
-	: m_world{ world }, m_name{ std::filesystem::path(fileName).stem().c_str() }
+	: m_world{ world }, m_name{ std::filesystem::path(fileName).stem().wstring() }
 {
 	Assimp::Importer importer;
 

@@ -11,18 +11,21 @@ void BoneAnimation::Evaluate(float time, LastKeyIndex& inOutLastKeyIndex, Vector
 	size_t rotationKeyIndex = inOutLastKeyIndex.rotation;
 	size_t scaleKeyIndex = inOutLastKeyIndex.scale;
 
+	if (positionKeys[positionKeyIndex].time >= time)
+	{
+		positionKeyIndex = 0;
+	}
+
 	while (true)
 	{
-		size_t nextIndex = (positionKeyIndex + 1) % positionKeys.size();
+		size_t nextIndex = positionKeyIndex + 1;
 		
 		if (positionKeys[nextIndex].time > time)
 		{
 			outPosition = DirectX::SimpleMath::Vector3::Lerp(
 				positionKeys[positionKeyIndex].value,
 				positionKeys[nextIndex].value,
-				(time - (positionKeys[positionKeyIndex].time)) / (positionKeys[nextIndex].time - positionKeys[positionKeyIndex].time)
-			);
-			
+				(time - positionKeys[positionKeyIndex].time) / (positionKeys[nextIndex].time - positionKeys[positionKeyIndex].time));
 			inOutLastKeyIndex.position = positionKeyIndex;
 			
 			break;
@@ -31,9 +34,14 @@ void BoneAnimation::Evaluate(float time, LastKeyIndex& inOutLastKeyIndex, Vector
 		positionKeyIndex = nextIndex;
 	}
 
+	if (rotationKeys[rotationKeyIndex].time >= time)
+	{
+		rotationKeyIndex = 0;
+	}
+
 	while (true)
 	{
-		size_t nextIndex = (rotationKeyIndex + 1) % rotationKeys.size();
+		size_t nextIndex = rotationKeyIndex + 1;
 
 		if (rotationKeys[nextIndex].time > time)
 		{
@@ -51,9 +59,14 @@ void BoneAnimation::Evaluate(float time, LastKeyIndex& inOutLastKeyIndex, Vector
 		rotationKeyIndex = nextIndex;
 	}
 
+	if (scaleKeys[scaleKeyIndex].time >= time)
+	{
+		scaleKeyIndex = 0;
+	}
+
 	while (true)
 	{
-		size_t nextIndex = (scaleKeyIndex + 1) % scaleKeys.size();
+		size_t nextIndex = scaleKeyIndex + 1;
 
 		if (scaleKeys[nextIndex].time > time)
 		{

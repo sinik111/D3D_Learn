@@ -35,7 +35,7 @@ inline void LogImpl(std::ostringstream& oss, T arg)
 template<typename T, typename...Args>
 inline void LogImpl(std::ostringstream& oss, T arg, Args...args)
 {
-    oss << arg;
+    oss << arg << ' ';
 
     LogImpl(oss, args...);
 }

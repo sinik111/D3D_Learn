@@ -28,7 +28,7 @@ using Matrix = DirectX::SimpleMath::Matrix;
 static std::unordered_map<std::wstring, std::weak_ptr<SkeletalMeshResource>> s_resourceMap; // 간단한 리소스 매니저
 
 SkeletalMesh::SkeletalMesh(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const char* fileName, const Matrix& world)
-	: m_name{ std::filesystem::path(fileName).stem().c_str() }
+	: m_name{ std::filesystem::path(fileName).stem().wstring() }
 {
 	bool exist = false;
 
@@ -82,7 +82,7 @@ SkeletalMesh::SkeletalMesh(const Microsoft::WRL::ComPtr<ID3D11Device>& device, c
 		
 		for (unsigned int i = 0; i < scene->mNumAnimations; ++i)
 		{
-			m_resource->animations.emplace_back(scene->mAnimations[0], m_resource->skeletonInfo.get());
+			m_resource->animations.emplace_back(scene->mAnimations[i], m_resource->skeletonInfo.get());
 		}
 
 		s_resourceMap[m_name] = m_resource;
@@ -93,15 +93,23 @@ SkeletalMesh::SkeletalMesh(const Microsoft::WRL::ComPtr<ID3D11Device>& device, c
 }
 
 SkeletalMesh::SkeletalMesh(const SkeletalMesh& other, const Matrix& world)
+	: m_resource{ other.m_resource },
+	m_name{ other.m_name },
+	m_world{ world },
+	m_skeleton{ other.m_skeleton },
+	m_skeletonPose{ other.m_skeletonPose },
+	m_animationIndex{ other.m_animationIndex },
+	m_animationProgressTime{ other.m_animationProgressTime }
 {
-	*this = other;
-
-	m_world = world;
+	
 }
 
 SkeletalMesh::SkeletalMesh(SkeletalMesh&& other) noexcept
-	: m_resource{ std::move(other.m_resource) }, m_name{ std::move(other.m_name) }, m_world{ other.m_world },
-	m_skeleton{ std::move(other.m_skeleton) }, m_skeletonPose{ std::move(other.m_skeletonPose) }
+	: m_resource{ std::move(other.m_resource) },
+	m_name{ std::move(other.m_name) },
+	m_world{ other.m_world },
+	m_skeleton{ std::move(other.m_skeleton) },
+	m_skeletonPose{ std::move(other.m_skeletonPose) }
 {
 
 }

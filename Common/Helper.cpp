@@ -1,7 +1,6 @@
 #include "Helper.h"
 
 #include <Windows.h>
-#include <vector>
 
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC
@@ -20,64 +19,64 @@ std::wstring ToWideCharStr(const std::string& multibyteStr)
 {
 	if (multibyteStr.empty())
 	{
-		return L"";
+		return std::wstring();
 	}
 
 	int count = MultiByteToWideChar(
 		CP_UTF8,
 		0,
 		multibyteStr.c_str(),
-		static_cast<int>(multibyteStr.length()),
+		static_cast<int>(multibyteStr.size()),
 		nullptr,
 		0
 	);
 
-	std::vector<wchar_t> wide(count);
+	std::wstring str(count, L'\0');
 
 	MultiByteToWideChar(
 		CP_UTF8,
 		0,
 		multibyteStr.c_str(),
-		static_cast<int>(multibyteStr.length()),
-		wide.data(),
+		static_cast<int>(multibyteStr.size()),
+		&str[0],
 		count
 	);
 
-	return std::wstring(wide.data(), wide.size());
+	return str;
 }
 
 std::string ToMultibyteStr(const std::wstring& wideCharStr)
 {
 	if (wideCharStr.empty())
 	{
-		return "";
+		return std::string();
 	}
 
 	int count = WideCharToMultiByte(
 		CP_UTF8,
 		0,
 		wideCharStr.c_str(),
-		static_cast<int>(wideCharStr.length()),
+		static_cast<int>(wideCharStr.size()),
 		nullptr,
 		0,
 		nullptr,
 		nullptr
 	);
 
-	std::vector<char> multibyte(count);
+	std::string str(count, '\0');
 
 	WideCharToMultiByte(
 		CP_UTF8,
 		0,
 		wideCharStr.c_str(),
-		static_cast<int>(wideCharStr.length()),
-		multibyte.data(),
+		static_cast<int>(wideCharStr.size()),
+		&str[0],
 		count,
 		nullptr,
 		nullptr
 	);
 
-	return std::string(multibyte.data(), multibyte.size());
+	return str;
 }
 
 static MyTime::TimePoint s_lastTimestamp = MyTime::Clock::now();
