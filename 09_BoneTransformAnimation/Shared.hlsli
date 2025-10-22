@@ -1,20 +1,33 @@
-SamplerState samLinear : register(s0);
+SamplerState g_samLinear : register(s0);
 
-cbuffer ConstantBuffer : register(b0)
+cbuffer Transform : register(b0)
 {
-    matrix world;
-    matrix view;
-    matrix projection;
-    matrix normalMatrix;
-    
-    float4 materialAmbient;
-    float4 materialSpecular;
-    
-    float4 cameraPos;
-    float4 lightDir;
-    float4 lightColor;
-    float4 ambientLightColor;
-    float4 shininess;
+    matrix g_world;
+    matrix g_view;
+    matrix g_projection;
+    uint g_refBoneIndex;
+    float3 __pad1;
+}
+
+cbuffer Environment : register(b1)
+{
+    float4 g_cameraPos;
+    float4 g_lightDir;
+    float4 g_lightColor;
+    float4 g_ambientLightColor;
+}
+
+cbuffer Material : register(b2)
+{
+    float4 g_materialAmbient;
+    float4 g_materialSpecular;
+    float g_shininess;
+    float3 __pad2;
+}
+
+cbuffer ModelMatrix : register(b3)
+{
+    matrix g_modelMatrices[32];
 }
 
 struct VS_INPUT

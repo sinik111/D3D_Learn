@@ -25,21 +25,29 @@ const float spaceY = 10.0f;
 const float randMin = 0.1f;
 const float randMax = 0.3f;
 
-struct ConstantBuffer
+struct TransformBuffer
 {
 	Matrix world;
 	Matrix view;
 	Matrix projection;
-	Matrix normalMatrix;
+	unsigned int refBoneIndex;
+	float __pad1[3];
+};
 
-	Vector4 materialAmbient;
-	Vector4 materialSpecular;
-
+struct EnvironmentBuffer
+{
 	Vector4 cameraPos;
 	Vector4 lightDirection;
 	Vector4 lightColor;
 	Vector4 ambientLightColor;
-	Vector4 shininess;
+};
+
+struct MaterialBuffer
+{
+	Vector4 materialAmbient;
+	Vector4 materialSpecular;
+	float shininess;
+	float __pad1[3];
 };
 
 void BoneTransformAnimationApp::Initialize()
@@ -73,6 +81,11 @@ void BoneTransformAnimationApp::OnUpdate()
 		Matrix::CreateRotationY(DirectX::XMConvertToRadians(m_lightRotation.y));
 
 	m_lightDirection = DirectX::XMVector3TransformNormal(m_originalLightDir, m_lightRotationMatrix);
+
+	for (auto& skeletalMesh : m_skeletalMeshes)
+	{
+		skeletalMesh.Update(MyTime::DeltaTime());
+	}
 }
 
 void BoneTransformAnimationApp::OnRender()
@@ -93,47 +106,66 @@ void BoneTransformAnimationApp::OnRender()
 	auto deviceContext = m_graphicsDevice.GetDeviceContext();
 
 	// common
-	ConstantBuffer cb{};
-	cb.view = m_view.Transpose();
-	cb.projection = m_projection.Transpose();
-	cb.cameraPos = Vector4(m_camera.GetPosition());
-	cb.lightDirection = m_lightDirection;
-	cb.lightColor = m_lightColor;
-	cb.ambientLightColor = m_ambientLightColor;
-	cb.materialAmbient = m_materialAmbient;
-	cb.materialSpecular = m_materialSpecular;
-	cb.shininess = m_shininess;
-
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	deviceContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
-	deviceContext->PSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
 	deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
 
-	// model
-	for (const auto& model : m_staticMeshes)
+	// todo: dirty flag
+	TransformBuffer transformBuffer{};
+	transformBuffer.view = m_view.Transpose();
+	transformBuffer.projection = m_projection.Transpose();
+
+	deviceContext->VSSetConstantBuffers(0, 1, m_transformConstantBuffer.GetAddressOf());
+
+	// todo: dirty flag
+	EnvironmentBuffer environmentBuffer{};
+	environmentBuffer.cameraPos = Vector4(m_camera.GetPosition());
+	environmentBuffer.lightDirection = m_lightDirection;
+	environmentBuffer.lightColor = m_lightColor;
+	environmentBuffer.ambientLightColor = m_ambientLightColor;
+
+	deviceContext->VSSetConstantBuffers(1, 1, m_environmentConstantBuffer.GetAddressOf());
+	deviceContext->PSSetConstantBuffers(1, 1, m_environmentConstantBuffer.GetAddressOf());
+	deviceContext->UpdateSubresource(m_environmentConstantBuffer.Get(), 0, nullptr, &environmentBuffer, 0, 0);
+
+	// todo: dirty flag
+	MaterialBuffer materialBuffer{};
+	materialBuffer.materialAmbient = m_materialAmbient;
+	materialBuffer.materialSpecular = m_materialSpecular;
+	materialBuffer.shininess = m_shininess;
+
+	deviceContext->PSSetConstantBuffers(2, 1, m_materialConstantBuffer.GetAddressOf());
+	deviceContext->UpdateSubresource(m_materialConstantBuffer.Get(), 0, nullptr, &materialBuffer, 0, 0);
+
+	deviceContext->VSSetConstantBuffers(3, 1, m_modelMatrixConstantBuffer.GetAddressOf());
+
+	// skeletalMesh
+	for (const auto& skeletalMesh : m_skeletalMeshes)
 	{
-		const auto& meshes = model.GetMeshes();
-		const auto& materials = model.GetMaterials();
+		const auto& meshes = skeletalMesh.GetMeshes();
+		const auto& materials = skeletalMesh.GetMaterials();
+
+		deviceContext->UpdateSubresource(m_modelMatrixConstantBuffer.Get(), 0, nullptr, skeletalMesh.GetSkeletonPose().data(), 0, 0);
 
 		deviceContext->IASetInputLayout(m_blinnPhongInputLayout.Get());
 		deviceContext->VSSetShader(m_blinnPhongVertexShader.Get(), nullptr, 0);
 		deviceContext->PSSetShader(m_blinnPhongPixelShader.Get(), nullptr, 0);
 
-		//for (const auto& mesh : meshes)
-		//{
-		//	cb.world = model.GetWorld().Transpose();
-		//	cb.normalMatrix = model.GetWorld().Invert().Transpose().Transpose();
+		transformBuffer.world = m_world.Transpose();//skeletalMesh.GetWorld().Transpose();
 
-		//	auto textureSRVs = materials[mesh.GetMaterialIndex()].GetTextureSRVs().AsRawArray();
+		for (const auto& mesh : meshes)
+		{
+			transformBuffer.refBoneIndex = mesh.GetBoneIndex();
 
-		//	deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+			deviceContext->UpdateSubresource(m_transformConstantBuffer.Get(), 0, nullptr, &transformBuffer, 0, 0);
 
-		//	deviceContext->IASetVertexBuffers(0, 1, mesh.GetVertexBuffer().GetAddressOf(), &m_vertexBufferStride, &m_vertexBufferOffset);
-		//	deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
-		//	deviceContext->PSSetShaderResources(0, static_cast<UINT>(textureSRVs.size()), textureSRVs.data());
+			auto textureSRVs = materials[mesh.GetMaterialIndex()].GetTextureSRVs().AsRawArray();
 
-		//	deviceContext->DrawIndexed(mesh.GetIndexCount(), 0, 0);
-		//}
+			deviceContext->IASetVertexBuffers(0, 1, mesh.GetVertexBuffer().GetAddressOf(), &m_vertexBufferStride, &m_vertexBufferOffset);
+			deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
+			deviceContext->PSSetShaderResources(0, static_cast<UINT>(textureSRVs.size()), textureSRVs.data());
+
+			deviceContext->DrawIndexed(mesh.GetIndexCount(), 0, 0);
+		}
 	}
 
 	RenderImGui();
@@ -212,21 +244,23 @@ void BoneTransformAnimationApp::RenderImGui()
 
 	ImGui::SeparatorText("Object");
 
-	ImGui::DragFloat3("Scale", &m_scale.x, 0.1f);
+	float scale = m_scale.x;
+	ImGui::DragFloat("Scale", &scale, 0.1f);
+	m_scale = Vector3(scale, scale, scale);
 	ImGui::DragFloat2("Rotation(x, y)##1", &m_rotation.x, 0.1f);
 	ImGui::DragFloat3("Position##2", &m_position.x, 0.1f);
 	ImGui::ColorEdit3("Ambient", &m_materialAmbient.x);
 	ImGui::ColorEdit3("Specular", &m_materialSpecular.x);
-	ImGui::DragFloat("Shininess", &m_shininess.x, 5.0f, 1.0f, 10000.0f);
+	ImGui::DragFloat("Shininess", &m_shininess, 5.0f, 1.0f, 10000.0f);
 
 	if (ImGui::Button("Reset##2"))
 	{
-		m_scale = { 50.0f, 50.0f, 50.0f };
+		m_scale = { 1.0f, 1.0f, 1.0f };
 		m_rotation = { 0.0f, 0.0f, 0.0f };
 		m_position = { 0.0f, 0.0f, 0.0f };
 		m_materialAmbient = { 1.0f, 1.0f, 1.0f, 1.0f };
 		m_materialSpecular = { 1.0f, 1.0f, 1.0f, 1.0f };
-		m_shininess = { 64.0f, 0.0f, 0.0f, 0.0f };
+		m_shininess = 64.0f;
 	}
 
 	ImGui::NewLine();
@@ -271,20 +305,21 @@ void BoneTransformAnimationApp::InitializeScene()
 
 	const char* fbxFileNames[]{
 		//"1CubeAnim.fbx",
-		"BoxHuman.fbx",
+		"BoxHuman_o.fbx",
 	};
 
 	const size_t numFBXs = ARRAYSIZE(fbxFileNames);
 	const float radian = DirectX::XM_2PI / numFBXs;
 	const float radius = 300.0f;
 
-	m_staticMeshes.reserve(numFBXs);
+	m_skeletalMeshes.reserve(numFBXs);
 
 	for (size_t i = 0; i < numFBXs; ++i)
 	{
 		Vector3 position{ radius * std::cos(radian * i), 0.0f, radius * std::sin(radian * i) };
 
-		m_staticMeshes.emplace_back(device, fbxFileNames[i], Matrix::CreateTranslation(position));
+		m_skeletalMeshes.emplace_back(device, fbxFileNames[i], Matrix::CreateTranslation(position));
+		m_skeletalMeshes.back().PlayAnimation(0);
 	}
 
 	// object
@@ -331,11 +366,20 @@ void BoneTransformAnimationApp::InitializeScene()
 
 	// constant buffer
 	D3D11_BUFFER_DESC constantBufferDesc{};
-	constantBufferDesc.ByteWidth = sizeof(ConstantBuffer);
 	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 
-	device->CreateBuffer(&constantBufferDesc, nullptr, &m_constantBuffer);
+	constantBufferDesc.ByteWidth = sizeof(TransformBuffer);
+	device->CreateBuffer(&constantBufferDesc, nullptr, &m_transformConstantBuffer);
+
+	constantBufferDesc.ByteWidth = sizeof(EnvironmentBuffer);
+	device->CreateBuffer(&constantBufferDesc, nullptr, &m_environmentConstantBuffer);
+
+	constantBufferDesc.ByteWidth = sizeof(MaterialBuffer);
+	device->CreateBuffer(&constantBufferDesc, nullptr, &m_materialConstantBuffer);
+
+	constantBufferDesc.ByteWidth = sizeof(Matrix) * 32;
+	device->CreateBuffer(&constantBufferDesc, nullptr, &m_modelMatrixConstantBuffer);
 
 	// sampler
 	D3D11_SAMPLER_DESC samplerDesc{};

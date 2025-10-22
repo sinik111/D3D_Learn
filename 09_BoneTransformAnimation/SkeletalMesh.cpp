@@ -6,83 +6,90 @@
 
 #include <filesystem>
 #include <queue>
+#include <unordered_map>
+#include <functional>
 
 #include "../Common/Helper.h"
 
+#include "SkeletalMeshSection.h"
+#include "Material.h"
+#include "Animation.h"
+
+struct SkeletalMeshResource
+{
+	std::vector<SkeletalMeshSection> meshes;
+	std::vector<Material> materials;
+	std::vector<Animation> animations;
+	std::unique_ptr<SkeletonInfo> skeletonInfo;
+};
+
 using Matrix = DirectX::SimpleMath::Matrix;
 
-static size_t GetNodeCount(const aiNode* node)
-{
-	size_t count = 1;
-
-	if (node->mNumChildren > 0)
-	{
-		for (unsigned int i = 0; i < node->mNumChildren; ++i)
-		{
-			count += GetNodeCount(node->mChildren[i]);
-		}
-	}
-
-	return count;
-}
+static std::unordered_map<std::wstring, std::weak_ptr<SkeletalMeshResource>> s_resourceMap; // 간단한 리소스 매니저
 
 SkeletalMesh::SkeletalMesh(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const char* fileName, const Matrix& world)
-	: m_name{ std::filesystem::path(fileName).stem().c_str() },
-	m_meshes{ std::make_shared<std::vector<SkeletalMeshSection>>() },
-	m_materials{ std::make_shared<std::vector<Material>>() },
-	m_animations{ std::make_shared<std::vector<Animation>>() },
-	m_boneInfos{ std::make_shared<std::vector<BoneInfo>>() }
+	: m_name{ std::filesystem::path(fileName).stem().c_str() }
 {
-	Assimp::Importer importer;
+	bool exist = false;
 
-	unsigned int importFlags = aiProcess_Triangulate |
-		aiProcess_GenNormals |
-		aiProcess_GenUVCoords |
-		aiProcess_CalcTangentSpace |
-		aiProcess_ConvertToLeftHanded;
-
-	const aiScene* scene = importer.ReadFile(fileName, importFlags);
-
-	const aiNode* rootNode = scene->mRootNode; // RootNode, Scene 최상위 노드
-	aiAnimation** animation = scene->mAnimations;
-
-	const aiNode* meshRootNode = rootNode->mChildren[0]; // Mesh의 최상위 노드(주로 pelvis)
-
-	const size_t nodeCount = GetNodeCount(meshRootNode);
-	m_boneInfos->reserve(nodeCount);
-
-	m_boneInfos->emplace_back(meshRootNode->mTransformation[0], -1); // 루트 index 0
-
-	std::queue<std::pair<aiNode*, int>> nodeQueue; // 상위 노드 순으로 만들기 위한 큐
-	nodeQueue.push({ rootNode->mChildren[0], 0 });
-
-	while (!nodeQueue.empty())
+	auto it = s_resourceMap.find(m_name);
+	if (it != s_resourceMap.end())
 	{
-		auto [ node, parentIndex ] = nodeQueue.front();
-		nodeQueue.pop();
-
-		for (unsigned int i = 0; i < node->mNumChildren; ++i)
+		if (!it->second.expired())
 		{
-			aiNode* child = node->mChildren[i];
+			m_resource = it->second.lock();
 
-			nodeQueue.push({ child, static_cast<int>(m_boneInfos->size()) });
-			m_boneInfos->emplace_back(child->mTransformation[0], parentIndex);
+			exist = true;
 		}
 	}
 
-	//m_meshes->reserve(scene->mNumMeshes);
+	if (!exist)
+	{
+		m_resource = std::make_shared<SkeletalMeshResource>();
 
-	//for (unsigned int i = 0; i < scene->mNumMeshes; ++i)
-	//{
-	//	m_meshes->emplace_back(device, scene->mMeshes[i]);
-	//}
+		Assimp::Importer importer;
 
-	//m_materials->reserve(scene->mNumMaterials);
+		unsigned int importFlags = aiProcess_Triangulate |
+			aiProcess_GenNormals |
+			aiProcess_GenUVCoords |
+			aiProcess_CalcTangentSpace |
+			aiProcess_ConvertToLeftHanded;
 
-	//for (unsigned int i = 0; i < scene->mNumMaterials; ++i)
-	//{
-	//	m_materials->emplace_back(device, scene->mMaterials[i]);
-	//}
+		const aiScene* scene = importer.ReadFile(fileName, importFlags);
+
+		// bone 생성
+		m_resource->skeletonInfo = std::make_unique<SkeletonInfo>(scene);
+
+		// mesh sections 생성
+		m_resource->meshes.reserve(scene->mNumMeshes);
+
+		for (unsigned int i = 0; i < scene->mNumMeshes; ++i)
+		{
+			const aiMesh* mesh = scene->mMeshes[i];
+			m_resource->meshes.emplace_back(device, mesh, m_resource->skeletonInfo.get());
+		}
+
+		// material 생성
+		m_resource->materials.reserve(scene->mNumMaterials);
+
+		for (unsigned int i = 0; i < scene->mNumMaterials; ++i)
+		{
+			m_resource->materials.emplace_back(device, scene->mMaterials[i]);
+		}
+
+		// animation 생성
+		m_resource->animations.reserve(scene->mNumAnimations);
+		
+		for (unsigned int i = 0; i < scene->mNumAnimations; ++i)
+		{
+			m_resource->animations.emplace_back(scene->mAnimations[0], m_resource->skeletonInfo.get());
+		}
+
+		s_resourceMap[m_name] = m_resource;
+	}
+
+	// 인스턴스 데이터 생성
+	m_resource->skeletonInfo->SetupSkeletonInstance(m_skeleton);
 }
 
 SkeletalMesh::SkeletalMesh(const SkeletalMesh& other, const Matrix& world)
@@ -93,10 +100,8 @@ SkeletalMesh::SkeletalMesh(const SkeletalMesh& other, const Matrix& world)
 }
 
 SkeletalMesh::SkeletalMesh(SkeletalMesh&& other) noexcept
-	: m_meshes{ std::move(other.m_meshes) }, m_materials{ std::move(other.m_materials) },
-	m_animations{ std::move(other.m_animations) }, m_boneInfos{ std::move(other.m_boneInfos) },
-	m_name{ std::move(other.m_name) }, m_world{ other.m_world }, m_bones{ std::move(other.m_bones) },
-	m_models{ std::move(other.m_models) }
+	: m_resource{ std::move(other.m_resource) }, m_name{ std::move(other.m_name) }, m_world{ other.m_world },
+	m_skeleton{ std::move(other.m_skeleton) }, m_skeletonPose{ std::move(other.m_skeletonPose) }
 {
 
 }
@@ -105,14 +110,11 @@ SkeletalMesh& SkeletalMesh::operator=(SkeletalMesh&& other) noexcept
 {
 	if (this != &other)
 	{
-		m_meshes = std::move(other.m_meshes);
-		m_materials = std::move(other.m_materials);
-		m_animations = std::move(other.m_animations);
-		m_boneInfos = std::move(other.m_boneInfos);
+		m_resource = std::move(other.m_resource);
 		m_name = std::move(other.m_name);
 		m_world = other.m_world;
-		m_bones = std::move(other.m_bones);
-		m_models = std::move(other.m_models);
+		m_skeleton = std::move(other.m_skeleton);
+		m_skeletonPose = std::move(other.m_skeletonPose);
 	}
 
 	return *this;
@@ -125,12 +127,12 @@ const std::wstring& SkeletalMesh::GetName() const
 
 const std::vector<SkeletalMeshSection>& SkeletalMesh::GetMeshes() const
 {
-	return *m_meshes.get();
+	return m_resource->meshes;
 }
 
 const std::vector<Material>& SkeletalMesh::GetMaterials() const 
 {
-	return *m_materials.get();
+	return m_resource->materials;
 }
 
 const Matrix& SkeletalMesh::GetWorld() const 
@@ -138,12 +140,50 @@ const Matrix& SkeletalMesh::GetWorld() const
 	return m_world;
 }
 
-const std::array<Matrix, 128>& SkeletalMesh::GetModels() const 
+const std::array<Matrix, 32>& SkeletalMesh::GetSkeletonPose() const 
 {
-	return m_models;
+	return m_skeletonPose;
 }
 
 void SkeletalMesh::SetWorld(const Matrix& world) 
 {
 	m_world = world;
+}
+
+void SkeletalMesh::Update(float deltaTime)
+{
+	if (!m_resource->animations.empty())
+	{
+		m_animationProgressTime += deltaTime;
+		m_animationProgressTime = std::fmod(m_animationProgressTime, m_resource->animations[m_animationIndex].GetDuration());
+	}
+
+	for (auto& bone : m_skeleton)
+	{
+		if (bone.boneAnimation != nullptr)
+		{
+			DirectX::SimpleMath::Vector3 position, scale;
+			DirectX::SimpleMath::Quaternion rotation;
+			bone.boneAnimation->Evaluate(m_animationProgressTime, bone.lastKeyIndex, position, rotation, scale);
+			bone.local = Matrix::CreateScale(scale) * Matrix::CreateFromQuaternion(rotation) * Matrix::CreateTranslation(position);
+		}
+
+		if (bone.parentIndex != -1)
+		{
+			bone.model = bone.local * m_skeleton[bone.parentIndex].model;
+		}
+		else
+		{
+			bone.model = bone.local;
+		}
+
+		m_skeletonPose[bone.index] = bone.model.Transpose();
+	}
+}
+
+void SkeletalMesh::PlayAnimation(size_t index)
+{
+	m_animationIndex = index;
+	m_animationProgressTime = 0.0f;
+	m_resource->animations[index].SetupBoneAnimation(m_skeleton);
 }

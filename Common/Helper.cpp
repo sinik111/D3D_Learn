@@ -134,3 +134,8 @@ LeakCheck::~LeakCheck()
 	}
 }
 #endif // _DEBUG
+
+void Log(const std::string& log)
+{
+	OutputDebugStringA((log + '\n').c_str());
+}

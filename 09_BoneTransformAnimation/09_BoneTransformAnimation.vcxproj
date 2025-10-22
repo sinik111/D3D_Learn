@@ -126,21 +126,21 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
-    <ClCompile Include="Bone.cpp" />
     <ClCompile Include="BoneTransformAnimationApp.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="SkeletalMeshSection.cpp" />
+    <ClCompile Include="Skeleton.cpp" />
     <ClCompile Include="StaticMeshSection.cpp" />
     <ClCompile Include="StaticMesh.cpp" />
     <ClCompile Include="SkeletalMesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
-    <ClInclude Include="Bone.h" />
     <ClInclude Include="BoneTransformAnimationApp.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="SkeletalMeshSection.h" />
+    <ClInclude Include="Skeleton.h" />
     <ClInclude Include="StaticMeshSection.h" />
     <ClInclude Include="StaticMesh.h" />
     <ClInclude Include="SkeletalMesh.h" />

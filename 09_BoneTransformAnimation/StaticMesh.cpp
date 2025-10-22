@@ -48,8 +48,8 @@ StaticMesh::StaticMesh(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const
 	unsigned int importFlags = aiProcess_Triangulate |
 		aiProcess_GenNormals |
 		aiProcess_GenUVCoords |
-		aiProcess_CalcTangentSpace /*|
-		aiProcess_ConvertToLeftHanded*/ |
+		aiProcess_CalcTangentSpace |
+		aiProcess_ConvertToLeftHanded |
 		aiProcess_PreTransformVertices;
 
 	const aiScene* scene = importer.ReadFile(fileName, importFlags);

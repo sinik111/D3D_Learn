@@ -8,8 +8,10 @@
 
 #include "SkeletalMeshSection.h"
 #include "Material.h"
-#include "Bone.h"
-#include "Animation.h"
+#include "Skeleton.h"
+
+struct SkeletalMeshResource;
+struct aiNode;
 
 class SkeletalMesh
 {
@@ -18,18 +20,15 @@ private:
 
 private:
 	// resource
-	std::shared_ptr<std::vector<SkeletalMeshSection>> m_meshes;
-	std::shared_ptr<std::vector<Material>> m_materials;
-	std::shared_ptr<std::vector<Animation>> m_animations;
-	std::shared_ptr<std::vector<BoneInfo>> m_boneInfos;
+	std::shared_ptr<SkeletalMeshResource> m_resource;
 
 	// instance
 	std::wstring m_name;
 	Matrix m_world;
-	std::vector<Bone> m_bones;
-	std::array<Matrix, 128> m_models;
-	int m_animationIndex = 0;
-	float m_animationTimer = 0.0f;
+	std::vector<Bone> m_skeleton;
+	std::array<Matrix, 32> m_skeletonPose;
+	size_t m_animationIndex = 0;
+	float m_animationProgressTime = 0.0f;
 
 public:
 	SkeletalMesh(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const char* fileName, const Matrix& world = Matrix::Identity);
@@ -44,7 +43,11 @@ public:
 	const std::vector<SkeletalMeshSection>& GetMeshes() const;
 	const std::vector<Material>& GetMaterials() const;
 	const Matrix& GetWorld() const;
-	const std::array<Matrix, 128>& GetModels() const;
+	const std::array<Matrix, 32>& GetSkeletonPose() const;
 
 	void SetWorld(const Matrix& world);
+
+public:
+	void Update(float deltaTime);
+	void PlayAnimation(size_t index);
 };

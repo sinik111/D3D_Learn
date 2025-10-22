@@ -20,13 +20,17 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> m_blinnPhongVertexShader;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> m_blinnPhongPixelShader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_blinnPhongInputLayout;
-	Microsoft::WRL::ComPtr<ID3D11Buffer> m_constantBuffer;
+
+	Microsoft::WRL::ComPtr<ID3D11Buffer> m_transformConstantBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> m_environmentConstantBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> m_materialConstantBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> m_modelMatrixConstantBuffer;
 
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> m_samplerState;
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_rasterizerState;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_depthStencilState;
 
-	std::vector<SkeletalMesh> m_staticMeshes;
+	std::vector<SkeletalMesh> m_skeletalMeshes;
 
 	UINT m_vertexBufferStride = 0;
 	UINT m_vertexBufferOffset = 0;
@@ -36,8 +40,8 @@ private:
 	Matrix m_projection;
 
 	Matrix m_world;
-	Vector3 m_scale{ 50.0f, 50.0f, 50.0f };
-	Vector3 m_rotation{ 0.0f, 0.0f, 0.0f };
+	Vector3 m_scale{ 0.1f, 0.1f, 0.1f };
+	Vector3 m_rotation{ 0.0f, 180.0f, 0.0f };
 	Vector3 m_position{ 0.0f, 25.0f, 0.0f };
 	Vector4 m_materialAmbient{ 1.0f, 1.0f, 1.0f, 1.0f };
 	Vector4 m_materialSpecular{ 1.0f, 1.0f, 1.0f, 1.0f };
@@ -48,7 +52,7 @@ private:
 	Vector3 m_lightRotation{ -40.0f, 25.0f, 0.0f };
 	Vector4 m_lightColor{ 1.0f, 1.0f, 1.0f, 1.0f };
 	Vector4 m_ambientLightColor{ 0.1f, 0.1f, 0.1f, 1.0f };
-	Vector4 m_shininess{ 64.0f, 0.0f, 0.0f, 0.0f };
+	float m_shininess = 64.0f;
 
 public:
 	void Initialize() override;

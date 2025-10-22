@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <sstream>
 
 // std::string을 std::wstring으로 변환 (Windows API 기반)
 std::wstring ToWideCharStr(const std::string& multibyteStr);
@@ -22,3 +23,29 @@ void UpdateFPS();
 int GetLastFPS();
 
 float RandomFloat(float min, float max);
+
+void Log(const std::string& log);
+
+template<typename T>
+inline void LogImpl(std::ostringstream& oss, T arg)
+{
+    oss << arg;
+}
+
+template<typename T, typename...Args>
+inline void LogImpl(std::ostringstream& oss, T arg, Args...args)
+{
+    oss << arg;
+
+    LogImpl(oss, args...);
+}
+
+template<typename...Args>
+inline void Log(Args...args)
+{
+    std::ostringstream oss;
+
+    LogImpl(oss, args...);
+
+    Log(oss.str());
+}
