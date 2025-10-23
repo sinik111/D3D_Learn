@@ -27,7 +27,7 @@ cbuffer Material : register(b2)
 
 cbuffer ModelMatrix : register(b3)
 {
-    matrix g_modelMatrices[32];
+    matrix g_modelMatrices[128];
 }
 
 struct VS_INPUT

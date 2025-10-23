@@ -28,7 +28,7 @@ using Matrix = DirectX::SimpleMath::Matrix;
 static std::unordered_map<std::wstring, std::weak_ptr<SkeletalMeshResource>> s_resourceMap; // 간단한 리소스 매니저
 
 SkeletalMesh::SkeletalMesh(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const char* fileName, const Matrix& world)
-	: m_name{ std::filesystem::path(fileName).stem().wstring() }
+	: m_name{ std::filesystem::path(fileName).stem().wstring() }, m_world{ world }
 {
 	bool exist = false;
 

@@ -150,7 +150,7 @@ void BoneTransformAnimationApp::OnRender()
 		deviceContext->VSSetShader(m_blinnPhongVertexShader.Get(), nullptr, 0);
 		deviceContext->PSSetShader(m_blinnPhongPixelShader.Get(), nullptr, 0);
 
-		transformBuffer.world = m_world.Transpose();//skeletalMesh.GetWorld().Transpose();
+		transformBuffer.world = skeletalMesh.GetWorld().Transpose();
 
 		for (const auto& mesh : meshes)
 		{
@@ -304,13 +304,14 @@ void BoneTransformAnimationApp::InitializeScene()
 	auto device = m_graphicsDevice.GetDevice();
 
 	const char* fbxFileNames[]{
-		//"1CubeAnim.fbx",
-		"BoxHuman_o.fbx",
+		"1CubeAnim.fbx",
+		"BoxHuman.fbx",
+		"BouncingBall.fbx"
 	};
 
 	const size_t numFBXs = ARRAYSIZE(fbxFileNames);
 	const float radian = DirectX::XM_2PI / numFBXs;
-	const float radius = 300.0f;
+	const float radius = 100.0f;
 
 	m_skeletalMeshes.reserve(numFBXs);
 
@@ -318,7 +319,25 @@ void BoneTransformAnimationApp::InitializeScene()
 	{
 		Vector3 position{ radius * std::cos(radian * i), 0.0f, radius * std::sin(radian * i) };
 
-		m_skeletalMeshes.emplace_back(device, fbxFileNames[i], Matrix::CreateTranslation(position));
+		if (strcmp("1CubeAnim.fbx", fbxFileNames[i]) == 0)
+		{
+			m_skeletalMeshes.emplace_back(device, fbxFileNames[i],
+				Matrix::CreateScale(0.1f) * Matrix::CreateTranslation(position));
+		}
+		else if (strcmp("BouncingBall.fbx", fbxFileNames[i]) == 0)
+		{
+			m_skeletalMeshes.emplace_back(device, fbxFileNames[i],
+				Matrix::CreateScale(10.0f) * Matrix::CreateTranslation(position));
+		}
+		else if (strcmp("BoxHuman.fbx", fbxFileNames[i]) == 0)
+		{
+			m_skeletalMeshes.emplace_back(device, fbxFileNames[i],
+				Matrix::CreateScale(0.1f) * Matrix::CreateTranslation(position));
+		}
+		else
+		{
+			m_skeletalMeshes.emplace_back(device, fbxFileNames[i], Matrix::CreateTranslation(position));
+		}
 		m_skeletalMeshes.back().PlayAnimation(0);
 	}
 
