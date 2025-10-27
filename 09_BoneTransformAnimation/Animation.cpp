@@ -140,8 +140,9 @@ void Animation::SetupBoneAnimation(std::vector<Bone>& out) const
 {
 	for (auto& bone : out)
 	{
-		auto find = m_animMappingTable.find(bone.name);
+		bone.lastKeyIndex = LastKeyIndex{};
 
+		auto find = m_animMappingTable.find(bone.name);
 		if (find != m_animMappingTable.end())
 		{
 			bone.boneAnimation = &m_boneAnimations[find->second];

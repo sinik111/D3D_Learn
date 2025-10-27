@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="01_App">
+      <UniqueIdentifier>{5b03bdb2-dac2-4c98-803c-9afe10b5a98a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02_Mesh">
+      <UniqueIdentifier>{df7c4f00-6498-43d1-885f-a59f4e6fa9b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03_Shader">
+      <UniqueIdentifier>{b8e72d01-53d8-4eb8-87ab-56df406b3c6b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Animation.cpp">
+      <Filter>02_Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>02_Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeletalMesh.cpp">
+      <Filter>02_Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeletalMeshSection.cpp">
+      <Filter>02_Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Skeleton.cpp">
+      <Filter>02_Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="SkinningAnimationApp.cpp">
+      <Filter>01_App</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>01_App</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Animation.h">
+      <Filter>02_Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>02_Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletalMesh.h">
+      <Filter>02_Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletalMeshSection.h">
+      <Filter>02_Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Skeleton.h">
+      <Filter>02_Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="SkinningAnimationApp.h">
+      <Filter>01_App</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="BlinnPhongPixelShader.hlsl">
+      <Filter>03_Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="BlinnPhongVertexShader.hlsl">
+      <Filter>03_Shader</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shared.hlsli">
+      <Filter>03_Shader</Filter>
+    </None>
+  </ItemGroup>
+</Project>

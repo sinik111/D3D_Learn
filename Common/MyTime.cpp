@@ -1,27 +1,27 @@
 #include "MyTime.h"
 
-namespace MyTime
+namespace
 {
-    static TimePoint s_previousTime = Clock::now();
-    static TimePoint s_currentTime = Clock::now();
+    MyTime::TimePoint g_previousTime = MyTime::Clock::now();
+    MyTime::TimePoint g_currentTime = MyTime::Clock::now();
 
-    static float s_deltaTime = 0.0f;
+    float g_deltaTime = 0.0f;
 }
 
 void MyTime::Update()
 {
-    s_currentTime = Clock::now();
+    g_currentTime = Clock::now();
 
-    std::chrono::duration<float> duration(s_currentTime - s_previousTime);
+    std::chrono::duration<float> duration(g_currentTime - g_previousTime);
 
-    s_deltaTime = duration.count();
+    g_deltaTime = duration.count();
 
-    s_previousTime = s_currentTime;
+    g_previousTime = g_currentTime;
 }
 
 float MyTime::DeltaTime()
 {
-    return s_deltaTime;
+    return g_deltaTime;
 }
 
 MyTime::TimePoint MyTime::GetTimestamp()

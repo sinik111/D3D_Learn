@@ -26,7 +26,7 @@ private:
 	std::wstring m_name;
 	Matrix m_world;
 	std::vector<Bone> m_skeleton;
-	std::array<Matrix, 32> m_skeletonPose;
+	std::array<Matrix, 128> m_skeletonPose;
 	size_t m_animationIndex = 0;
 	float m_animationProgressTime = 0.0f;
 
@@ -43,7 +43,7 @@ public:
 	const std::vector<SkeletalMeshSection>& GetMeshes() const;
 	const std::vector<Material>& GetMaterials() const;
 	const Matrix& GetWorld() const;
-	const std::array<Matrix, 32>& GetSkeletonPose() const;
+	const std::array<Matrix, 128>& GetSkeletonPose() const;
 
 	void SetWorld(const Matrix& world);
 

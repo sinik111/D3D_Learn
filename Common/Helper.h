@@ -49,3 +49,6 @@ inline void Log(Args...args)
 
     Log(oss.str());
 }
+
+float ToRadian(float degree);
+float ToDegree(float radian);

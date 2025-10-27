@@ -58,7 +58,7 @@ void BoneTransformAnimationApp::Initialize()
 	WinApp::Initialize();
 
 	m_camera.SetSpeed(100.0f);
-	m_camera.SetPosition({ 0.0f, 70.0f, -200.0f });
+	m_camera.SetPosition({ 0.0f, 10.0f, -200.0f });
 	m_camera.SetFar(3000.0f);
 
 	Material::CreateDefaultTextureSRV(m_graphicsDevice.GetDevice());
@@ -72,13 +72,13 @@ void BoneTransformAnimationApp::OnUpdate()
 {
 	m_world =
 		Matrix::CreateScale(m_scale) *
-		Matrix::CreateRotationX(DirectX::XMConvertToRadians(m_rotation.x)) *
-		Matrix::CreateRotationY(DirectX::XMConvertToRadians(m_rotation.y)) *
+		Matrix::CreateRotationX(ToRadian(m_rotation.x)) *
+		Matrix::CreateRotationY(ToRadian(m_rotation.y)) *
 		Matrix::CreateTranslation(m_position);
 
 	m_lightRotationMatrix =
-		Matrix::CreateRotationX(DirectX::XMConvertToRadians(m_lightRotation.x)) *
-		Matrix::CreateRotationY(DirectX::XMConvertToRadians(m_lightRotation.y));
+		Matrix::CreateRotationX(ToRadian(m_lightRotation.x)) *
+		Matrix::CreateRotationY(ToRadian(m_lightRotation.y));
 
 	m_lightDirection = DirectX::XMVector3TransformNormal(m_originalLightDir, m_lightRotationMatrix);
 
@@ -201,11 +201,11 @@ void BoneTransformAnimationApp::RenderImGui()
 	m_camera.SetPosition(cameraPosition);
 
 	Vector3 cameraRotation = m_camera.GetRotation();
-	float cameraRotationBuffer[2]{ DirectX::XMConvertToDegrees(cameraRotation.y), DirectX::XMConvertToDegrees(cameraRotation.x) };
+	float cameraRotationBuffer[2]{ ToDegree(cameraRotation.y), ToDegree(cameraRotation.x) };
 
 	if (ImGui::DragFloat2("Yaw Pitch##1", cameraRotationBuffer))
 	{
-		m_camera.SetRotation({ DirectX::XMConvertToRadians(cameraRotationBuffer[1]), DirectX::XMConvertToRadians(cameraRotationBuffer[0]), cameraRotation.z });
+		m_camera.SetRotation({ ToRadian(cameraRotationBuffer[1]), ToRadian(cameraRotationBuffer[0]), cameraRotation.z });
 	}
 
 	float cameraFov = m_camera.GetFOV();
@@ -306,7 +306,7 @@ void BoneTransformAnimationApp::InitializeScene()
 	const char* fbxFileNames[]{
 		"1CubeAnim.fbx",
 		"BoxHuman.fbx",
-		"BouncingBall.fbx"
+		"BouncingBall.fbx",
 	};
 
 	const size_t numFBXs = ARRAYSIZE(fbxFileNames);
@@ -332,12 +332,13 @@ void BoneTransformAnimationApp::InitializeScene()
 		else if (strcmp("BoxHuman.fbx", fbxFileNames[i]) == 0)
 		{
 			m_skeletalMeshes.emplace_back(device, fbxFileNames[i],
-				Matrix::CreateScale(0.1f) * Matrix::CreateTranslation(position));
+				Matrix::CreateScale(0.1f) * Matrix::CreateRotationY(ToRadian(180.0f)) * Matrix::CreateTranslation(position));
 		}
 		else
 		{
 			m_skeletalMeshes.emplace_back(device, fbxFileNames[i], Matrix::CreateTranslation(position));
 		}
+
 		m_skeletalMeshes.back().PlayAnimation(0);
 	}
 
@@ -397,7 +398,7 @@ void BoneTransformAnimationApp::InitializeScene()
 	constantBufferDesc.ByteWidth = sizeof(MaterialBuffer);
 	device->CreateBuffer(&constantBufferDesc, nullptr, &m_materialConstantBuffer);
 
-	constantBufferDesc.ByteWidth = sizeof(Matrix) * 32;
+	constantBufferDesc.ByteWidth = sizeof(Matrix) * 128;
 	device->CreateBuffer(&constantBufferDesc, nullptr, &m_modelMatrixConstantBuffer);
 
 	// sampler

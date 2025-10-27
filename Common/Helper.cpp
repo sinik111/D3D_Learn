@@ -1,6 +1,7 @@
 #include "Helper.h"
 
 #include <Windows.h>
+#include <random>
 
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC
@@ -13,7 +14,18 @@
 #pragma comment(lib, "dxguid.lib")
 #endif // _DEBUG
 
+#include <directxtk/SimpleMath.h>
+
 #include "MyTime.h"
+
+namespace
+{
+	MyTime::TimePoint g_lastTimestamp = MyTime::Clock::now();
+	int g_frameCount;
+	int g_lastFPS;
+
+	std::mt19937 g_gen{ std::random_device{}() };
+}
 
 std::wstring ToWideCharStr(const std::string& multibyteStr)
 {
@@ -79,38 +91,6 @@ std::string ToMultibyteStr(const std::wstring& wideCharStr)
 	return str;
 }
 
-static MyTime::TimePoint s_lastTimestamp = MyTime::Clock::now();
-static int s_frameCount;
-static int s_lastFPS;
-
-void UpdateFPS()
-{
-	++s_frameCount;
-
-	if (MyTime::GetElapsedSeconds(s_lastTimestamp) > 1.0f)
-	{
-		s_lastTimestamp = MyTime::GetAccumulatedTime(s_lastTimestamp, 1);
-
-		s_lastFPS = s_frameCount;
-
-		s_frameCount = 0;
-	}
-}
-
-int GetLastFPS()
-{
-	return s_lastFPS;
-}
-
-#include <random>
-
-static std::mt19937 gen{ std::random_device{}() };
-
-float RandomFloat(float min, float max)
-{
-	return std::uniform_real_distribution<float>(min, max)(gen);
-}
-
 #ifdef _DEBUG
 LeakCheck::LeakCheck()
 {
@@ -134,7 +114,41 @@ LeakCheck::~LeakCheck()
 }
 #endif // _DEBUG
 
+void UpdateFPS()
+{
+	++g_frameCount;
+
+	if (MyTime::GetElapsedSeconds(g_lastTimestamp) > 1.0f)
+	{
+		g_lastTimestamp = MyTime::GetAccumulatedTime(g_lastTimestamp, 1);
+
+		g_lastFPS = g_frameCount;
+
+		g_frameCount = 0;
+	}
+}
+
+int GetLastFPS()
+{
+	return g_lastFPS;
+}
+
+float RandomFloat(float min, float max)
+{
+	return std::uniform_real_distribution<float>(min, max)(g_gen);
+}
+
 void Log(const std::string& log)
 {
 	OutputDebugStringA((log + '\n').c_str());
+}
+
+float ToRadian(float degree)
+{
+	return DirectX::XMConvertToRadians(degree);
+}
+
+float ToDegree(float radian)
+{
+	return DirectX::XMConvertToDegrees(radian);
 }

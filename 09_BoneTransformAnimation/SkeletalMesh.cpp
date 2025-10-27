@@ -148,7 +148,7 @@ const Matrix& SkeletalMesh::GetWorld() const
 	return m_world;
 }
 
-const std::array<Matrix, 32>& SkeletalMesh::GetSkeletonPose() const 
+const std::array<Matrix, 128>& SkeletalMesh::GetSkeletonPose() const 
 {
 	return m_skeletonPose;
 }

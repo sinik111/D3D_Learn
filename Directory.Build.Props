@@ -12,10 +12,10 @@
     <ItemDefinitionGroup>
         <ClCompile>
             <AdditionalIncludeDirectories>
-				$(VcpkgRoot)\installed\$(TripletStatic)\include;
-				$(VcpkgRoot)\installed\$(TripletDynamic)\include;
-				%(AdditionalIncludeDirectories)
-			</AdditionalIncludeDirectories>
+                $(VcpkgRoot)\installed\$(TripletStatic)\include;
+                $(VcpkgRoot)\installed\$(TripletDynamic)\include;
+                %(AdditionalIncludeDirectories)
+            </AdditionalIncludeDirectories>
         </ClCompile>
     </ItemDefinitionGroup>
 
@@ -23,18 +23,18 @@
     <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
         <Link>
             <AdditionalLibraryDirectories>
-				$(VcpkgRoot)\installed\$(TripletStatic)\debug\lib;
-				$(VcpkgRoot)\installed\$(TripletDynamic)\debug\lib;
-				%(AdditionalLibraryDirectories)
+                $(VcpkgRoot)\installed\$(TripletStatic)\debug\lib;
+                $(VcpkgRoot)\installed\$(TripletDynamic)\debug\lib;
+                %(AdditionalLibraryDirectories)
 			</AdditionalLibraryDirectories>
 			
             <!-- DX11 기준: directxtk.lib / directxtex.lib / imgui.lib + Assimp import lib -->
             <AdditionalDependencies>
-				directxtk.lib;
-				directxtex.lib;
-				imguid.lib;
-				assimp-vc143-mtd.lib;
-				%(AdditionalDependencies)
+                directxtk.lib;
+                directxtex.lib;
+                imguid.lib;
+                assimp-vc143-mtd.lib;
+                %(AdditionalDependencies)
 			</AdditionalDependencies>
         </Link>
 
@@ -55,16 +55,16 @@
     <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
         <Link>
             <AdditionalLibraryDirectories>
-				$(VcpkgRoot)\installed\$(TripletStatic)\lib;
-				$(VcpkgRoot)\installed\$(TripletDynamic)\lib;
-				%(AdditionalLibraryDirectories)
+                $(VcpkgRoot)\installed\$(TripletStatic)\lib;
+                $(VcpkgRoot)\installed\$(TripletDynamic)\lib;
+                %(AdditionalLibraryDirectories)
 			</AdditionalLibraryDirectories>
             <AdditionalDependencies>
-				directxtk.lib;
-				directxtex.lib;
-				imgui.lib;
-				assimp-vc143-mt.lib;
-				%(AdditionalDependencies)
+                directxtk.lib;
+                directxtex.lib;
+                imgui.lib;
+                assimp-vc143-mt.lib;
+                %(AdditionalDependencies)
 			</AdditionalDependencies>
         </Link>
 
