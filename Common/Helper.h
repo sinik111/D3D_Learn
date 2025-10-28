@@ -5,9 +5,11 @@
 
 // std::string을 std::wstring으로 변환 (Windows API 기반)
 std::wstring ToWideCharStr(const std::string& multibyteStr);
+std::wstring ToWideCharStr(const char* multibyteStr);
 
 // std::wstring을 std::string으로 변환 (Windows API 기반)
 std::string ToMultibyteStr(const std::wstring& wideCharStr);
+std::string ToMultibyteStr(const wchar_t* wideCharStr);
 
 #ifdef _DEBUG
 class LeakCheck

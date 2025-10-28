@@ -29,64 +29,68 @@ namespace
 
 std::wstring ToWideCharStr(const std::string& multibyteStr)
 {
-	if (multibyteStr.empty())
+	int length = static_cast<int>(multibyteStr.size());
+	if (length == 0)
 	{
-		return std::wstring();
+		return std::wstring{};
 	}
 
-	int count = MultiByteToWideChar(
-		CP_UTF8,
-		0,
-		multibyteStr.c_str(),
-		static_cast<int>(multibyteStr.size()),
-		nullptr,
-		0
-	);
+	int count = MultiByteToWideChar(CP_UTF8, 0, multibyteStr.c_str(), length, nullptr, 0);
 
 	std::wstring str(count, L'\0');
 
-	MultiByteToWideChar(
-		CP_UTF8,
-		0,
-		multibyteStr.c_str(),
-		static_cast<int>(multibyteStr.size()),
-		&str[0],
-		count
-	);
+	MultiByteToWideChar(CP_UTF8, 0, multibyteStr.c_str(), length, &str[0], count);
+
+	return str;
+}
+
+std::wstring ToWideCharStr(const char* multibyteStr)
+{
+	int length = static_cast<int>(strlen(multibyteStr));
+	if (length == 0)
+	{
+		return std::wstring{};
+	}
+
+	int count = MultiByteToWideChar(CP_UTF8, 0, multibyteStr, length, nullptr, 0);
+
+	std::wstring str(count, L'\0');
+
+	MultiByteToWideChar(CP_UTF8, 0, multibyteStr, length, &str[0], count);
 
 	return str;
 }
 
 std::string ToMultibyteStr(const std::wstring& wideCharStr)
 {
-	if (wideCharStr.empty())
+	int length = static_cast<int>(wideCharStr.size());
+	if (length == 0)
 	{
 		return std::string();
 	}
 
-	int count = WideCharToMultiByte(
-		CP_UTF8,
-		0,
-		wideCharStr.c_str(),
-		static_cast<int>(wideCharStr.size()),
-		nullptr,
-		0,
-		nullptr,
-		nullptr
-	);
+	int count = WideCharToMultiByte(CP_UTF8, 0, wideCharStr.c_str(), length, nullptr, 0, nullptr, nullptr);
 
 	std::string str(count, '\0');
 
-	WideCharToMultiByte(
-		CP_UTF8,
-		0,
-		wideCharStr.c_str(),
-		static_cast<int>(wideCharStr.size()),
-		&str[0],
-		count,
-		nullptr,
-		nullptr
-	);
+	WideCharToMultiByte(CP_UTF8, 0, wideCharStr.c_str(), length, &str[0], count, nullptr, nullptr);
+
+	return str;
+}
+
+std::string ToMultibyteStr(const wchar_t* wideCharStr)
+{
+	int length = static_cast<int>(wcslen(wideCharStr));
+	if (length == 0)
+	{
+		return std::string{};
+	}
+
+	int count = WideCharToMultiByte(CP_UTF8, 0, wideCharStr, length, nullptr, 0, nullptr, nullptr);
+
+	std::string str(count, '\0');
+
+	WideCharToMultiByte(CP_UTF8, 0, wideCharStr, length, &str[0], count, nullptr, nullptr);
 
 	return str;
 }

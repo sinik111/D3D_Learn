@@ -187,7 +187,6 @@ void SkinningAnimationApp::RenderImGui()
 	ImGui::NewFrame();
 
 	ImGui::Begin("Controller");
-
 	ImGui::SeparatorText("Camera");
 
 	Vector3 cameraPosition = m_camera.GetPosition();
@@ -377,10 +376,10 @@ void SkinningAnimationApp::InitializeScene()
 	constantBufferDesc.ByteWidth = sizeof(MaterialBuffer);
 	device->CreateBuffer(&constantBufferDesc, nullptr, &m_materialConstantBuffer);
 
-	constantBufferDesc.ByteWidth = sizeof(Matrix) * 128;
+	constantBufferDesc.ByteWidth = sizeof(Matrix) * MAX_BONE_NUM;
 	device->CreateBuffer(&constantBufferDesc, nullptr, &m_bonePoseConstantBuffer);
 
-	constantBufferDesc.ByteWidth = sizeof(Matrix) * 128;
+	constantBufferDesc.ByteWidth = sizeof(Matrix) * MAX_BONE_NUM;
 	device->CreateBuffer(&constantBufferDesc, nullptr, &m_boneOffsetConstantBuffer);
 	
 
@@ -401,7 +400,7 @@ void SkinningAnimationApp::InitializeScene()
 	m_camera.GetViewMatrix(m_view);
 
 	m_projection = DirectX::XMMatrixPerspectiveFovLH(
-		DirectX::XMConvertToRadians(m_camera.GetFOV()),
+		ToRadian(m_camera.GetFOV()),
 		static_cast<float>(m_width) / m_height,
 		m_camera.GetNear(),
 		m_camera.GetFar());

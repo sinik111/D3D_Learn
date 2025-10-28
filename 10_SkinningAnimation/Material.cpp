@@ -25,7 +25,7 @@ Material::Material(const Microsoft::WRL::ComPtr<ID3D11Device>& device, aiMateria
 
 		DirectX::CreateWICTextureFromFile(device.Get(), fileName.c_str(), nullptr, &m_textureSRVs.diffuseTextureSRV);
 	}
-	else if (material->Get(AI_MATKEY_COLOR_DIFFUSE, aiColor) == AI_SUCCESS)
+	else if (aiReturn_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, aiColor))
 	{
 		unsigned char color[4]{
 			static_cast<unsigned char>(aiColor.r * 255),
@@ -183,7 +183,6 @@ void Material::CreateDefaultTextureSRV(const Microsoft::WRL::ComPtr<ID3D11Device
 Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> Material::CreateDiffuseTextureSRV(
 	const Microsoft::WRL::ComPtr<ID3D11Device>& device, unsigned char color[4])
 {
-
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> diffuseTextureSRV;
 
 	D3D11_TEXTURE2D_DESC texDesc{};

@@ -51,7 +51,7 @@ SkeletalMesh::SkeletalMesh(const Microsoft::WRL::ComPtr<ID3D11Device>& device, c
 		m_resource = std::make_shared<SkeletalMeshResource>();
 
 		Assimp::Importer importer;
-		importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, 0);
+		importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
 
 		unsigned int importFlags =
 			aiProcess_Triangulate |
@@ -71,8 +71,7 @@ SkeletalMesh::SkeletalMesh(const Microsoft::WRL::ComPtr<ID3D11Device>& device, c
 
 		for (unsigned int i = 0; i < scene->mNumMeshes; ++i)
 		{
-			const aiMesh* mesh = scene->mMeshes[i];
-			m_resource->meshes.emplace_back(device, mesh, m_resource->skeletonInfo.get());
+			m_resource->meshes.emplace_back(device, scene->mMeshes[i], m_resource->skeletonInfo.get());
 		}
 
 		// material »ý¼º
