@@ -37,6 +37,11 @@ struct Vertex
 	}
 };
 
+struct PosVertex
+{
+	DirectX::SimpleMath::Vector3 position;
+};
+
 struct BoneWeightVertex
 {
 	using Vector2 = DirectX::SimpleMath::Vector2;

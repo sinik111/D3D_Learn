@@ -429,7 +429,8 @@ void FBXLoadingApp::InitializeScene()
 		"IcoSphere.fbx",
 		"turtle.fbx",
 		"Grass.fbx",
-		"Tree.fbx"
+		"Tree.fbx",
+		"Teapot.fbx"
 	};
 
 	const size_t numFBXs = ARRAYSIZE(fbxFileNames);
@@ -489,6 +490,14 @@ void FBXLoadingApp::InitializeScene()
 			position.y = 100.0f;
 
 			m_models.emplace_back(device, fbxFileNames[i], Matrix::CreateTranslation(position));
+
+			continue;
+		}
+		else if (strcmp(fbxFileNames[i], "Teapot.fbx") == 0)
+		{
+			position.y = 100.0f;
+
+			m_models.emplace_back(device, fbxFileNames[i], Matrix::CreateScale(0.01f) * Matrix::CreateTranslation(position));
 
 			continue;
 		}

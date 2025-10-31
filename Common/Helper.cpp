@@ -142,9 +142,14 @@ float RandomFloat(float min, float max)
 	return std::uniform_real_distribution<float>(min, max)(g_gen);
 }
 
+void __Log(const std::string& log)
+{
+	OutputDebugStringA(log.c_str());
+}
+
 void Log(const std::string& log)
 {
-	OutputDebugStringA((log + '\n').c_str());
+	__Log(log);
 }
 
 float ToRadian(float degree)

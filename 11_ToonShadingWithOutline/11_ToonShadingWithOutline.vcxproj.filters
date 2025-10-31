@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="01_App">
+      <UniqueIdentifier>{d44eb06b-5711-4d12-84c0-22bf6d65ff0a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02_Mesh">
+      <UniqueIdentifier>{23bdc38c-645b-4e48-99a4-4f8640270fc0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03_Shader">
+      <UniqueIdentifier>{a04e5d93-5544-4d85-981c-9791df799779}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="PhongToonPixelShader.hlsl">
+      <Filter>03_Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="PhongToonVertexShader.hlsl">
+      <Filter>03_Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="OutlineVertexShader.hlsl">
+      <Filter>03_Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="OutlinePixelShader.hlsl">
+      <Filter>03_Shader</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ToonShadingWithOutlineApp.cpp">
+      <Filter>01_App</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>01_App</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>02_Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="StaticMeshSection.cpp">
+      <Filter>02_Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="StaticMesh.cpp">
+      <Filter>02_Mesh</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ToonShadingWithOutlineApp.h">
+      <Filter>01_App</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>02_Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticMeshSection.h">
+      <Filter>02_Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticMesh.h">
+      <Filter>02_Mesh</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shared.hlsli">
+      <Filter>03_Shader</Filter>
+    </None>
+  </ItemGroup>
+</Project>

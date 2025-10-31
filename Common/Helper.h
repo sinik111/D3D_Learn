@@ -26,30 +26,33 @@ int GetLastFPS();
 
 float RandomFloat(float min, float max);
 
+void __Log(const std::string& log);
 void Log(const std::string& log);
 
 template<typename T>
-inline void LogImpl(std::ostringstream& oss, T arg)
+inline void LogImpl(std::ostringstream& oss, T&& arg)
 {
-    oss << arg;
+    oss << std::forward<T>(arg);
 }
 
 template<typename T, typename...Args>
-inline void LogImpl(std::ostringstream& oss, T arg, Args...args)
+inline void LogImpl(std::ostringstream& oss, T&& arg, Args&&...args)
 {
-    oss << arg << ' ';
+    oss << std::forward<T>(arg);
 
-    LogImpl(oss, args...);
+    LogImpl(oss, std::forward<Args>(args)...);
 }
 
 template<typename...Args>
-inline void Log(Args...args)
+inline void Log(Args&&...args)
 {
     std::ostringstream oss;
 
-    LogImpl(oss, args...);
+    LogImpl(oss, std::forward<Args>(args)...);
 
-    Log(oss.str());
+    oss << '\n';
+
+    __Log(oss.str());
 }
 
 float ToRadian(float degree);

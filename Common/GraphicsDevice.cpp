@@ -158,6 +158,11 @@ Microsoft::WRL::ComPtr<ID3D11RenderTargetView> GraphicsDevice::GetRenderTargetVi
 	return m_d3d11RenderTargetView;
 }
 
+Microsoft::WRL::ComPtr<ID3D11DepthStencilView> GraphicsDevice::GetDepthStencilView() const
+{
+	return m_d3d11DepthStencilView;
+}
+
 void GraphicsDevice::BeginDraw(const DirectX::SimpleMath::Color& clearColor)
 {
 #ifdef USE_FLIPMODE

@@ -26,6 +26,7 @@ public:
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> GetDeviceContext() const;
 	Microsoft::WRL::ComPtr<IDXGISwapChain1> GetSwapChain() const;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> GetRenderTargetView() const;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> GetDepthStencilView() const;
 
 	void BeginDraw(const DirectX::SimpleMath::Color& clearColor);
 	void EndDraw();
