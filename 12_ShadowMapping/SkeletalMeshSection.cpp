@@ -8,7 +8,7 @@
 #include "Skeleton.h"
 
 SkeletalMeshSection::SkeletalMeshSection(const Microsoft::WRL::ComPtr<ID3D11Device>& device,
-	const aiMesh* mesh, SkeletonInfo* skeletonInfo)
+	const aiMesh* mesh, SkeletonInfo* skeletonInfo, bool isRigid)
 	: m_name{ ToWideCharStr(mesh->mName.C_Str()) }, m_materialIndex{ mesh->mMaterialIndex }
 {
 	const unsigned int numVertices = mesh->mNumVertices;
@@ -39,26 +39,29 @@ SkeletalMeshSection::SkeletalMeshSection(const Microsoft::WRL::ComPtr<ID3D11Devi
 		indices.push_back(mesh->mFaces[i].mIndices[2]);
 	}
 
-	const unsigned int numBones = mesh->mNumBones;
-	m_boneReferences.reserve(numBones);
-
-	for (unsigned int i = 0; i < numBones; ++i)
+	if (isRigid)
 	{
-		const aiBone* bone = mesh->mBones[i];
-		const std::wstring boneName = ToWideCharStr(bone->mName.C_Str());
+		const unsigned int numBones = mesh->mNumBones;
+		m_boneReferences.reserve(numBones);
 
-		const unsigned int boneIndex = skeletonInfo->GetBoneIndexByBoneName(boneName);
-
-		skeletonInfo->SetBoneOffset(DirectX::SimpleMath::Matrix(&bone->mOffsetMatrix.a1), boneIndex);
-
-		m_boneReferences.push_back(boneIndex);
-
-		for (unsigned int j = 0; j < bone->mNumWeights; ++j)
+		for (unsigned int i = 0; i < numBones; ++i)
 		{
-			unsigned int vertexId = bone->mWeights[j].mVertexId;
-			float weight = bone->mWeights[j].mWeight;
+			const aiBone* bone = mesh->mBones[i];
+			const std::wstring boneName = ToWideCharStr(bone->mName.C_Str());
 
-			vertices[vertexId].AddBoneData(boneIndex, weight);
+			const unsigned int boneIndex = skeletonInfo->GetBoneIndexByBoneName(boneName);
+
+			skeletonInfo->SetBoneOffset(DirectX::SimpleMath::Matrix(&bone->mOffsetMatrix.a1), boneIndex);
+
+			m_boneReferences.push_back(boneIndex);
+
+			for (unsigned int j = 0; j < bone->mNumWeights; ++j)
+			{
+				unsigned int vertexId = bone->mWeights[j].mVertexId;
+				float weight = bone->mWeights[j].mWeight;
+
+				vertices[vertexId].AddBoneData(boneIndex, weight);
+			}
 		}
 	}
 

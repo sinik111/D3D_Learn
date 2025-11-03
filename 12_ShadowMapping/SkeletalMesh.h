@@ -28,6 +28,7 @@ private:
 	BoneMatrixArray m_skeletonPose;
 	size_t m_animationIndex = 0;
 	float m_animationProgressTime = 0.0f;
+	bool m_isRigid = false;
 
 public:
 	SkeletalMesh(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const std::string& fileName, const Matrix& world = Matrix::Identity);
@@ -39,6 +40,7 @@ public:
 	const Matrix& GetWorld() const;
 	const BoneMatrixArray& GetSkeletonPose() const;
 	const BoneMatrixArray& GetBoneOffsets() const;
+	bool IsRigid() const;
 
 	void SetWorld(const Matrix& world);
 

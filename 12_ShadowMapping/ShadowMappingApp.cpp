@@ -1,4 +1,4 @@
-#include "SkinningAnimationApp.h"
+#include "ShadowMappingApp.h"
 
 #include <cmath>
 #include <imgui.h>
@@ -46,7 +46,7 @@ struct MaterialBuffer
 	float __pad1[3];
 };
 
-void SkinningAnimationApp::Initialize()
+void ShadowMappingApp::Initialize()
 {
 	m_width = 1600;
 	m_height = 900;
@@ -64,7 +64,7 @@ void SkinningAnimationApp::Initialize()
 	InitializeScene();
 }
 
-void SkinningAnimationApp::OnUpdate()
+void ShadowMappingApp::OnUpdate()
 {
 	m_world =
 		Matrix::CreateScale(m_scale) *
@@ -84,7 +84,7 @@ void SkinningAnimationApp::OnUpdate()
 	}
 }
 
-void SkinningAnimationApp::OnRender()
+void ShadowMappingApp::OnRender()
 {
 	// camera
 	m_camera.GetViewMatrix(m_view);
@@ -169,14 +169,14 @@ void SkinningAnimationApp::OnRender()
 	m_graphicsDevice.EndDraw();
 }
 
-void SkinningAnimationApp::OnShutdown()
+void ShadowMappingApp::OnShutdown()
 {
 	ShutdownImGui();
 
 	Material::DestroyDefaultTextureSRV();
 }
 
-void SkinningAnimationApp::RenderImGui()
+void ShadowMappingApp::RenderImGui()
 {
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
@@ -284,7 +284,7 @@ void SkinningAnimationApp::RenderImGui()
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
 
-void SkinningAnimationApp::InitializeImGui()
+void ShadowMappingApp::InitializeImGui()
 {
 	IMGUI_CHECKVERSION();
 
@@ -294,29 +294,57 @@ void SkinningAnimationApp::InitializeImGui()
 	ImGui_ImplDX11_Init(m_graphicsDevice.GetDevice().Get(), m_graphicsDevice.GetDeviceContext().Get());
 }
 
-void SkinningAnimationApp::InitializeScene()
+void ShadowMappingApp::InitializeScene()
 {
 	auto device = m_graphicsDevice.GetDevice();
 
-	const std::string fbxFileNames[]{
+	const std::string staticFbxFileNames[]{
 		"SkinningTest.fbx",
 		"Zombie_Run.fbx"
 	};
 
-	const size_t numFBXs = ARRAYSIZE(fbxFileNames);
+	const std::string skeletalFbxFileNames[]{
+		"SkinningTest.fbx",
+		"Zombie_Run.fbx"
+	};
+
+	const size_t numFBXs = ARRAYSIZE(skeletalFbxFileNames) + ARRAYSIZE(staticFbxFileNames);
 	const float radian = DirectX::XM_2PI / numFBXs;
 	const float radius = 100.0f;
 
-	m_skeletalMeshes.reserve(numFBXs);
+	size_t index = 0;
 
-	for (size_t i = 0; i < numFBXs; ++i)
+	// create static mesh
+	for (size_t i = 0; i < ARRAYSIZE(staticFbxFileNames); ++i)
 	{
-		Vector3 position{ radius * std::cos(radian * i), 0.0f, radius * std::sin(radian * i) };
-		//Vector3 position{ 0.0f, 0.0f, 0.0f };
+		Vector3 position{ radius * std::cos(radian * index), 0.0f, radius * std::sin(radian * index) };
 
-		m_skeletalMeshes.emplace_back(device, fbxFileNames[i], Matrix::CreateTranslation(position));
-		m_skeletalMeshes.back().PlayAnimation(0);
+		m_staticMeshes.emplace_back(device, staticFbxFileNames[i], Matrix::CreateTranslation(position));
+
+		++index;
 	}
+
+	// create skeletal mesh
+	for (size_t i = 0; i < ARRAYSIZE(skeletalFbxFileNames); ++i)
+	{
+		Vector3 position{ radius * std::cos(radian * index), 0.0f, radius * std::sin(radian * index) };
+
+		SkeletalMesh mesh{ device, skeletalFbxFileNames[i], Matrix::CreateTranslation(position) };
+		if (mesh.IsRigid())
+		{
+			m_rigidAnimMeshes.push_back(std::move(mesh));
+			m_rigidAnimMeshes.back().PlayAnimation(0);
+		}
+		else
+		{
+			m_skinningAnimMeshes.push_back(std::move(mesh));
+			m_skinningAnimMeshes.back().PlayAnimation(0);
+		}
+
+		++index;
+	}
+
+	
 
 	// object
 	{
@@ -334,23 +362,28 @@ void SkinningAnimationApp::InitializeScene()
 		};
 
 		ComPtr<ID3DBlob> vertexShaderBuffer;
-		GraphicsDevice::CompileShaderFromFile(L"BlinnPhongVertexShader.hlsl", "main", "vs_5_0", vertexShaderBuffer);
+		GraphicsDevice::CompileShaderFromFile(L"SkinningVertexShader.hlsl", "main", "vs_5_0", vertexShaderBuffer);
 
 		device->CreateInputLayout(
 			layout,
 			ARRAYSIZE(layout),
 			vertexShaderBuffer->GetBufferPointer(),
 			vertexShaderBuffer->GetBufferSize(),
-			&m_blinnPhongInputLayout
+			&m_skinningInputLayout
 		);
 
 		device->CreateVertexShader(
 			vertexShaderBuffer->GetBufferPointer(),
 			vertexShaderBuffer->GetBufferSize(),
 			nullptr,
-			&m_blinnPhongVertexShader
+			&m_skinningAnimVertexShader
 		);
 
+
+	}
+
+	// blinn-phong pixel shader
+	{
 		ComPtr<ID3DBlob> pixelShaderBuffer;
 		GraphicsDevice::CompileShaderFromFile(L"BlinnPhongPixelShader.hlsl", "main", "ps_5_0", pixelShaderBuffer);
 
@@ -359,6 +392,19 @@ void SkinningAnimationApp::InitializeScene()
 			pixelShaderBuffer->GetBufferSize(),
 			nullptr,
 			&m_blinnPhongPixelShader
+		);
+	}
+
+	// skybox pixel shader
+	{
+		ComPtr<ID3DBlob> pixelShaderBuffer;
+		GraphicsDevice::CompileShaderFromFile(L"SkyboxPixelShader.hlsl", "main", "ps_5_0", pixelShaderBuffer);
+
+		device->CreatePixelShader(
+			pixelShaderBuffer->GetBufferPointer(),
+			pixelShaderBuffer->GetBufferSize(),
+			nullptr,
+			&m_skyboxPixelShader
 		);
 	}
 
@@ -395,8 +441,6 @@ void SkinningAnimationApp::InitializeScene()
 
 	device->CreateSamplerState(&samplerDesc, &m_samplerState);
 
-	m_world = Matrix::Identity;
-
 	m_camera.GetViewMatrix(m_view);
 
 	m_projection = DirectX::XMMatrixPerspectiveFovLH(
@@ -406,14 +450,14 @@ void SkinningAnimationApp::InitializeScene()
 		m_camera.GetFar());
 }
 
-void SkinningAnimationApp::ShutdownImGui()
+void ShadowMappingApp::ShutdownImGui()
 {
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 }
 
-LRESULT SkinningAnimationApp::MessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT ShadowMappingApp::MessageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
 	{

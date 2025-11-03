@@ -18,7 +18,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="SkinningAnimationApp.cpp">
+    <ClCompile Include="ShadowMappingApp.cpp">
       <Filter>01_App</Filter>
     </ClCompile>
     <ClCompile Include="Main.cpp">
@@ -47,7 +47,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SkinningAnimationApp.h">
+    <ClInclude Include="ShadowMappingApp.h">
       <Filter>01_App</Filter>
     </ClInclude>
     <ClInclude Include="Material.h">
@@ -73,10 +73,22 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="BlinnPhongVertexShader.hlsl">
+    <FxCompile Include="SkinningAnimVertexShader.hlsl">
       <Filter>03_Shader</Filter>
     </FxCompile>
     <FxCompile Include="BlinnPhongPixelShader.hlsl">
+      <Filter>03_Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="RigidAnimVertexShader.hlsl">
+      <Filter>03_Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVertexShader.hlsl">
+      <Filter>03_Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="SkyboxVertexShader.hlsl">
+      <Filter>03_Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="SkyboxPixelShader.hlsl">
       <Filter>03_Shader</Filter>
     </FxCompile>
   </ItemGroup>

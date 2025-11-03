@@ -19,7 +19,7 @@ private:
 	UINT m_indexCount = 0;
 
 public:
-	SkeletalMeshSection(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const aiMesh* mesh, SkeletonInfo* skeletonInfo);
+	SkeletalMeshSection(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const aiMesh* mesh, SkeletonInfo* skeletonInfo, bool isRigid);
 
 public:
 	const Microsoft::WRL::ComPtr<ID3D11Buffer>& GetVertexBuffer() const;

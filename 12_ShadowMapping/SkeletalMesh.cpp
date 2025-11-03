@@ -66,12 +66,17 @@ SkeletalMesh::SkeletalMesh(const Microsoft::WRL::ComPtr<ID3D11Device>& device, c
 		// bone 持失
 		m_resource->skeletonInfo = std::make_unique<SkeletonInfo>(scene);
 
+		if (scene->mMeshes[0]->mNumBones == 0)
+		{
+			m_isRigid = true;
+		}
+
 		// mesh sections 持失
 		m_resource->meshes.reserve(scene->mNumMeshes);
 
 		for (unsigned int i = 0; i < scene->mNumMeshes; ++i)
 		{
-			m_resource->meshes.emplace_back(device, scene->mMeshes[i], m_resource->skeletonInfo.get());
+			m_resource->meshes.emplace_back(device, scene->mMeshes[i], m_resource->skeletonInfo.get(), m_isRigid);
 		}
 
 		// material 持失
@@ -125,6 +130,11 @@ const BoneMatrixArray& SkeletalMesh::GetSkeletonPose() const
 const BoneMatrixArray& SkeletalMesh::GetBoneOffsets() const
 {
 	return m_resource->skeletonInfo->GetBoneOffsets();
+}
+
+bool SkeletalMesh::IsRigid() const
+{
+	return m_isRigid;
 }
 
 void SkeletalMesh::SetWorld(const Matrix& world) 

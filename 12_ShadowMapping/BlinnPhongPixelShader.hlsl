@@ -12,11 +12,12 @@ float4 main(PS_INPUT input) : SV_Target
     float4 texNormColor = g_texNormal.Sample(g_samLinear, input.tex);
     float4 texSpecColor = g_texSpecular.Sample(g_samLinear, input.tex);
     float4 texOpacColor = g_texOpacity.Sample(g_samLinear, input.tex);
+    float4 texEmsvColor = g_texEmissive.Sample(g_samLinear, input.tex);
     
     clip(texOpacColor.a - 0.5f);
     
     // emissive
-    float4 emissive = g_texEmissive.Sample(g_samLinear, input.tex);
+    float4 emissive = texEmsvColor;
     
     // normal
     float3 norm = normalize(input.norm);
@@ -31,14 +32,15 @@ float4 main(PS_INPUT input) : SV_Target
     float4 ambient = texDiffColor * g_materialAmbient * g_ambientLightColor;
     
     // diffuse
-    float diffuseScalar = max(dot(worldNorm, -g_lightDir.xyz), 0.0f);
-    float4 diffuse = texDiffColor * g_lightColor * diffuseScalar;
+    float diffuseIntensity = saturate(dot(worldNorm, -g_lightDir.xyz));
+    float4 diffuse = texDiffColor * g_lightColor * diffuseIntensity;
     
     // specular
     float3 viewDir = normalize(g_cameraPos.xyz - input.worldPos);
     float3 halfVector = normalize(-g_lightDir.xyz + viewDir);
-    float specularScalar = max(dot(worldNorm, halfVector), 0.0f) * step(0.000001f, max(dot(norm, -g_lightDir.xyz), 0.0f));
-    float4 specular = texSpecColor * g_materialSpecular * g_lightColor * pow(specularScalar, g_shininess.x);
+    float nDotH = saturate(dot(worldNorm, halfVector));
+    float specularIntensity = diffuseIntensity > 0.0f ? pow(nDotH, g_shininess.x) : 0.0f;
+    float4 specular = texSpecColor * g_materialSpecular * g_lightColor * specularIntensity;
     
     float4 finalColor = saturate(diffuse + ambient + specular + emissive);
     finalColor.a = texOpacColor.a;

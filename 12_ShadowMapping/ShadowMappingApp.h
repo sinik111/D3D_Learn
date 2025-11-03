@@ -6,9 +6,10 @@
 #include <d3d11.h>
 #include <directxtk/SimpleMath.h>
 
+#include "StaticMesh.h"
 #include "SkeletalMesh.h"
 
-class SkinningAnimationApp :
+class ShadowMappingApp :
 	public WinApp
 {
 private:
@@ -16,9 +17,14 @@ private:
 	using Vector4 = DirectX::SimpleMath::Vector4;
 	using Matrix = DirectX::SimpleMath::Matrix;
 
-	Microsoft::WRL::ComPtr<ID3D11VertexShader> m_blinnPhongVertexShader;
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> m_basicVertexShader;
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> m_rigidAnimVertexShader;
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> m_skinningAnimVertexShader;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_commonInputLayout;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_skinningInputLayout;
+
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> m_blinnPhongPixelShader;
-	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_blinnPhongInputLayout;
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> m_skyboxPixelShader;
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_transformConstantBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_environmentConstantBuffer;
@@ -27,10 +33,12 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_boneOffsetConstantBuffer;
 
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> m_samplerState;
-	Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_rasterizerState;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_depthStencilState;
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_skyboxRSState;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_skyboxDSState;
 
-	std::vector<SkeletalMesh> m_skeletalMeshes;
+	std::vector<StaticMesh> m_staticMeshes;
+	std::vector<SkeletalMesh> m_rigidAnimMeshes;
+	std::vector<SkeletalMesh> m_skinningAnimMeshes;
 
 	UINT m_vertexBufferStride = 0;
 	UINT m_vertexBufferOffset = 0;
@@ -39,10 +47,6 @@ private:
 	Matrix m_view;
 	Matrix m_projection;
 
-	Matrix m_world;
-	Vector3 m_scale{ 0.1f, 0.1f, 0.1f };
-	Vector3 m_rotation{ 0.0f, 180.0f, 0.0f };
-	Vector3 m_position{ 0.0f, 25.0f, 0.0f };
 	Vector4 m_materialAmbient{ 1.0f, 1.0f, 1.0f, 1.0f };
 	Vector4 m_materialSpecular{ 1.0f, 1.0f, 1.0f, 1.0f };
 

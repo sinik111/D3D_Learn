@@ -2,7 +2,7 @@
 
 #include "../Common/Helper.h"
 
-#include "SkinningAnimationApp.h"
+#include "ShadowMappingApp.h"
 
 int APIENTRY wWinMain(
     _In_ HINSTANCE hInstance,
@@ -14,7 +14,7 @@ int APIENTRY wWinMain(
 	LeakCheck lc;
 #endif // _DEBUG
 
-	SkinningAnimationApp app;
+	ShadowMappingApp app;
 
 	app.Initialize();
 	app.Run();
