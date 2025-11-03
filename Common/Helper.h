@@ -2,6 +2,7 @@
 
 #include <string>
 #include <sstream>
+#include <type_traits>
 
 // std::string을 std::wstring으로 변환 (Windows API 기반)
 std::wstring ToWideCharStr(const std::string& multibyteStr);
@@ -29,7 +30,13 @@ float RandomFloat(float min, float max);
 void __Log(const std::string& log);
 void Log(const std::string& log);
 
-template<typename T>
+template<typename T, typename = std::enable_if_t<std::is_function_v<std::decay_t<T>>>, typename = void>
+inline void LogImpl(std::ostringstream& oss, T arg)
+{
+    oss << arg;
+}
+
+template<typename T, typename = std::enable_if_t<!std::is_function_v<std::decay_t<T>>>>
 inline void LogImpl(std::ostringstream& oss, T&& arg)
 {
     oss << std::forward<T>(arg);
@@ -38,7 +45,7 @@ inline void LogImpl(std::ostringstream& oss, T&& arg)
 template<typename T, typename...Args>
 inline void LogImpl(std::ostringstream& oss, T&& arg, Args&&...args)
 {
-    oss << std::forward<T>(arg);
+    LogImpl(oss, std::forward<T>(arg));
 
     LogImpl(oss, std::forward<Args>(args)...);
 }
@@ -48,7 +55,10 @@ inline void Log(Args&&...args)
 {
     std::ostringstream oss;
 
-    LogImpl(oss, std::forward<Args>(args)...);
+    if constexpr (sizeof...(Args) > 0)
+    {
+        LogImpl(oss, std::forward<Args>(args)...);
+    }
 
     oss << '\n';
 
