@@ -1,34 +1,36 @@
 #include "Shared.hlsli"
 
+SamplerState g_samPoint : register(s0);
+
+Texture2D g_texRamp : register(t0);
+
 float4 main(PS_INPUT input) : SV_Target
 {
-    // normal
-    float3 norm = normalize(input.norm);
-    float3 tan = normalize(input.tan);
-    float3 binorm = normalize(input.binorm);
-    float3x3 tbnMatrix = float3x3(tan, binorm, norm);
+    float3 N = normalize(input.normal);
     
-    float3 texNorm = DecodeNormal(texNormColor.rgb);
-    float3 worldNorm = normalize(mul(texNorm, tbnMatrix));
+    float3 V = normalize(-input.viewPos);
     
-    // ambient
-    float4 ambient = texDiffColor * materialAmbient * ambientLightColor;
+    float3 L = normalize(input.viewLightDir);
     
-    // diffuse
-    float diffuseScalar = max(dot(worldNorm, -lightDir.xyz), 0.0f);
-    float4 diffuse = texDiffColor * lightColor * diffuseScalar;
+    float3 R = 2.0f * dot(N, L) * N - L;
     
-    // specular
-    float3 viewDir = normalize(cameraPos.xyz - input.worldPos);
-    float3 halfVector = normalize(-lightDir.xyz + viewDir);
-    float specularScalar = max(dot(worldNorm, halfVector), 0.0f) * step(0.000001f, max(dot(norm, -lightDir.xyz), 0.0f));
-    float4 specular = texSpecColor * materialSpecular * lightColor * pow(specularScalar, shininess.x);
+    float4 ambient = g_materialAmbient * g_ambientLightColor;
     
-    // emissive
-    float4 emissive = texEmissive.Sample(samLinear, input.tex);
+    float diffuseIntensity = saturate(dot(N, L));
     
-    float4 finalColor = saturate(diffuse + ambient + specular + emissive);
-    finalColor.a = texOpacColor.a;
+    float2 rampUV = float2(diffuseIntensity, 0.5f);
+    float4 rampColor = g_texRamp.Sample(g_samPoint, rampUV);
     
-    return finalColor;
+    float4 diffuse = rampColor * g_materialDiffuse * g_lightColor * diffuseIntensity;
+    
+    float specularIntensity = diffuseIntensity > 0.0f ? pow(saturate(dot(R, V)), g_shininess) : 0.0f;
+    float4 specular = g_materialSpecular * g_lightColor * specularIntensity;
+    
+    float4 emissive = 0.0f;
+    if (input.localPos.y > g_emissivePosition)
+    {
+        emissive = g_materialEmissive;
+    }
+   
+    return saturate(ambient + diffuse + specular + emissive);
 }

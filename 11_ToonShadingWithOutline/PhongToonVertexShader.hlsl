@@ -4,13 +4,20 @@ PS_INPUT main(VS_INPUT input)
 {
     PS_INPUT output = (PS_INPUT)0;
     
-    output.pos = mul(float4(input.pos, 1.0f), world);
-    output.worldPos = output.pos.xyz;
-    output.pos = mul(output.pos, view);
-    output.pos = mul(output.pos, projection);
+    float4x4 worldView = mul(g_world, g_view);
+    float4x4 worldViewProjection = mul(worldView, g_projection);
     
-    output.norm = mul(input.norm, (float3x3) world);
-    output.tex = input.tex;
+    output.position = mul(float4(input.position, 1.0f), worldViewProjection);
+    
+    output.viewPos = mul(float4(input.position, 1.0f), worldView).xyz;
+    
+    output.viewLightDir = normalize(mul(-g_lightDirection, (float3x3) g_view));
+    
+    output.normal = normalize(mul(input.normal, (float3x3) worldView));
+    
+    output.texCoord = input.texCoord;
+    
+    output.localPos = input.position;
     
     return output;
 }

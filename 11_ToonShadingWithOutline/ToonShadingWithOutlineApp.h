@@ -25,13 +25,13 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> m_phongToonPixelShader;
 
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_vertexInputLayout;
-	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_simpleVertexInputLayout;
-
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_outlineTextureRV;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_outlineVertexInputLayout;
 
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> m_samplerState;
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_outlineRasterizerState;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_outlineDepthStencilState;
+
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_rampTextureSRV;
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_constantBuffer;
 
@@ -44,21 +44,27 @@ private:
 	Matrix m_projection;
 
 	Matrix m_world;
-	Vector3 m_scale{ 0.01f, 0.01f, 0.01f };
+	float m_scale = 1.0f;
 	Vector3 m_rotation{ 0.0f, 0.0f, 0.0f };
 	Vector3 m_position{ 0.0f, 0.0f, 0.0f };
 
-	Vector4 m_materialDiffuse{ 1.0f, 0.0f, 1.0f, 1.0f };
+	Vector4 m_materialDiffuse{ 0.7f, 1.0f, 0.7f, 1.0f };
 	Vector4 m_materialAmbient{ 0.1f, 0.1f, 0.1f, 1.0f };
 	Vector4 m_materialSpecular{ 1.0f, 1.0f, 1.0f, 1.0f };
+	Vector4 m_materialEmissive{ 1.0f, 0.0f, 1.0f, 1.0f };
+	float m_outlineThickness = 2.0f;
+	float m_emissivePosition = 29.0f;
 
 	Matrix m_lightRotationMatrix;
-	const Vector4 m_originalLightDir{ 0.0f, -1.0f, 0.0f, 0.0f };
-	Vector4 m_lightDirection;
+	const Vector3 m_originalLightDir{ 0.0f, 0.0f, 1.0f };
+	Vector3 m_lightDirection;
 	Vector3 m_lightRotation{ 0.0f, 0.0f, 0.0f };
 	Vector4 m_lightColor{ 1.0f, 1.0f, 1.0f, 1.0f };
 	Vector4 m_ambientLightColor{ 1.0f, 1.0f, 1.0f, 1.0f };
 	float m_shininess = 64.0f;
+	float m_elapsedTime = 0.0f;
+	float m_outlineFrequency = 5.0f;
+	float m_outlineDensity = 5.0f;
 
 public:
 	void Initialize() override;

@@ -4,6 +4,7 @@
 #include <imgui.h>
 #include <imgui_impl_win32.h>
 #include <imgui_impl_dx11.h>
+#include <directxtk/WICTextureLoader.h>
 
 #include "../Common/MyTime.h"
 #include "../Common/Helper.h"
@@ -24,34 +25,43 @@ const float spaceY = 10.0f;
 const float randMin = 0.1f;
 const float randMax = 0.3f;
 
+MyTime::TimePoint g_initTime = MyTime::GetTimestamp();
+
 struct ConstantBuffer
 {
 	Matrix world;
 	Matrix view;
 	Matrix projection;
 
+	Vector4 materialDiffuse;
 	Vector4 materialAmbient;
 	Vector4 materialSpecular;
+	Vector4 materialEmissive;
 
-	Vector4 cameraPos;
-	Vector4 lightDirection;
+	Vector3 lightDirection;
+	float __pad1;
 	Vector4 lightColor;
 	Vector4 ambientLightColor;
 	float shininess;
-	float __pad[3];
+	float spoutPosition;
+	float outlineThickness;
+	float elapsedTime;
+	float outlineFrequency;
+	float outlineDensity;
+	float __pad2[2];
 };
 
 void ToonShadingWithOutlineApp::Initialize()
 {
-	m_width = 800;
-	m_height = 600;
+	m_width = 1280;
+	m_height = 720;
 
 	WinApp::Initialize();
 
 	m_camera.SetSpeed(100.0f);
-	m_camera.SetPosition({ 0.0f, 0.0f, -200.0f });
+	m_camera.SetPosition({ 0.0f, 0.0f, -300.0f });
 	m_camera.SetFar(1000.0f);
-
+	
 	Material::CreateDefaultTextureSRV(m_graphicsDevice.GetDevice());
 
 	InitializeImGui();
@@ -71,6 +81,8 @@ void ToonShadingWithOutlineApp::OnUpdate()
 		Matrix::CreateRotationY(DirectX::XMConvertToRadians(m_lightRotation.y));
 
 	m_lightDirection = DirectX::XMVector3TransformNormal(m_originalLightDir, m_lightRotationMatrix);
+
+	m_elapsedTime = MyTime::GetElapsedSeconds(g_initTime);
 }
 
 void ToonShadingWithOutlineApp::OnRender()
@@ -91,8 +103,8 @@ void ToonShadingWithOutlineApp::OnRender()
 
 	deviceContext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
 
-	deviceContext->ClearRenderTargetView(renderTargetView.Get(), DirectX::SimpleMath::Color{ 0.0f, 0.0f, 0.0f, 0.0f });
 	deviceContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+	deviceContext->ClearRenderTargetView(renderTargetView.Get(), DirectX::SimpleMath::Color{ 0.0f, 0.0f, 0.0f, 0.0f });
 
 
 	// common
@@ -100,31 +112,56 @@ void ToonShadingWithOutlineApp::OnRender()
 	cb.world = m_world.Transpose();
 	cb.view = m_view.Transpose();
 	cb.projection = m_projection.Transpose();
-	cb.cameraPos = Vector4(m_camera.GetPosition());
 	cb.lightDirection = m_lightDirection;
 	cb.lightColor = m_lightColor;
 	cb.ambientLightColor = m_ambientLightColor;
+	cb.materialDiffuse = m_materialDiffuse;
 	cb.materialAmbient = m_materialAmbient;
 	cb.materialSpecular = m_materialSpecular;
+	cb.materialEmissive = m_materialEmissive;
 	cb.shininess = m_shininess;
+	cb.spoutPosition = m_emissivePosition;
+	cb.outlineThickness = m_outlineThickness;
+	cb.elapsedTime = m_elapsedTime;
+	cb.outlineFrequency = m_outlineFrequency;
+	cb.outlineDensity = m_outlineDensity;
 
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	deviceContext->VSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
 	deviceContext->PSSetConstantBuffers(0, 1, m_constantBuffer.GetAddressOf());
 	deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
+	deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+	deviceContext->IASetInputLayout(m_vertexInputLayout.Get());
+
+	const auto& meshes = m_teapot->GetMeshes();
+
+	// teapot outline
+
+	deviceContext->VSSetShader(m_outlineVertexShader.Get(), nullptr, 0);
+	deviceContext->PSSetShader(m_outlinePixelShader.Get(), nullptr, 0);
+	deviceContext->RSSetState(m_outlineRasterizerState.Get());
+	deviceContext->OMSetDepthStencilState(m_outlineDepthStencilState.Get(), 0);
+
+	for (const auto& mesh : meshes)
+	{
+		deviceContext->IASetVertexBuffers(0, 1, mesh.GetVertexBuffer().GetAddressOf(), &m_vertexBufferStride, &m_vertexBufferOffset);
+		deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
+
+		deviceContext->DrawIndexed(mesh.GetIndexCount(), 0, 0);
+	}
+
+	deviceContext->RSSetState(nullptr);
+	deviceContext->OMSetDepthStencilState(nullptr, 0);
 
 	// teapot
-	const auto& meshes = m_teapot->GetMeshes();
-	const auto& materials = m_teapot->GetMaterials();
 
 	deviceContext->IASetInputLayout(m_vertexInputLayout.Get());
 	deviceContext->VSSetShader(m_phongToonVertexShader.Get(), nullptr, 0);
 	deviceContext->PSSetShader(m_phongToonPixelShader.Get(), nullptr, 0);
+	deviceContext->PSSetShaderResources(0, 1, m_rampTextureSRV.GetAddressOf());
 
 	for (const auto& mesh : meshes)
 	{
-		deviceContext->UpdateSubresource(m_constantBuffer.Get(), 0, nullptr, &cb, 0, 0);
-
 		deviceContext->IASetVertexBuffers(0, 1, mesh.GetVertexBuffer().GetAddressOf(), &m_vertexBufferStride, &m_vertexBufferOffset);
 		deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
 
@@ -181,22 +218,31 @@ void ToonShadingWithOutlineApp::RenderImGui()
 
 	ImGui::SeparatorText("Object");
 
-	ImGui::DragFloat3("Scale", &m_scale.x, 0.1f);
+	ImGui::DragFloat("Scale", &m_scale, 0.1f, 0.1f, 100.0f);
 	ImGui::DragFloat2("Rotation(x, y)##1", &m_rotation.x, 0.1f);
 	ImGui::DragFloat3("Position##2", &m_position.x, 0.1f);
+	ImGui::ColorEdit3("Diffuse", &m_materialDiffuse.x);
 	ImGui::ColorEdit3("Ambient", &m_materialAmbient.x);
 	ImGui::ColorEdit3("Specular", &m_materialSpecular.x);
+	ImGui::ColorEdit3("Emissive", &m_materialEmissive.x);
 	ImGui::DragFloat("Shininess", &m_shininess, 5.0f, 1.0f, 10000.0f);
-
+	ImGui::DragFloat("OutlineThickness", &m_outlineThickness, 0.01f, 0.0f, 5.0f);
+	ImGui::DragFloat("OutlineFrequency", &m_outlineFrequency, 0.1f, 1.0f, 30.0f);
+	ImGui::DragFloat("OutlineDensity", &m_outlineDensity, 0.1f, 1.0f, 20.0f);
+	
 	if (ImGui::Button("Reset##2"))
 	{
-		m_scale = { 0.01f, 0.01f, 0.01f };
+		m_scale = 1.0f;
 		m_rotation = { 0.0f, 0.0f, 0.0f };
 		m_position = { 0.0f, 0.0f, 0.0f };
-		m_materialDiffuse = { 1.0f, 0.0f, 1.0f, 1.0f };
+		m_materialDiffuse = { 1.0f, 1.0f, 1.0f, 1.0f };
 		m_materialAmbient = { 0.1f, 0.1f, 0.1f, 1.0f };
 		m_materialSpecular = { 1.0f, 1.0f, 1.0f, 1.0f };
+		m_materialEmissive = { 1.0f, 0.0f, 1.0f, 1.0f };
 		m_shininess = 64.0f;
+		m_outlineThickness = 2.0f;
+		m_outlineFrequency = 5.0f;
+		m_outlineDensity = 5.0f;
 	}
 
 	ImGui::NewLine();
@@ -240,11 +286,12 @@ void ToonShadingWithOutlineApp::InitializeScene()
 
 	m_vertexBufferStride = sizeof(Vertex);
 	
-	// SimpleVertex input layout
+	// outline
 	{
 		D3D11_INPUT_ELEMENT_DESC layout[]{
 			// SemanticName , SemanticIndex , Format , InputSlot , AlignedByteOffset , InputSlotClass , InstanceDataStepRate
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 		};
 
 		ComPtr<ID3DBlob> vertexShaderBuffer;
@@ -255,7 +302,7 @@ void ToonShadingWithOutlineApp::InitializeScene()
 			ARRAYSIZE(layout),
 			vertexShaderBuffer->GetBufferPointer(),
 			vertexShaderBuffer->GetBufferSize(),
-			&m_simpleVertexInputLayout
+			&m_outlineVertexInputLayout
 		);
 
 		device->CreateVertexShader(
@@ -266,7 +313,7 @@ void ToonShadingWithOutlineApp::InitializeScene()
 		);
 
 		ComPtr<ID3DBlob> pixelShaderBuffer;
-		GraphicsDevice::CompileShaderFromFile(L"SkyboxPixelShader.hlsl", "main", "ps_4_0", pixelShaderBuffer);
+		GraphicsDevice::CompileShaderFromFile(L"OutlinePixelShader.hlsl", "main", "ps_4_0", pixelShaderBuffer);
 
 		device->CreatePixelShader(
 			pixelShaderBuffer->GetBufferPointer(),
@@ -276,10 +323,10 @@ void ToonShadingWithOutlineApp::InitializeScene()
 		);
 
 		D3D11_RASTERIZER_DESC rasterizerDesc{};
-		rasterizerDesc.CullMode = D3D11_CULL_BACK;
+		rasterizerDesc.CullMode = D3D11_CULL_NONE;
 		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
 		rasterizerDesc.DepthClipEnable = TRUE;
-		rasterizerDesc.FrontCounterClockwise = TRUE;
+		rasterizerDesc.FrontCounterClockwise = FALSE;
 
 		device->CreateRasterizerState(&rasterizerDesc, &m_outlineRasterizerState);
 
@@ -299,8 +346,6 @@ void ToonShadingWithOutlineApp::InitializeScene()
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "BINORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
 
 		ComPtr<ID3DBlob> vertexShaderBuffer;
@@ -330,6 +375,8 @@ void ToonShadingWithOutlineApp::InitializeScene()
 			nullptr,
 			&m_phongToonPixelShader
 		);
+
+		DirectX::CreateWICTextureFromFile(device.Get(), L"RampTexture.png", nullptr, &m_rampTextureSRV);
 	}
 
 	// constant buffer
@@ -342,7 +389,7 @@ void ToonShadingWithOutlineApp::InitializeScene()
 
 	// sampler
 	D3D11_SAMPLER_DESC samplerDesc{};
-	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
