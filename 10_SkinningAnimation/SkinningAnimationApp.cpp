@@ -334,7 +334,7 @@ void SkinningAnimationApp::InitializeScene()
 		};
 
 		ComPtr<ID3DBlob> vertexShaderBuffer;
-		GraphicsDevice::CompileShaderFromFile(L"BlinnPhongVertexShader.hlsl", "main", "vs_4_0", vertexShaderBuffer);
+		GraphicsDevice::CompileShaderFromFile(L"BlinnPhongVertexShader.hlsl", "main", "vs_5_0", vertexShaderBuffer);
 
 		device->CreateInputLayout(
 			layout,
@@ -352,7 +352,7 @@ void SkinningAnimationApp::InitializeScene()
 		);
 
 		ComPtr<ID3DBlob> pixelShaderBuffer;
-		GraphicsDevice::CompileShaderFromFile(L"BlinnPhongPixelShader.hlsl", "main", "ps_4_0", pixelShaderBuffer);
+		GraphicsDevice::CompileShaderFromFile(L"BlinnPhongPixelShader.hlsl", "main", "ps_5_0", pixelShaderBuffer);
 
 		device->CreatePixelShader(
 			pixelShaderBuffer->GetBufferPointer(),
