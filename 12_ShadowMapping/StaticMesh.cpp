@@ -8,7 +8,7 @@
 
 #include "../Common/Helper.h"
 
-StaticMesh::StaticMesh(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const char* fileName, const Matrix& world)
+StaticMesh::StaticMesh(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const std::string& fileName, const Matrix& world)
 	: m_world{ world }, m_name{ std::filesystem::path(fileName).stem().c_str() }
 {
 	Assimp::Importer importer;

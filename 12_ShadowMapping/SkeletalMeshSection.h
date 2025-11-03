@@ -15,6 +15,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_vertexBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_indexBuffer;
 	std::vector<unsigned int> m_boneReferences;
+	unsigned int m_boneReference = 0;
 	unsigned int m_materialIndex;
 	UINT m_indexCount = 0;
 
@@ -24,7 +25,8 @@ public:
 public:
 	const Microsoft::WRL::ComPtr<ID3D11Buffer>& GetVertexBuffer() const;
 	const Microsoft::WRL::ComPtr<ID3D11Buffer>& GetIndexBuffer() const;
-	const UINT GetIndexCount() const;
-	const unsigned int GetMaterialIndex() const;
+	UINT GetIndexCount() const;
+	unsigned int GetMaterialIndex() const;
 	const std::vector<unsigned int>& GetBoneReferences() const;
+	unsigned int GetBoneReference() const;
 };

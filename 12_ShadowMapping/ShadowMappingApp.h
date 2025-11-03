@@ -20,11 +20,14 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> m_basicVertexShader;
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> m_rigidAnimVertexShader;
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> m_skinningAnimVertexShader;
-	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_commonInputLayout;
-	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_skinningInputLayout;
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> m_skyboxVertexShader;
 
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> m_blinnPhongPixelShader;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> m_skyboxPixelShader;
+
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_commonInputLayout;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_skinningInputLayout;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_posInputLayout;
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_transformConstantBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_environmentConstantBuffer;
@@ -32,7 +35,12 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_bonePoseConstantBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_boneOffsetConstantBuffer;
 
+	Microsoft::WRL::ComPtr<ID3D11Buffer> m_cubeVertexBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> m_cubeIndexBuffer;
+
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> m_samplerState;
+
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_skyboxTextureSRV;
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_skyboxRSState;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_skyboxDSState;
 
@@ -40,9 +48,11 @@ private:
 	std::vector<SkeletalMesh> m_rigidAnimMeshes;
 	std::vector<SkeletalMesh> m_skinningAnimMeshes;
 
-	UINT m_vertexBufferStride = 0;
+	UINT m_boneWeightVertexBufferStride = 0;
+	UINT m_commonVertexBufferStride = 0;
+	UINT m_cubeVertexBufferStride = 0;
 	UINT m_vertexBufferOffset = 0;
-	UINT m_indexCount = 0;
+	UINT m_cubeIndexCount = 0;
 
 	Matrix m_view;
 	Matrix m_projection;

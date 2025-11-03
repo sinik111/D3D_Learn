@@ -21,7 +21,7 @@ private:
 	Matrix m_world;
 
 public:
-	StaticMesh(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const char* fileName, const Matrix& world = Matrix::Identity);
+	StaticMesh(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const std::string& fileName, const Matrix& world = Matrix::Identity);
 
 public:
 	const std::wstring& GetName() const;

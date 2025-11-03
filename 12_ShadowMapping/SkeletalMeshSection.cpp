@@ -14,23 +14,9 @@ SkeletalMeshSection::SkeletalMeshSection(const Microsoft::WRL::ComPtr<ID3D11Devi
 	const unsigned int numVertices = mesh->mNumVertices;
 	const unsigned int numFaces = mesh->mNumFaces;
 
-	std::vector<BoneWeightVertex> vertices;
 	std::vector<DWORD> indices;
-
-	m_indexCount = numFaces * 3;
-
-	vertices.reserve(numVertices);
 	indices.reserve(m_indexCount);
-
-	for (unsigned int i = 0; i < numVertices; ++i)
-	{
-		vertices.emplace_back(
-			&mesh->mVertices[i].x,
-			&mesh->mTextureCoords[0][i].x,
-			&mesh->mNormals[i].x,
-			&mesh->mTangents[i].x,
-			&mesh->mBitangents[i].x);
-	}
+	m_indexCount = numFaces * 3;
 
 	for (unsigned int i = 0; i < numFaces; ++i)
 	{
@@ -39,8 +25,22 @@ SkeletalMeshSection::SkeletalMeshSection(const Microsoft::WRL::ComPtr<ID3D11Devi
 		indices.push_back(mesh->mFaces[i].mIndices[2]);
 	}
 
-	if (isRigid)
+	if (!isRigid)
 	{
+		std::vector<BoneWeightVertex> vertices;
+
+		vertices.reserve(numVertices);
+
+		for (unsigned int i = 0; i < numVertices; ++i)
+		{
+			vertices.emplace_back(
+				&mesh->mVertices[i].x,
+				&mesh->mTextureCoords[0][i].x,
+				&mesh->mNormals[i].x,
+				&mesh->mTangents[i].x,
+				&mesh->mBitangents[i].x);
+		}
+
 		const unsigned int numBones = mesh->mNumBones;
 		m_boneReferences.reserve(numBones);
 
@@ -63,21 +63,49 @@ SkeletalMeshSection::SkeletalMeshSection(const Microsoft::WRL::ComPtr<ID3D11Devi
 				vertices[vertexId].AddBoneData(boneIndex, weight);
 			}
 		}
+
+		D3D11_BUFFER_DESC vertexBufferDesc{};
+		vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(BoneWeightVertex) * numVertices);
+		vertexBufferDesc.CPUAccessFlags = 0;
+		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		vertexBufferDesc.MiscFlags = 0;
+		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+
+		D3D11_SUBRESOURCE_DATA vertexBufferData{};
+		vertexBufferData.pSysMem = vertices.data();
+
+		device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &m_vertexBuffer);
 	}
+	else
+	{
+		std::vector<Vertex> vertices;
 
+		vertices.reserve(numVertices);
 
-	D3D11_BUFFER_DESC vertexBufferDesc{};
-	vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(BoneWeightVertex) * numVertices);
-	vertexBufferDesc.CPUAccessFlags = 0;
-	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vertexBufferDesc.MiscFlags = 0;
-	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		for (unsigned int i = 0; i < numVertices; ++i)
+		{
+			vertices.emplace_back(
+				&mesh->mVertices[i].x,
+				&mesh->mTextureCoords[0][i].x,
+				&mesh->mNormals[i].x,
+				&mesh->mTangents[i].x,
+				&mesh->mBitangents[i].x);
+		}
 
-	D3D11_SUBRESOURCE_DATA vertexBufferData{};
-	vertexBufferData.pSysMem = vertices.data();
+		m_boneReference = skeletonInfo->GetBoneIndexByMeshName(m_name);
 
-	device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &m_vertexBuffer);
+		D3D11_BUFFER_DESC vertexBufferDesc{};
+		vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Vertex) * numVertices);
+		vertexBufferDesc.CPUAccessFlags = 0;
+		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		vertexBufferDesc.MiscFlags = 0;
+		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 
+		D3D11_SUBRESOURCE_DATA vertexBufferData{};
+		vertexBufferData.pSysMem = vertices.data();
+
+		device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &m_vertexBuffer);
+	}
 
 	D3D11_BUFFER_DESC indexBufferDesc{};
 	indexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(DWORD) * numFaces * 3);
@@ -100,12 +128,12 @@ const Microsoft::WRL::ComPtr<ID3D11Buffer>& SkeletalMeshSection::GetIndexBuffer(
 	return m_indexBuffer;
 }
 
-const UINT SkeletalMeshSection::GetIndexCount() const 
+UINT SkeletalMeshSection::GetIndexCount() const 
 {
 	return m_indexCount;
 }
 
-const unsigned int SkeletalMeshSection::GetMaterialIndex() const 
+unsigned int SkeletalMeshSection::GetMaterialIndex() const 
 {
 	return m_materialIndex;
 }
@@ -113,4 +141,9 @@ const unsigned int SkeletalMeshSection::GetMaterialIndex() const
 const std::vector<unsigned int>& SkeletalMeshSection::GetBoneReferences() const
 {
 	return m_boneReferences;
+}
+
+unsigned int SkeletalMeshSection::GetBoneReference() const
+{
+	return m_boneReference;
 }
