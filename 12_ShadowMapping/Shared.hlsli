@@ -1,20 +1,25 @@
 SamplerState g_samLinear : register(s0);
+SamplerComparisonState g_samComparison : register(s1);
 
 cbuffer Transform : register(b0)
 {
-    matrix g_world;
     matrix g_view;
     matrix g_projection;
-    uint g_refBoneIndex;
-    float3 __pad1;
+    matrix g_lightView;
+    matrix g_lightProjection;
 }
 
 cbuffer Environment : register(b1)
 {
-    float4 g_cameraPos;
-    float4 g_lightDir;
+    float3 g_cameraPos;
+    float __pad3;
+    float3 g_lightDir;
+    float __pad4;
     float4 g_lightColor;
     float4 g_ambientLightColor;
+    int g_shadowMapSize;
+    int g_useShadowPCF;
+    float __pad5[2];
 }
 
 cbuffer Material : register(b2)
@@ -22,7 +27,7 @@ cbuffer Material : register(b2)
     float4 g_materialAmbient;
     float4 g_materialSpecular;
     float g_shininess;
-    float3 __pad2;
+    float __pad2[3];
 }
 
 cbuffer BonePoseMatrix : register(b3)
@@ -33,6 +38,13 @@ cbuffer BonePoseMatrix : register(b3)
 cbuffer BoneOffsetMatrix : register(b4)
 {
     matrix g_boneOffset[128];
+}
+
+cbuffer WorldTransform : register(b5)
+{
+    matrix g_world;
+    uint g_refBoneIndex;
+    float __pad1[3];
 }
 
 struct VS_INPUT_SKINNING
@@ -63,6 +75,17 @@ struct PS_INPUT
     float3 tan : TEXCOORD2;
     float3 binorm : TEXCOORD3;
     float3 worldPos : TEXCOORD4;
+};
+
+struct PS_INPUT_SHADOW
+{
+    float4 pos : SV_Position;
+    float2 tex : TEXCOORD0;
+    float3 norm : TEXCOORD1;
+    float3 tan : TEXCOORD2;
+    float3 binorm : TEXCOORD3;
+    float3 worldPos : TEXCOORD4;
+    float4 lightViewPos : TEXCOORD5;
 };
 
 struct VS_INPUT_SKYBOX

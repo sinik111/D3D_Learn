@@ -24,21 +24,32 @@ const float spaceY = 10.0f;
 const float randMin = 0.1f;
 const float randMax = 0.3f;
 
-struct TransformBuffer
+struct WorldTransformBuffer
 {
 	Matrix world;
-	Matrix view;
-	Matrix projection;
 	unsigned int refBoneIndex;
 	float __pad1[3];
 };
 
+struct TransformBuffer
+{
+	Matrix view;
+	Matrix projection;
+	Matrix lightView;
+	Matrix lightProjection;
+};
+
 struct EnvironmentBuffer
 {
-	Vector4 cameraPos;
-	Vector4 lightDirection;
+	Vector3 cameraPos;
+	float __pad1;
+	Vector3 lightDirection;
+	float __pad2;
 	Vector4 lightColor;
 	Vector4 ambientLightColor;
+	int shadowMapSize;
+	int useShadowPCF;
+	float __pad3[2];
 };
 
 struct MaterialBuffer
@@ -74,6 +85,28 @@ void ShadowMappingApp::OnUpdate()
 		Matrix::CreateRotationY(ToRadian(m_lightRotation.y));
 
 	m_lightDirection = DirectX::XMVector3TransformNormal(m_originalLightDir, m_lightRotationMatrix);
+	m_lightDirection.Normalize();
+	Vector3 lightUp{ 0.0f, 0.0f, -1.0f };
+	lightUp = DirectX::XMVector3TransformNormal(lightUp, m_lightRotationMatrix);
+	lightUp.Normalize();
+
+	//m_lightNear = m_lightFar * 0.9f;
+
+	m_lightProjection = DirectX::XMMatrixPerspectiveFovLH(
+		ToRadian(m_lightFOV),
+		static_cast<float>(m_shadowMapWidth) / m_shadowMapHeight,
+		m_lightNear,
+		m_lightFar);
+
+	Vector3 focusPosition = m_camera.GetPosition() + m_camera.GetForward() * m_lightForwardDistFromCam;
+	m_lightPosition = focusPosition + -m_lightDirection * m_lightFar * 0.95f;
+	m_lightView = DirectX::XMMatrixLookAtLH(m_lightPosition, focusPosition, lightUp);
+
+	m_lightProjection = DirectX::XMMatrixPerspectiveFovLH(
+		ToRadian(m_lightFOV),
+		static_cast<float>(m_shadowMapWidth) / m_shadowMapHeight,
+		m_lightNear,
+		m_lightFar);
 
 	for (auto& mesh : m_skinningAnimMeshes)
 	{
@@ -92,155 +125,77 @@ void ShadowMappingApp::OnRender()
 	m_camera.GetViewMatrix(m_view);
 
 	m_projection = DirectX::XMMatrixPerspectiveFovLH(
-		DirectX::XMConvertToRadians(m_camera.GetFOV()),
+		ToRadian(m_camera.GetFOV()),
 		static_cast<float>(m_width) / m_height,
 		m_camera.GetNear(),
 		m_camera.GetFar());
 
 	// draw
-	m_graphicsDevice.BeginDraw({ 0.85f, 0.82f, 0.95f, 1.0f });
-	//{ 0.85f, 0.82f, 0.95f, 1.0f }
-	//{ 0.65f, 0.90f, 0.85f, 1.0f }
 	auto deviceContext = m_graphicsDevice.GetDeviceContext();
+	auto renderTargetView = m_graphicsDevice.GetRenderTargetView();
+	auto depthStencilView = m_graphicsDevice.GetDepthStencilView();
 
 	// constant buffers
 	TransformBuffer transformBuffer{};
-	transformBuffer.world = Matrix::Identity;
 	transformBuffer.view = m_view.Transpose();
 	transformBuffer.projection = m_projection.Transpose();
+	transformBuffer.lightView = m_lightView.Transpose();
+	transformBuffer.lightProjection = m_lightProjection.Transpose();
 
-	deviceContext->VSSetConstantBuffers(0, 1, m_transformConstantBuffer.GetAddressOf());
+	deviceContext->VSSetConstantBuffers(0, 1, m_transformCB.GetAddressOf());
+	deviceContext->UpdateSubresource(m_transformCB.Get(), 0, nullptr, &transformBuffer, 0, 0);
 
 	EnvironmentBuffer environmentBuffer{};
-	environmentBuffer.cameraPos = Vector4(m_camera.GetPosition());
+	environmentBuffer.cameraPos = m_camera.GetPosition();
 	environmentBuffer.lightDirection = m_lightDirection;
 	environmentBuffer.lightColor = m_lightColor;
 	environmentBuffer.ambientLightColor = m_ambientLightColor;
+	environmentBuffer.shadowMapSize = m_shadowMapWidth;// * m_shadowMapHeight;
+	environmentBuffer.useShadowPCF = m_useShadowPCF;
 
-	deviceContext->VSSetConstantBuffers(1, 1, m_environmentConstantBuffer.GetAddressOf());
-	deviceContext->PSSetConstantBuffers(1, 1, m_environmentConstantBuffer.GetAddressOf());
-	deviceContext->UpdateSubresource(m_environmentConstantBuffer.Get(), 0, nullptr, &environmentBuffer, 0, 0);
+	deviceContext->VSSetConstantBuffers(1, 1, m_environmentCB.GetAddressOf());
+	deviceContext->PSSetConstantBuffers(1, 1, m_environmentCB.GetAddressOf());
+	deviceContext->UpdateSubresource(m_environmentCB.Get(), 0, nullptr, &environmentBuffer, 0, 0);
 
 	MaterialBuffer materialBuffer{};
 	materialBuffer.materialAmbient = m_materialAmbient;
 	materialBuffer.materialSpecular = m_materialSpecular;
 	materialBuffer.shininess = m_shininess;
 
-	deviceContext->PSSetConstantBuffers(2, 1, m_materialConstantBuffer.GetAddressOf());
-	deviceContext->UpdateSubresource(m_materialConstantBuffer.Get(), 0, nullptr, &materialBuffer, 0, 0);
+	deviceContext->PSSetConstantBuffers(2, 1, m_materialCB.GetAddressOf());
+	deviceContext->UpdateSubresource(m_materialCB.Get(), 0, nullptr, &materialBuffer, 0, 0);
 
-	deviceContext->VSSetConstantBuffers(3, 1, m_bonePoseConstantBuffer.GetAddressOf());
-	deviceContext->VSSetConstantBuffers(4, 1, m_boneOffsetConstantBuffer.GetAddressOf());
+	deviceContext->VSSetConstantBuffers(3, 1, m_bonePoseCB.GetAddressOf());
+	deviceContext->VSSetConstantBuffers(4, 1, m_boneOffsetCB.GetAddressOf());
 
 	// common
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	deviceContext->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
+	deviceContext->PSSetSamplers(1, 1, m_samplerComparisonState.GetAddressOf());
+	
+	D3D11_VIEWPORT shadowViewport{};
+	shadowViewport.TopLeftX = 0;
+	shadowViewport.TopLeftY = 0;
+	shadowViewport.Width = static_cast<float>(m_shadowMapWidth);
+	shadowViewport.Height = static_cast<float>(m_shadowMapHeight);
+	shadowViewport.MinDepth = 0.0f;
+	shadowViewport.MaxDepth = 1.0f;
 
+	deviceContext->RSSetViewports(1, &shadowViewport);
 
-	// skybox
-	deviceContext->IASetVertexBuffers(0, 1, m_cubeVertexBuffer.GetAddressOf(), &m_cubeVertexBufferStride, &m_vertexBufferOffset);
-	deviceContext->IASetIndexBuffer(m_cubeIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
-	deviceContext->IASetInputLayout(m_posInputLayout.Get());
-	deviceContext->VSSetShader(m_skyboxVertexShader.Get(), nullptr, 0);
-	deviceContext->PSSetShader(m_skyboxPixelShader.Get(), nullptr, 0);
-	deviceContext->PSSetShaderResources(0, 1, m_skyboxTextureSRV.GetAddressOf());
-	deviceContext->RSSetState(m_skyboxRSState.Get());
-	deviceContext->OMSetDepthStencilState(m_skyboxDSState.Get(), 0);
+	deviceContext->OMSetRenderTargets(0, nullptr, m_shadowMapDSV.Get());
+	deviceContext->ClearDepthStencilView(m_shadowMapDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-	transformBuffer.world = Matrix::CreateRotationY(ToRadian(90.0f));
-	deviceContext->UpdateSubresource(m_transformConstantBuffer.Get(), 0, nullptr, &transformBuffer, 0, 0);
-	deviceContext->DrawIndexed(m_cubeIndexCount, 0, 0);
+	RenderShadowMap();
 
-	deviceContext->RSSetState(nullptr);
-	deviceContext->OMSetDepthStencilState(nullptr, 0);
+	deviceContext->RSSetViewports(1, &m_graphicsDevice.GetViewport());
 
+	deviceContext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
+	deviceContext->ClearRenderTargetView(renderTargetView.Get(), Color{ 1.0f, 0.0f, 1.0f, 1.0f });
+	deviceContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-	// common pixel shader
-	deviceContext->PSSetShader(m_blinnPhongPixelShader.Get(), nullptr, 0);
-
-
-	// staticMesh
-	deviceContext->IASetInputLayout(m_commonInputLayout.Get());
-	deviceContext->VSSetShader(m_basicVertexShader.Get(), nullptr, 0);
-
-	for (const auto& staticMesh : m_staticMeshes)
-	{
-		const auto& meshes = staticMesh.GetMeshes();
-		const auto& materials = staticMesh.GetMaterials();
-
-		transformBuffer.world = staticMesh.GetWorld().Transpose();
-
-		for (const auto& mesh : meshes)
-		{
-			deviceContext->UpdateSubresource(m_transformConstantBuffer.Get(), 0, nullptr, &transformBuffer, 0, 0);
-
-			auto textureSRVs = materials[mesh.GetMaterialIndex()].GetTextureSRVs().AsRawArray();
-
-			deviceContext->IASetVertexBuffers(0, 1, mesh.GetVertexBuffer().GetAddressOf(), &m_commonVertexBufferStride, &m_vertexBufferOffset);
-			deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
-			deviceContext->PSSetShaderResources(0, static_cast<UINT>(textureSRVs.size()), textureSRVs.data());
-
-			deviceContext->DrawIndexed(mesh.GetIndexCount(), 0, 0);
-		}
-	}
-
-
-	// skeletalMesh (rigid)
-	deviceContext->IASetInputLayout(m_commonInputLayout.Get());
-	deviceContext->VSSetShader(m_rigidAnimVertexShader.Get(), nullptr, 0);
-
-	for (const auto& skeletalMesh : m_rigidAnimMeshes)
-	{
-		const auto& meshes = skeletalMesh.GetMeshes();
-		const auto& materials = skeletalMesh.GetMaterials();
-
-		deviceContext->UpdateSubresource(m_bonePoseConstantBuffer.Get(), 0, nullptr, skeletalMesh.GetSkeletonPose().data(), 0, 0);
-
-		transformBuffer.world = skeletalMesh.GetWorld().Transpose();
-
-		for (const auto& mesh : meshes)
-		{
-			transformBuffer.refBoneIndex = mesh.GetBoneReference();
-			deviceContext->UpdateSubresource(m_transformConstantBuffer.Get(), 0, nullptr, &transformBuffer, 0, 0);
-
-			auto textureSRVs = materials[mesh.GetMaterialIndex()].GetTextureSRVs().AsRawArray();
-
-			deviceContext->IASetVertexBuffers(0, 1, mesh.GetVertexBuffer().GetAddressOf(), &m_commonVertexBufferStride, &m_vertexBufferOffset);
-			deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
-			deviceContext->PSSetShaderResources(0, static_cast<UINT>(textureSRVs.size()), textureSRVs.data());
-
-			deviceContext->DrawIndexed(mesh.GetIndexCount(), 0, 0);
-		}
-	}
-
-
-	// skeletalMesh (skinning)
-	deviceContext->IASetInputLayout(m_skinningInputLayout.Get());
-	deviceContext->VSSetShader(m_skinningAnimVertexShader.Get(), nullptr, 0);
-
-	for (const auto& skeletalMesh : m_skinningAnimMeshes)
-	{
-		const auto& meshes = skeletalMesh.GetMeshes();
-		const auto& materials = skeletalMesh.GetMaterials();
-
-		deviceContext->UpdateSubresource(m_bonePoseConstantBuffer.Get(), 0, nullptr, skeletalMesh.GetSkeletonPose().data(), 0, 0);
-		deviceContext->UpdateSubresource(m_boneOffsetConstantBuffer.Get(), 0, nullptr, skeletalMesh.GetBoneOffsets().data(), 0, 0);
-
-		transformBuffer.world = skeletalMesh.GetWorld().Transpose();
-
-		for (const auto& mesh : meshes)
-		{
-			deviceContext->UpdateSubresource(m_transformConstantBuffer.Get(), 0, nullptr, &transformBuffer, 0, 0);
-
-			auto textureSRVs = materials[mesh.GetMaterialIndex()].GetTextureSRVs().AsRawArray();
-
-			deviceContext->IASetVertexBuffers(0, 1, mesh.GetVertexBuffer().GetAddressOf(), &m_boneWeightVertexBufferStride, &m_vertexBufferOffset);
-			deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
-			deviceContext->PSSetShaderResources(0, static_cast<UINT>(textureSRVs.size()), textureSRVs.data());
-
-			deviceContext->DrawIndexed(mesh.GetIndexCount(), 0, 0);
-		}
-	}
+	//RenderShadowMap();
+	RenderFinal();
 
 	RenderImGui();
 
@@ -252,6 +207,217 @@ void ShadowMappingApp::OnShutdown()
 	ShutdownImGui();
 
 	Material::DestroyDefaultTextureSRV();
+}
+
+void ShadowMappingApp::RenderShadowMap()
+{
+	auto deviceContext = m_graphicsDevice.GetDeviceContext();
+
+	WorldTransformBuffer worldtransformBuffer{};
+	deviceContext->VSSetConstantBuffers(5, 1, m_worldTransformCB.GetAddressOf());
+	//deviceContext->RSSetState(m_shadowMapRSState.Get());
+	deviceContext->OMSetDepthStencilState(m_shadowMapDSState.Get(), 0);
+
+	// common pixel shader
+	deviceContext->PSSetShader(m_lightViewPS.Get(), nullptr, 0);
+	//deviceContext->PSSetShader(nullptr, nullptr, 0);
+
+	// staticMesh
+	deviceContext->IASetInputLayout(m_commonInputLayout.Get());
+	deviceContext->VSSetShader(m_basicLightViewVS.Get(), nullptr, 0);
+	//deviceContext->VSSetShader(m_basicVS.Get(), nullptr, 0);
+
+	for (const auto& staticMesh : m_staticMeshes)
+	{
+		const auto& meshes = staticMesh.GetMeshes();
+		const auto& materials = staticMesh.GetMaterials();
+
+		worldtransformBuffer.world = staticMesh.GetWorld().Transpose();
+		deviceContext->UpdateSubresource(m_worldTransformCB.Get(), 0, nullptr, &worldtransformBuffer, 0, 0);
+
+		for (const auto& mesh : meshes)
+		{
+			auto textureSRV = materials[mesh.GetMaterialIndex()].GetTextureSRVs().opacityTextureSRV;
+
+			deviceContext->PSSetShaderResources(0, 1, textureSRV.GetAddressOf());
+
+			deviceContext->IASetVertexBuffers(0, 1, mesh.GetVertexBuffer().GetAddressOf(), &m_commonVertexBufferStride, &m_vertexBufferOffset);
+			deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
+
+			deviceContext->DrawIndexed(mesh.GetIndexCount(), 0, 0);
+		}
+	}
+
+	// skeletalMesh (rigid)
+	deviceContext->IASetInputLayout(m_commonInputLayout.Get());
+	deviceContext->VSSetShader(m_rigidAnimLightViewVS.Get(), nullptr, 0);
+	//deviceContext->VSSetShader(m_rigidAnimVS.Get(), nullptr, 0);
+
+	for (const auto& skeletalMesh : m_rigidAnimMeshes)
+	{
+		const auto& meshes = skeletalMesh.GetMeshes();
+		const auto& materials = skeletalMesh.GetMaterials();
+
+		deviceContext->UpdateSubresource(m_bonePoseCB.Get(), 0, nullptr, skeletalMesh.GetSkeletonPose().data(), 0, 0);
+
+		worldtransformBuffer.world = skeletalMesh.GetWorld().Transpose();
+
+		for (const auto& mesh : meshes)
+		{
+			worldtransformBuffer.refBoneIndex = mesh.GetBoneReference();
+			deviceContext->UpdateSubresource(m_worldTransformCB.Get(), 0, nullptr, &worldtransformBuffer, 0, 0);
+
+			auto textureSRV = materials[mesh.GetMaterialIndex()].GetTextureSRVs().opacityTextureSRV;
+
+			deviceContext->PSSetShaderResources(0, 1, textureSRV.GetAddressOf());
+
+			deviceContext->IASetVertexBuffers(0, 1, mesh.GetVertexBuffer().GetAddressOf(), &m_commonVertexBufferStride, &m_vertexBufferOffset);
+			deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
+
+			deviceContext->DrawIndexed(mesh.GetIndexCount(), 0, 0);
+		}
+	}
+
+	// skeletalMesh (skinning)
+	deviceContext->IASetInputLayout(m_skinningInputLayout.Get());
+	deviceContext->VSSetShader(m_skinningAnimLightViewVS.Get(), nullptr, 0);
+	//deviceContext->VSSetShader(m_skinningAnimVS.Get(), nullptr, 0);
+
+	for (const auto& skeletalMesh : m_skinningAnimMeshes)
+	{
+		const auto& meshes = skeletalMesh.GetMeshes();
+		const auto& materials = skeletalMesh.GetMaterials();
+
+		deviceContext->UpdateSubresource(m_bonePoseCB.Get(), 0, nullptr, skeletalMesh.GetSkeletonPose().data(), 0, 0);
+		deviceContext->UpdateSubresource(m_boneOffsetCB.Get(), 0, nullptr, skeletalMesh.GetBoneOffsets().data(), 0, 0);
+
+		worldtransformBuffer.world = skeletalMesh.GetWorld().Transpose();
+		deviceContext->UpdateSubresource(m_worldTransformCB.Get(), 0, nullptr, &worldtransformBuffer, 0, 0);
+
+		for (const auto& mesh : meshes)
+		{
+			auto textureSRV = materials[mesh.GetMaterialIndex()].GetTextureSRVs().opacityTextureSRV;
+
+			deviceContext->PSSetShaderResources(0, 1, textureSRV.GetAddressOf());
+
+			deviceContext->IASetVertexBuffers(0, 1, mesh.GetVertexBuffer().GetAddressOf(), &m_boneWeightVertexBufferStride, &m_vertexBufferOffset);
+			deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
+
+			deviceContext->DrawIndexed(mesh.GetIndexCount(), 0, 0);
+		}
+	}
+	deviceContext->RSSetState(nullptr);
+	deviceContext->OMSetDepthStencilState(nullptr, 0);
+}
+
+void ShadowMappingApp::RenderFinal()
+{
+	auto deviceContext = m_graphicsDevice.GetDeviceContext();
+
+	WorldTransformBuffer worldtransformBuffer{};
+	deviceContext->VSSetConstantBuffers(5, 1, m_worldTransformCB.GetAddressOf());
+
+	// skybox
+	deviceContext->IASetVertexBuffers(0, 1, m_cubeVertexBuffer.GetAddressOf(), &m_cubeVertexBufferStride, &m_vertexBufferOffset);
+	deviceContext->IASetIndexBuffer(m_cubeIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
+	deviceContext->IASetInputLayout(m_posInputLayout.Get());
+	deviceContext->VSSetShader(m_skyboxVS.Get(), nullptr, 0);
+	deviceContext->PSSetShader(m_skyboxPS.Get(), nullptr, 0);
+	deviceContext->PSSetShaderResources(0, 1, m_skyboxTextureSRV.GetAddressOf());
+	deviceContext->RSSetState(m_skyboxRSState.Get());
+	deviceContext->OMSetDepthStencilState(m_skyboxDSState.Get(), 0);
+
+	worldtransformBuffer.world = Matrix::CreateRotationY(ToRadian(90.0f));
+	deviceContext->UpdateSubresource(m_worldTransformCB.Get(), 0, nullptr, &worldtransformBuffer, 0, 0);
+	deviceContext->DrawIndexed(m_cubeIndexCount, 0, 0);
+
+	deviceContext->RSSetState(nullptr);
+	deviceContext->OMSetDepthStencilState(nullptr, 0);
+
+	// common pixel shader
+	deviceContext->PSSetShader(m_blinnPhongPS.Get(), nullptr, 0);
+	deviceContext->PSSetShaderResources(5, 1, m_shadowMapSRV.GetAddressOf());
+
+	// staticMesh
+	deviceContext->IASetInputLayout(m_commonInputLayout.Get());
+	deviceContext->VSSetShader(m_basicVS.Get(), nullptr, 0);
+
+	for (const auto& staticMesh : m_staticMeshes)
+	{
+		const auto& meshes = staticMesh.GetMeshes();
+		const auto& materials = staticMesh.GetMaterials();
+
+		worldtransformBuffer.world = staticMesh.GetWorld().Transpose();
+		deviceContext->UpdateSubresource(m_worldTransformCB.Get(), 0, nullptr, &worldtransformBuffer, 0, 0);
+
+		for (const auto& mesh : meshes)
+		{
+			auto textureSRVs = materials[mesh.GetMaterialIndex()].GetTextureSRVs().AsRawArray();
+
+			deviceContext->IASetVertexBuffers(0, 1, mesh.GetVertexBuffer().GetAddressOf(), &m_commonVertexBufferStride, &m_vertexBufferOffset);
+			deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
+			deviceContext->PSSetShaderResources(0, static_cast<UINT>(textureSRVs.size()), textureSRVs.data());
+
+			deviceContext->DrawIndexed(mesh.GetIndexCount(), 0, 0);
+		}
+	}
+
+	// skeletalMesh (rigid)
+	deviceContext->IASetInputLayout(m_commonInputLayout.Get());
+	deviceContext->VSSetShader(m_rigidAnimVS.Get(), nullptr, 0);
+
+	for (const auto& skeletalMesh : m_rigidAnimMeshes)
+	{
+		const auto& meshes = skeletalMesh.GetMeshes();
+		const auto& materials = skeletalMesh.GetMaterials();
+
+		deviceContext->UpdateSubresource(m_bonePoseCB.Get(), 0, nullptr, skeletalMesh.GetSkeletonPose().data(), 0, 0);
+
+		worldtransformBuffer.world = skeletalMesh.GetWorld().Transpose();
+
+		for (const auto& mesh : meshes)
+		{
+			worldtransformBuffer.refBoneIndex = mesh.GetBoneReference();
+			deviceContext->UpdateSubresource(m_worldTransformCB.Get(), 0, nullptr, &worldtransformBuffer, 0, 0);
+
+			auto textureSRVs = materials[mesh.GetMaterialIndex()].GetTextureSRVs().AsRawArray();
+
+			deviceContext->IASetVertexBuffers(0, 1, mesh.GetVertexBuffer().GetAddressOf(), &m_commonVertexBufferStride, &m_vertexBufferOffset);
+			deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
+			deviceContext->PSSetShaderResources(0, static_cast<UINT>(textureSRVs.size()), textureSRVs.data());
+
+			deviceContext->DrawIndexed(mesh.GetIndexCount(), 0, 0);
+		}
+	}
+
+	// skeletalMesh (skinning)
+	deviceContext->IASetInputLayout(m_skinningInputLayout.Get());
+	deviceContext->VSSetShader(m_skinningAnimVS.Get(), nullptr, 0);
+
+	for (const auto& skeletalMesh : m_skinningAnimMeshes)
+	{
+		const auto& meshes = skeletalMesh.GetMeshes();
+		const auto& materials = skeletalMesh.GetMaterials();
+
+		deviceContext->UpdateSubresource(m_bonePoseCB.Get(), 0, nullptr, skeletalMesh.GetSkeletonPose().data(), 0, 0);
+		deviceContext->UpdateSubresource(m_boneOffsetCB.Get(), 0, nullptr, skeletalMesh.GetBoneOffsets().data(), 0, 0);
+
+		worldtransformBuffer.world = skeletalMesh.GetWorld().Transpose();
+		deviceContext->UpdateSubresource(m_worldTransformCB.Get(), 0, nullptr, &worldtransformBuffer, 0, 0);
+
+		for (const auto& mesh : meshes)
+		{
+			auto textureSRVs = materials[mesh.GetMaterialIndex()].GetTextureSRVs().AsRawArray();
+
+			deviceContext->IASetVertexBuffers(0, 1, mesh.GetVertexBuffer().GetAddressOf(), &m_boneWeightVertexBufferStride, &m_vertexBufferOffset);
+			deviceContext->IASetIndexBuffer(mesh.GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
+			deviceContext->PSSetShaderResources(0, static_cast<UINT>(textureSRVs.size()), textureSRVs.data());
+
+			deviceContext->DrawIndexed(mesh.GetIndexCount(), 0, 0);
+		}
+	}
+	ID3D11ShaderResourceView* nullSRV[]{ nullptr };
+	deviceContext->PSSetShaderResources(5, 1, nullSRV);
 }
 
 void ShadowMappingApp::RenderImGui()
@@ -336,6 +502,9 @@ void ShadowMappingApp::RenderImGui()
 	ImGui::InputFloat3("Direction", &m_lightDirection.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
 	ImGui::ColorEdit3("DirectLightColor", &m_lightColor.x);
 	ImGui::ColorEdit3("AmbientLightColor", &m_ambientLightColor.x);
+	/*ImGui::DragFloat("LightNear", &m_lightNear);
+	ImGui::DragFloat("LightFar", &m_lightFar);*/
+	ImGui::DragFloat("LightFOV", &m_lightFOV, 0.0001f);
 
 	if (ImGui::Button("Reset##3"))
 	{
@@ -347,6 +516,8 @@ void ShadowMappingApp::RenderImGui()
 	ImGui::NewLine();
 	ImGui::SeparatorText("Info");
 	ImGui::Text("%d FPS", GetLastFPS());
+	ImGui::Checkbox("Use Shadow PCF", &m_useShadowPCF);
+	ImGui::Image((ImTextureID)(intptr_t)m_shadowMapSRV.Get(), ImVec2(300.0f, 300.0f));
 	ImGui::End();
 
 	ImGui::Render();
@@ -372,6 +543,7 @@ void ShadowMappingApp::InitializeScene()
 		"Teapot.fbx",
 		"Tree.fbx",
 		"zeldaPosed001.fbx",
+		"Floor.fbx",
 	};
 
 	const std::string skeletalFbxFileNames[]{
@@ -382,7 +554,7 @@ void ShadowMappingApp::InitializeScene()
 		"BoxHuman.fbx",
 	};
 
-	const size_t numFBXs = ARRAYSIZE(skeletalFbxFileNames) + ARRAYSIZE(staticFbxFileNames);
+	const size_t numFBXs = ARRAYSIZE(skeletalFbxFileNames) + ARRAYSIZE(staticFbxFileNames) - 1 /* 바닥 -1 */;
 	const float radian = DirectX::XM_2PI / numFBXs;
 	const float radius = 300.0f;
 
@@ -398,6 +570,15 @@ void ShadowMappingApp::InitializeScene()
 		if (staticFbxFileNames[i] == "Teapot.fbx")
 		{
 			world = Matrix::CreateTranslation(position + Vector3(0.0f, 50.0f, 0.0f));
+		}
+		else if (staticFbxFileNames[i] == "Floor.fbx")
+		{
+			world = Matrix::CreateTranslation(0.0f, 0.0f, 0.0f);
+			--index;
+		}
+		else if (staticFbxFileNames[i] == "zeldaPosed001.fbx")
+		{
+			world = Matrix::CreateTranslation(position + Vector3(0.0f, 10.0f, 0.0f));
 		}
 		else
 		{
@@ -452,8 +633,6 @@ void ShadowMappingApp::InitializeScene()
 		++index;
 	}
 
-	
-
 	// skinning
 	{
 		m_boneWeightVertexBufferStride = sizeof(BoneWeightVertex);
@@ -469,23 +648,38 @@ void ShadowMappingApp::InitializeScene()
 			{ "BLENDWEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 72, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
 
-		ComPtr<ID3DBlob> vertexShaderBuffer;
-		GraphicsDevice::CompileShaderFromFile(L"SkinningAnimVertexShader.hlsl", "main", "vs_5_0", vertexShaderBuffer);
+		{
+			ComPtr<ID3DBlob> vertexShaderBuffer;
+			GraphicsDevice::CompileShaderFromFile(L"SkinningAnimVS.hlsl", "main", "vs_5_0", vertexShaderBuffer);
 
-		device->CreateInputLayout(
-			layout,
-			ARRAYSIZE(layout),
-			vertexShaderBuffer->GetBufferPointer(),
-			vertexShaderBuffer->GetBufferSize(),
-			&m_skinningInputLayout
-		);
+			device->CreateInputLayout(
+				layout,
+				ARRAYSIZE(layout),
+				vertexShaderBuffer->GetBufferPointer(),
+				vertexShaderBuffer->GetBufferSize(),
+				&m_skinningInputLayout
+			);
 
-		device->CreateVertexShader(
-			vertexShaderBuffer->GetBufferPointer(),
-			vertexShaderBuffer->GetBufferSize(),
-			nullptr,
-			&m_skinningAnimVertexShader
-		);
+			device->CreateVertexShader(
+				vertexShaderBuffer->GetBufferPointer(),
+				vertexShaderBuffer->GetBufferSize(),
+				nullptr,
+				&m_skinningAnimVS
+			);
+		}
+
+		{
+			// lightView
+			ComPtr<ID3DBlob> vertexShaderBuffer;
+			GraphicsDevice::CompileShaderFromFile(L"SkinningAnimLightViewVS.hlsl", "main", "vs_5_0", vertexShaderBuffer);
+
+			device->CreateVertexShader(
+				vertexShaderBuffer->GetBufferPointer(),
+				vertexShaderBuffer->GetBufferSize(),
+				nullptr,
+				&m_skinningAnimLightViewVS
+			);
+		}
 	}
 
 	// common
@@ -503,7 +697,7 @@ void ShadowMappingApp::InitializeScene()
 
 		{
 			ComPtr<ID3DBlob> vertexShaderBuffer;
-			GraphicsDevice::CompileShaderFromFile(L"RigidAnimVertexShader.hlsl", "main", "vs_5_0", vertexShaderBuffer);
+			GraphicsDevice::CompileShaderFromFile(L"RigidAnimVS.hlsl", "main", "vs_5_0", vertexShaderBuffer);
 
 			device->CreateInputLayout(
 				layout,
@@ -517,19 +711,43 @@ void ShadowMappingApp::InitializeScene()
 				vertexShaderBuffer->GetBufferPointer(),
 				vertexShaderBuffer->GetBufferSize(),
 				nullptr,
-				&m_rigidAnimVertexShader
+				&m_rigidAnimVS
 			);
 		}
 
 		{
 			ComPtr<ID3DBlob> vertexShaderBuffer;
-			GraphicsDevice::CompileShaderFromFile(L"BasicVertexShader.hlsl", "main", "vs_5_0", vertexShaderBuffer);
+			GraphicsDevice::CompileShaderFromFile(L"BasicVS.hlsl", "main", "vs_5_0", vertexShaderBuffer);
 
 			device->CreateVertexShader(
 				vertexShaderBuffer->GetBufferPointer(),
 				vertexShaderBuffer->GetBufferSize(),
 				nullptr,
-				&m_basicVertexShader
+				&m_basicVS
+			);
+		}
+
+		{
+			ComPtr<ID3DBlob> vertexShaderBuffer;
+			GraphicsDevice::CompileShaderFromFile(L"BasicLightViewVS.hlsl", "main", "vs_5_0", vertexShaderBuffer);
+
+			device->CreateVertexShader(
+				vertexShaderBuffer->GetBufferPointer(),
+				vertexShaderBuffer->GetBufferSize(),
+				nullptr,
+				&m_basicLightViewVS
+			);
+		}
+
+		{
+			ComPtr<ID3DBlob> vertexShaderBuffer;
+			GraphicsDevice::CompileShaderFromFile(L"RigidAnimLightViewVS.hlsl", "main", "vs_5_0", vertexShaderBuffer);
+
+			device->CreateVertexShader(
+				vertexShaderBuffer->GetBufferPointer(),
+				vertexShaderBuffer->GetBufferSize(),
+				nullptr,
+				&m_rigidAnimLightViewVS
 			);
 		}
 	}
@@ -623,7 +841,7 @@ void ShadowMappingApp::InitializeScene()
 		};
 
 		ComPtr<ID3DBlob> vertexShaderBuffer;
-		GraphicsDevice::CompileShaderFromFile(L"SkyboxVertexShader.hlsl", "main", "vs_5_0", vertexShaderBuffer);
+		GraphicsDevice::CompileShaderFromFile(L"SkyboxVS.hlsl", "main", "vs_5_0", vertexShaderBuffer);
 
 		device->CreateInputLayout(
 			layout,
@@ -637,17 +855,17 @@ void ShadowMappingApp::InitializeScene()
 			vertexShaderBuffer->GetBufferPointer(),
 			vertexShaderBuffer->GetBufferSize(),
 			nullptr,
-			&m_skyboxVertexShader
+			&m_skyboxVS
 		);
 
 		ComPtr<ID3DBlob> pixelShaderBuffer;
-		GraphicsDevice::CompileShaderFromFile(L"SkyboxPixelShader.hlsl", "main", "ps_5_0", pixelShaderBuffer);
+		GraphicsDevice::CompileShaderFromFile(L"SkyboxPS.hlsl", "main", "ps_5_0", pixelShaderBuffer);
 
 		device->CreatePixelShader(
 			pixelShaderBuffer->GetBufferPointer(),
 			pixelShaderBuffer->GetBufferSize(),
 			nullptr,
-			&m_skyboxPixelShader
+			&m_skyboxPS
 		);
 
 		DirectX::CreateDDSTextureFromFile(device.Get(), L"cloudy_skybox.dds", nullptr, &m_skyboxTextureSRV);
@@ -672,27 +890,87 @@ void ShadowMappingApp::InitializeScene()
 	// blinn-phong pixel shader
 	{
 		ComPtr<ID3DBlob> pixelShaderBuffer;
-		GraphicsDevice::CompileShaderFromFile(L"BlinnPhongPixelShader.hlsl", "main", "ps_5_0", pixelShaderBuffer);
+		GraphicsDevice::CompileShaderFromFile(L"BlinnPhongPS.hlsl", "main", "ps_5_0", pixelShaderBuffer);
 
 		device->CreatePixelShader(
 			pixelShaderBuffer->GetBufferPointer(),
 			pixelShaderBuffer->GetBufferSize(),
 			nullptr,
-			&m_blinnPhongPixelShader
+			&m_blinnPhongPS
 		);
 	}
 
 	// skybox pixel shader
 	{
 		ComPtr<ID3DBlob> pixelShaderBuffer;
-		GraphicsDevice::CompileShaderFromFile(L"SkyboxPixelShader.hlsl", "main", "ps_5_0", pixelShaderBuffer);
+		GraphicsDevice::CompileShaderFromFile(L"SkyboxPS.hlsl", "main", "ps_5_0", pixelShaderBuffer);
 
 		device->CreatePixelShader(
 			pixelShaderBuffer->GetBufferPointer(),
 			pixelShaderBuffer->GetBufferSize(),
 			nullptr,
-			&m_skyboxPixelShader
+			&m_skyboxPS
 		);
+	}
+
+	// lightview pixel shader
+	{
+		ComPtr<ID3DBlob> pixelShaderBuffer;
+		GraphicsDevice::CompileShaderFromFile(L"LightViewPS.hlsl", "main", "ps_5_0", pixelShaderBuffer);
+
+		device->CreatePixelShader(
+			pixelShaderBuffer->GetBufferPointer(),
+			pixelShaderBuffer->GetBufferSize(),
+			nullptr,
+			&m_lightViewPS
+		);
+	}
+
+	// shadow mapping
+	{
+		D3D11_TEXTURE2D_DESC texDesc{};
+		texDesc.Width = static_cast<UINT>(m_shadowMapWidth);
+		texDesc.Height = static_cast<UINT>(m_shadowMapWidth);
+		texDesc.MipLevels = 1;
+		texDesc.ArraySize = 1;
+		texDesc.Usage = D3D11_USAGE_DEFAULT;
+		texDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+		texDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+		texDesc.SampleDesc.Count = 1;
+		texDesc.SampleDesc.Quality = 0;
+
+		device->CreateTexture2D(&texDesc, nullptr, &m_shadowMap);
+
+		D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
+		dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+		dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+
+		device->CreateDepthStencilView(m_shadowMap.Get(), &dsvDesc, &m_shadowMapDSV);
+
+		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+		srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.Texture2D.MipLevels = 1;
+
+		device->CreateShaderResourceView(m_shadowMap.Get(), &srvDesc, &m_shadowMapSRV);
+
+		// Shadow Map용 Rasterizer State (Depth Bias 설정)
+		D3D11_RASTERIZER_DESC shadowRSDesc{};
+		shadowRSDesc.CullMode = D3D11_CULL_BACK;
+		shadowRSDesc.FillMode = D3D11_FILL_SOLID;
+		shadowRSDesc.DepthClipEnable = TRUE;
+		shadowRSDesc.DepthBias = 10000;  // 조정 필요할 수 있음
+		shadowRSDesc.DepthBiasClamp = 0.0f;
+		shadowRSDesc.SlopeScaledDepthBias = 20.0f;  // 조정 필요할 수 있음
+
+		device->CreateRasterizerState(&shadowRSDesc, &m_shadowMapRSState);
+
+		D3D11_DEPTH_STENCIL_DESC depthStencilDesc{};
+		depthStencilDesc.DepthEnable = TRUE;
+		depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+		depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+
+		device->CreateDepthStencilState(&depthStencilDesc, &m_shadowMapDSState);
 	}
 
 	// constant buffer
@@ -700,41 +978,49 @@ void ShadowMappingApp::InitializeScene()
 	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 
+	constantBufferDesc.ByteWidth = sizeof(WorldTransformBuffer);
+	device->CreateBuffer(&constantBufferDesc, nullptr, &m_worldTransformCB);
+
 	constantBufferDesc.ByteWidth = sizeof(TransformBuffer);
-	device->CreateBuffer(&constantBufferDesc, nullptr, &m_transformConstantBuffer);
+	device->CreateBuffer(&constantBufferDesc, nullptr, &m_transformCB);
 
 	constantBufferDesc.ByteWidth = sizeof(EnvironmentBuffer);
-	device->CreateBuffer(&constantBufferDesc, nullptr, &m_environmentConstantBuffer);
+	device->CreateBuffer(&constantBufferDesc, nullptr, &m_environmentCB);
 
 	constantBufferDesc.ByteWidth = sizeof(MaterialBuffer);
-	device->CreateBuffer(&constantBufferDesc, nullptr, &m_materialConstantBuffer);
+	device->CreateBuffer(&constantBufferDesc, nullptr, &m_materialCB);
 
 	constantBufferDesc.ByteWidth = sizeof(Matrix) * MAX_BONE_NUM;
-	device->CreateBuffer(&constantBufferDesc, nullptr, &m_bonePoseConstantBuffer);
+	device->CreateBuffer(&constantBufferDesc, nullptr, &m_bonePoseCB);
 
 	constantBufferDesc.ByteWidth = sizeof(Matrix) * MAX_BONE_NUM;
-	device->CreateBuffer(&constantBufferDesc, nullptr, &m_boneOffsetConstantBuffer);
-	
+	device->CreateBuffer(&constantBufferDesc, nullptr, &m_boneOffsetCB);
 
-	// sampler
-	D3D11_SAMPLER_DESC samplerDesc{};
-	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-	samplerDesc.MinLOD = 0;
-	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	// linear sampler
+	{
+		D3D11_SAMPLER_DESC samplerDesc{};
+		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		samplerDesc.MinLOD = 0;
+		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
-	device->CreateSamplerState(&samplerDesc, &m_samplerState);
+		device->CreateSamplerState(&samplerDesc, &m_samplerState);
+	}
 
-	m_camera.GetViewMatrix(m_view);
+	// comparison sampler
+	{
+		D3D11_SAMPLER_DESC samplerDesc{};
+		samplerDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
 
-	m_projection = DirectX::XMMatrixPerspectiveFovLH(
-		ToRadian(m_camera.GetFOV()),
-		static_cast<float>(m_width) / m_height,
-		m_camera.GetNear(),
-		m_camera.GetFar());
+		device->CreateSamplerState(&samplerDesc, &m_samplerComparisonState);
+	}
 }
 
 void ShadowMappingApp::ShutdownImGui()

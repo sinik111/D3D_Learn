@@ -7,14 +7,20 @@
     <Filter Include="02_Mesh">
       <UniqueIdentifier>{b421e2e1-e5ba-442c-b1ae-1cda28cb16e5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03_Shader">
-      <UniqueIdentifier>{9bbcc4b7-240b-43de-8163-91dc3ab1a39c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02_Mesh\Skeletal">
       <UniqueIdentifier>{472ae9bf-26e2-4ae4-859c-5ce8d37ef5f3}</UniqueIdentifier>
     </Filter>
     <Filter Include="02_Mesh\Static">
       <UniqueIdentifier>{7f050545-81cd-4f7d-a3ac-3695d58b1cd8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03_Shader">
+      <UniqueIdentifier>{9bbcc4b7-240b-43de-8163-91dc3ab1a39c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03_Shader\Vertex">
+      <UniqueIdentifier>{17d8ab03-f25a-42b3-9326-5784b87b5770}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03_Shader\Pixel">
+      <UniqueIdentifier>{45f5badf-3b78-49e5-8f71-61b0dd3e7438}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -73,23 +79,35 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="SkinningAnimVertexShader.hlsl">
-      <Filter>03_Shader</Filter>
+    <FxCompile Include="BasicVS.hlsl">
+      <Filter>03_Shader\Vertex</Filter>
     </FxCompile>
-    <FxCompile Include="BlinnPhongPixelShader.hlsl">
-      <Filter>03_Shader</Filter>
+    <FxCompile Include="RigidAnimVS.hlsl">
+      <Filter>03_Shader\Vertex</Filter>
     </FxCompile>
-    <FxCompile Include="RigidAnimVertexShader.hlsl">
-      <Filter>03_Shader</Filter>
+    <FxCompile Include="SkinningAnimVS.hlsl">
+      <Filter>03_Shader\Vertex</Filter>
     </FxCompile>
-    <FxCompile Include="BasicVertexShader.hlsl">
-      <Filter>03_Shader</Filter>
+    <FxCompile Include="SkyboxVS.hlsl">
+      <Filter>03_Shader\Vertex</Filter>
     </FxCompile>
-    <FxCompile Include="SkyboxVertexShader.hlsl">
-      <Filter>03_Shader</Filter>
+    <FxCompile Include="BlinnPhongPS.hlsl">
+      <Filter>03_Shader\Pixel</Filter>
     </FxCompile>
-    <FxCompile Include="SkyboxPixelShader.hlsl">
-      <Filter>03_Shader</Filter>
+    <FxCompile Include="SkyboxPS.hlsl">
+      <Filter>03_Shader\Pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicLightViewVS.hlsl">
+      <Filter>03_Shader\Vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="RigidAnimLightVIewVS.hlsl">
+      <Filter>03_Shader\Vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="SkinningAnimLightViewVS.hlsl">
+      <Filter>03_Shader\Vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="LightViewPS.hlsl">
+      <Filter>03_Shader\Pixel</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

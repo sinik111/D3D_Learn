@@ -100,16 +100,14 @@ void GraphicsDevice::Initialize(HWND hWnd, UINT width, UINT height)
 
 
 	// Viewport
+	m_viewport.TopLeftX = 0;
+	m_viewport.TopLeftY = 0;
+	m_viewport.Width = static_cast<float>(m_width);
+	m_viewport.Height = static_cast<float>(m_height);
+	m_viewport.MinDepth = 0.0f;
+	m_viewport.MaxDepth = 1.0f;
 
-	D3D11_VIEWPORT viewport{};
-	viewport.TopLeftX = 0;
-	viewport.TopLeftY = 0;
-	viewport.Width = static_cast<float>(m_width);
-	viewport.Height = static_cast<float>(m_height);
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
-
-	m_d3d11DeviceContext->RSSetViewports(1, &viewport);
+	m_d3d11DeviceContext->RSSetViewports(1, &m_viewport);
 
 
 	// Depth, Stencil View
@@ -161,6 +159,11 @@ Microsoft::WRL::ComPtr<ID3D11RenderTargetView> GraphicsDevice::GetRenderTargetVi
 Microsoft::WRL::ComPtr<ID3D11DepthStencilView> GraphicsDevice::GetDepthStencilView() const
 {
 	return m_d3d11DepthStencilView;
+}
+
+const D3D11_VIEWPORT& GraphicsDevice::GetViewport() const
+{
+	return m_viewport;
 }
 
 void GraphicsDevice::BeginDraw(const DirectX::SimpleMath::Color& clearColor)

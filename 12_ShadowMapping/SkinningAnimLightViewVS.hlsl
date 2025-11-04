@@ -19,13 +19,8 @@ PS_INPUT main(VS_INPUT_SKINNING input)
     float4x4 world = mul(weightedOffsetPose, g_world);
     
     output.pos = mul(float4(input.pos, 1.0f), world);
-    output.worldPos = output.pos.xyz;
-    output.pos = mul(output.pos, g_view);
-    output.pos = mul(output.pos, g_projection);
-    
-    output.norm = mul(input.norm, (float3x3) world);
-    output.tan = mul(input.tan, (float3x3) world);
-    output.binorm = mul(input.binorm, (float3x3) world);
+    output.pos = mul(output.pos, g_lightView);
+    output.pos = mul(output.pos, g_lightProjection);
     
     output.tex = input.tex;
     

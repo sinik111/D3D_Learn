@@ -18,6 +18,7 @@ private:
 	HWND m_hWnd = nullptr;
 	UINT m_width = 0;
 	UINT m_height = 0;
+	D3D11_VIEWPORT m_viewport{};
 
 public:
 	void Initialize(HWND hWnd, UINT width, UINT height);
@@ -27,6 +28,7 @@ public:
 	Microsoft::WRL::ComPtr<IDXGISwapChain1> GetSwapChain() const;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> GetRenderTargetView() const;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> GetDepthStencilView() const;
+	const D3D11_VIEWPORT& GetViewport() const;
 
 	void BeginDraw(const DirectX::SimpleMath::Color& clearColor);
 	void EndDraw();

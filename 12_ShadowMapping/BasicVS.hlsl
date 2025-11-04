@@ -1,8 +1,8 @@
 #include "Shared.hlsli"
 
-PS_INPUT main(VS_INPUT_COMMON input)
+PS_INPUT_SHADOW main(VS_INPUT_COMMON input)
 {
-    PS_INPUT output = (PS_INPUT) 0;
+    PS_INPUT_SHADOW output = (PS_INPUT_SHADOW) 0;
     
     output.pos = mul(float4(input.pos, 1.0f), g_world);
     output.worldPos = output.pos.xyz;
@@ -14,6 +14,9 @@ PS_INPUT main(VS_INPUT_COMMON input)
     output.binorm = mul(input.binorm, (float3x3) g_world);
     
     output.tex = input.tex;
+    
+    output.lightViewPos = mul(float4(output.worldPos, 1.0f), g_lightView);
+    output.lightViewPos = mul(output.lightViewPos, g_lightProjection);
     
     return output;
 }
