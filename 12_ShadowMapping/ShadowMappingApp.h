@@ -88,7 +88,7 @@ private:
 	Matrix m_lightRotationMatrix;
 	const Vector3 m_originalLightDir{ 0.0f, -1.0f, 0.0f };
 	Vector3 m_lightDirection;
-	Vector3 m_lightRotation{ 45.0f, 45.0f, 0.0f };
+	Vector3 m_lightRotation{ -40.0f, 25.0f, 0.0f };
 	Vector4 m_lightColor{ 1.0f, 1.0f, 1.0f, 1.0f };
 	Vector4 m_ambientLightColor{ 0.1f, 0.1f, 0.1f, 1.0f };
 	float m_shininess = 64.0f;

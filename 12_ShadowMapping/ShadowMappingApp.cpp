@@ -86,17 +86,34 @@ void ShadowMappingApp::OnUpdate()
 
 	m_lightDirection = DirectX::XMVector3TransformNormal(m_originalLightDir, m_lightRotationMatrix);
 	m_lightDirection.Normalize();
-	Vector3 lightUp{ 0.0f, 0.0f, -1.0f };
+	Vector3 lightUp;
+	float angleX = std::fmod(m_lightRotation.x, 360.0f);
+	if (angleX < 0)
+	{
+		lightUp = (angleX < -180.0f) ? Vector3(0.0f, 0.0f, -1.0f) : Vector3(0.0f, 0.0f, 1.0f);
+	}
+	else
+	{
+		lightUp = (angleX < 180.0f) ? Vector3(0.0f, 0.0f, -1.0f) : Vector3(0.0f, 0.0f, 1.0f);
+	}
+
 	lightUp = DirectX::XMVector3TransformNormal(lightUp, m_lightRotationMatrix);
 	lightUp.Normalize();
 
-	//m_lightNear = m_lightFar * 0.9f;
+	if (m_lightFOV == 0.0f)
+	{
+		m_lightFOV = 0.01f;
+	}
 
-	m_lightProjection = DirectX::XMMatrixPerspectiveFovLH(
-		ToRadian(m_lightFOV),
-		static_cast<float>(m_shadowMapWidth) / m_shadowMapHeight,
-		m_lightNear,
-		m_lightFar);
+	if (m_lightNear == 0.0f)
+	{
+		m_lightNear = 1.0f;
+	}
+
+	if (m_lightFar == 0.0f || m_lightFar <= m_lightNear)
+	{
+		m_lightFar = 1000.0f;
+	}
 
 	Vector3 focusPosition = m_camera.GetPosition() + m_camera.GetForward() * m_lightForwardDistFromCam;
 	m_lightPosition = focusPosition + -m_lightDirection * m_lightFar * 0.95f;
@@ -215,17 +232,14 @@ void ShadowMappingApp::RenderShadowMap()
 
 	WorldTransformBuffer worldtransformBuffer{};
 	deviceContext->VSSetConstantBuffers(5, 1, m_worldTransformCB.GetAddressOf());
-	//deviceContext->RSSetState(m_shadowMapRSState.Get());
 	deviceContext->OMSetDepthStencilState(m_shadowMapDSState.Get(), 0);
 
 	// common pixel shader
 	deviceContext->PSSetShader(m_lightViewPS.Get(), nullptr, 0);
-	//deviceContext->PSSetShader(nullptr, nullptr, 0);
 
 	// staticMesh
 	deviceContext->IASetInputLayout(m_commonInputLayout.Get());
 	deviceContext->VSSetShader(m_basicLightViewVS.Get(), nullptr, 0);
-	//deviceContext->VSSetShader(m_basicVS.Get(), nullptr, 0);
 
 	for (const auto& staticMesh : m_staticMeshes)
 	{
@@ -251,7 +265,6 @@ void ShadowMappingApp::RenderShadowMap()
 	// skeletalMesh (rigid)
 	deviceContext->IASetInputLayout(m_commonInputLayout.Get());
 	deviceContext->VSSetShader(m_rigidAnimLightViewVS.Get(), nullptr, 0);
-	//deviceContext->VSSetShader(m_rigidAnimVS.Get(), nullptr, 0);
 
 	for (const auto& skeletalMesh : m_rigidAnimMeshes)
 	{
@@ -281,7 +294,6 @@ void ShadowMappingApp::RenderShadowMap()
 	// skeletalMesh (skinning)
 	deviceContext->IASetInputLayout(m_skinningInputLayout.Get());
 	deviceContext->VSSetShader(m_skinningAnimLightViewVS.Get(), nullptr, 0);
-	//deviceContext->VSSetShader(m_skinningAnimVS.Get(), nullptr, 0);
 
 	for (const auto& skeletalMesh : m_skinningAnimMeshes)
 	{
@@ -502,10 +514,11 @@ void ShadowMappingApp::RenderImGui()
 	ImGui::InputFloat3("Direction", &m_lightDirection.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
 	ImGui::ColorEdit3("DirectLightColor", &m_lightColor.x);
 	ImGui::ColorEdit3("AmbientLightColor", &m_ambientLightColor.x);
-	/*ImGui::DragFloat("LightNear", &m_lightNear);
-	ImGui::DragFloat("LightFar", &m_lightFar);*/
+	ImGui::DragFloat("LightNear", &m_lightNear);
+	ImGui::DragFloat("LightFar", &m_lightFar);
 	ImGui::DragFloat("LightFOV", &m_lightFOV, 0.0001f);
-
+	ImGui::DragFloat("ForwardFromCam", &m_lightForwardDistFromCam, 0.1f);
+	
 	if (ImGui::Button("Reset##3"))
 	{
 		m_lightRotation = { -40.0f, 25.0f, 0.0f };
@@ -541,9 +554,9 @@ void ShadowMappingApp::InitializeScene()
 
 	const std::string staticFbxFileNames[]{
 		"Teapot.fbx",
-		"Tree.fbx",
 		"zeldaPosed001.fbx",
 		"Floor.fbx",
+		"Tree.fbx",
 	};
 
 	const std::string skeletalFbxFileNames[]{
@@ -953,17 +966,6 @@ void ShadowMappingApp::InitializeScene()
 		srvDesc.Texture2D.MipLevels = 1;
 
 		device->CreateShaderResourceView(m_shadowMap.Get(), &srvDesc, &m_shadowMapSRV);
-
-		// Shadow Map용 Rasterizer State (Depth Bias 설정)
-		D3D11_RASTERIZER_DESC shadowRSDesc{};
-		shadowRSDesc.CullMode = D3D11_CULL_BACK;
-		shadowRSDesc.FillMode = D3D11_FILL_SOLID;
-		shadowRSDesc.DepthClipEnable = TRUE;
-		shadowRSDesc.DepthBias = 10000;  // 조정 필요할 수 있음
-		shadowRSDesc.DepthBiasClamp = 0.0f;
-		shadowRSDesc.SlopeScaledDepthBias = 20.0f;  // 조정 필요할 수 있음
-
-		device->CreateRasterizerState(&shadowRSDesc, &m_shadowMapRSState);
 
 		D3D11_DEPTH_STENCIL_DESC depthStencilDesc{};
 		depthStencilDesc.DepthEnable = TRUE;
