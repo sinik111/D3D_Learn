@@ -33,9 +33,6 @@
     <ClInclude Include="Vertex.h">
       <Filter>02_Module</Filter>
     </ClInclude>
-    <ClInclude Include="Cube.h">
-      <Filter>02_Module</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinApp.cpp">
@@ -54,9 +51,6 @@
       <Filter>02_Module</Filter>
     </ClCompile>
     <ClCompile Include="Helper.cpp">
-      <Filter>02_Module</Filter>
-    </ClCompile>
-    <ClCompile Include="Cube.cpp">
       <Filter>02_Module</Filter>
     </ClCompile>
   </ItemGroup>

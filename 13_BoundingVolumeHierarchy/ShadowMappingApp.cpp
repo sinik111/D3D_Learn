@@ -5,6 +5,7 @@
 #include <imgui_impl_win32.h>
 #include <imgui_impl_dx11.h>
 #include <directxtk/DDSTextureLoader.h>
+#include <DirectXCollision.h>
 
 #include "../Common/MyTime.h"
 #include "../Common/Helper.h"
@@ -366,6 +367,7 @@ void ShadowMappingApp::RenderFinal()
 			deviceContext->PSSetShaderResources(0, static_cast<UINT>(textureSRVs.size()), textureSRVs.data());
 
 			deviceContext->DrawIndexed(mesh.GetIndexCount(), 0, 0);
+
 		}
 	}
 

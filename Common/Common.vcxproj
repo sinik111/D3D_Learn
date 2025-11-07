@@ -145,7 +145,6 @@
     <ClInclude Include="MyTime.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="WinApp.h" />
-    <ClInclude Include="Cube.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
@@ -154,7 +153,6 @@
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="MyTime.cpp" />
     <ClCompile Include="WinApp.cpp" />
-    <ClCompile Include="Cube.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
