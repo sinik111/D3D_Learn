@@ -29,6 +29,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "11_ToonShadingWithOutline",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "12_ShadowMapping", "12_ShadowMapping\12_ShadowMapping.vcxproj", "{72391F9F-C1F4-47EB-9159-0CA3C281D2A4}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "13_BoundingVolumeHierarchy", "13_BoundingVolumeHierarchy\13_BoundingVolumeHierarchy.vcxproj", "{E0C0B6BE-B161-4D80-B138-A5D40C9BC1BA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -141,6 +143,14 @@ Global
 		{72391F9F-C1F4-47EB-9159-0CA3C281D2A4}.Release|x64.Build.0 = Release|x64
 		{72391F9F-C1F4-47EB-9159-0CA3C281D2A4}.Release|x86.ActiveCfg = Release|Win32
 		{72391F9F-C1F4-47EB-9159-0CA3C281D2A4}.Release|x86.Build.0 = Release|Win32
+		{E0C0B6BE-B161-4D80-B138-A5D40C9BC1BA}.Debug|x64.ActiveCfg = Debug|x64
+		{E0C0B6BE-B161-4D80-B138-A5D40C9BC1BA}.Debug|x64.Build.0 = Debug|x64
+		{E0C0B6BE-B161-4D80-B138-A5D40C9BC1BA}.Debug|x86.ActiveCfg = Debug|Win32
+		{E0C0B6BE-B161-4D80-B138-A5D40C9BC1BA}.Debug|x86.Build.0 = Debug|Win32
+		{E0C0B6BE-B161-4D80-B138-A5D40C9BC1BA}.Release|x64.ActiveCfg = Release|x64
+		{E0C0B6BE-B161-4D80-B138-A5D40C9BC1BA}.Release|x64.Build.0 = Release|x64
+		{E0C0B6BE-B161-4D80-B138-A5D40C9BC1BA}.Release|x86.ActiveCfg = Release|Win32
+		{E0C0B6BE-B161-4D80-B138-A5D40C9BC1BA}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
