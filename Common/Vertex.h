@@ -3,7 +3,7 @@
 #include <directxtk/SimpleMath.h>
 #include <cassert>
 
-struct Vertex
+struct CommonVertex3D
 {
 	using Vector2 = DirectX::SimpleMath::Vector2;
 	using Vector3 = DirectX::SimpleMath::Vector3;
@@ -14,9 +14,9 @@ struct Vertex
 	Vector3 tangent;
 	Vector3 binormal;
 
-	Vertex() noexcept = default;
+	CommonVertex3D() noexcept = default;
 
-	Vertex(const float* position,
+	CommonVertex3D(const float* position,
 		const float* texCoord,
 		const float* normal,
 		const float* tangent,
@@ -26,7 +26,7 @@ struct Vertex
 
 	}
 
-	Vertex(const Vector3& position,
+	CommonVertex3D(const Vector3& position,
 		const Vector2& texCoord,
 		const Vector3& normal,
 		const Vector3& tangent,
@@ -37,12 +37,12 @@ struct Vertex
 	}
 };
 
-struct PosVertex
+struct PositionVertex3D
 {
 	DirectX::SimpleMath::Vector3 position;
 };
 
-struct BoneWeightVertex
+struct BoneWeightVertex3D
 {
 	using Vector2 = DirectX::SimpleMath::Vector2;
 	using Vector3 = DirectX::SimpleMath::Vector3;
@@ -55,9 +55,9 @@ struct BoneWeightVertex
 	unsigned int blendIndices[4]{};
 	float blendWeights[4]{};
 
-	BoneWeightVertex() noexcept = default;
+	BoneWeightVertex3D() noexcept = default;
 
-	BoneWeightVertex(const float* position,
+	BoneWeightVertex3D(const float* position,
 		const float* texCoord,
 		const float* normal,
 		const float* tangent,
@@ -67,7 +67,7 @@ struct BoneWeightVertex
 
 	}
 
-	BoneWeightVertex(const Vector3& position,
+	BoneWeightVertex3D(const Vector3& position,
 		const Vector2& texCoord,
 		const Vector3& normal,
 		const Vector3& tangent,

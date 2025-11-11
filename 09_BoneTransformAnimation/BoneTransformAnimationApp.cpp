@@ -344,7 +344,7 @@ void BoneTransformAnimationApp::InitializeScene()
 
 	// object
 	{
-		m_vertexBufferStride = sizeof(Vertex);
+		m_vertexBufferStride = sizeof(CommonVertex3D);
 
 		D3D11_INPUT_ELEMENT_DESC layout[]{
 			// SemanticName , SemanticIndex , Format , InputSlot , AlignedByteOffset , InputSlotClass , InstanceDataStepRate

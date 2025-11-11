@@ -16,7 +16,7 @@ using Microsoft::WRL::ComPtr;
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-struct Vertex
+struct CommonVertex3D
 {
 	Vector3 position;
 	Vector3 normal;
@@ -295,7 +295,7 @@ void LightingApp::InitializeScene()
 {
 	auto device = m_graphicsDevice.GetDevice();
 
-	m_vertexBufferStride = sizeof(Vertex);
+	m_vertexBufferStride = sizeof(CommonVertex3D);
 
 	CreateCrystal();
 	CreateSkyBox();
@@ -382,7 +382,7 @@ void LightingApp::CreateCrystal()
 		crystalFaceNormals[i] = normal;
 	}
 
-	Vertex vertices[FACES_COUNT * 3]{};
+	CommonVertex3D vertices[FACES_COUNT * 3]{};
 
 	WORD indices[FACES_COUNT * 3]{};
 
@@ -412,7 +412,7 @@ void LightingApp::CreateCrystal()
 	}
 
 	D3D11_BUFFER_DESC vertexBufferDesc{};
-	vertexBufferDesc.ByteWidth = sizeof(Vertex) * ARRAYSIZE(vertices);
+	vertexBufferDesc.ByteWidth = sizeof(CommonVertex3D) * ARRAYSIZE(vertices);
 	vertexBufferDesc.CPUAccessFlags = 0;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.MiscFlags = 0;
@@ -480,7 +480,7 @@ void LightingApp::CreateSkyBox()
 
 	// Cube
 
-	Vertex vertices[] =
+	CommonVertex3D vertices[] =
 	{
 		{ Vector3{ -0.5f, 0.5f, -0.5f } },
 		{ Vector3{ 0.5f, 0.5f, -0.5f } },
@@ -493,7 +493,7 @@ void LightingApp::CreateSkyBox()
 	};
 
 	D3D11_BUFFER_DESC vertexBufferDesc{};
-	vertexBufferDesc.ByteWidth = sizeof(Vertex) * ARRAYSIZE(vertices);
+	vertexBufferDesc.ByteWidth = sizeof(CommonVertex3D) * ARRAYSIZE(vertices);
 	vertexBufferDesc.CPUAccessFlags = 0;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.MiscFlags = 0;

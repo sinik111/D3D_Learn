@@ -16,7 +16,7 @@ using Microsoft::WRL::ComPtr;
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-struct Vertex
+struct CommonVertex3D
 {
 	Vector3 position;
 	Vector3 normal;
@@ -257,11 +257,11 @@ void BlinnPhongApp::InitializeScene()
 {
 	auto device = m_graphicsDevice.GetDevice();
 
-	m_vertexBufferStride = sizeof(Vertex);
+	m_vertexBufferStride = sizeof(CommonVertex3D);
 
 	// Cube
 
-	Vertex vertices[] =
+	CommonVertex3D vertices[] =
 	{
 		// Normal Y +
 		{ Vector3(-0.5f, 0.5f, -0.5f),	Vector3(0.0f, 1.0f, 0.0f),	Vector2(1.0f, 0.0f) },
@@ -301,7 +301,7 @@ void BlinnPhongApp::InitializeScene()
 	};
 
 	D3D11_BUFFER_DESC vertexBufferDesc{};
-	vertexBufferDesc.ByteWidth = sizeof(Vertex) * ARRAYSIZE(vertices);
+	vertexBufferDesc.ByteWidth = sizeof(CommonVertex3D) * ARRAYSIZE(vertices);
 	vertexBufferDesc.CPUAccessFlags = 0;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.MiscFlags = 0;

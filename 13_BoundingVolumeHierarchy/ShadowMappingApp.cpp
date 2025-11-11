@@ -645,7 +645,7 @@ void ShadowMappingApp::InitializeScene()
 
 	// skinning
 	{
-		m_boneWeightVertexBufferStride = sizeof(BoneWeightVertex);
+		m_boneWeightVertexBufferStride = sizeof(BoneWeightVertex3D);
 
 		D3D11_INPUT_ELEMENT_DESC layout[]{
 			// SemanticName , SemanticIndex , Format , InputSlot , AlignedByteOffset , InputSlotClass , InstanceDataStepRate
@@ -694,7 +694,7 @@ void ShadowMappingApp::InitializeScene()
 
 	// common
 	{
-		m_commonVertexBufferStride = sizeof(Vertex);
+		m_commonVertexBufferStride = sizeof(CommonVertex3D);
 
 		D3D11_INPUT_ELEMENT_DESC layout[]{
 			// SemanticName , SemanticIndex , Format , InputSlot , AlignedByteOffset , InputSlotClass , InstanceDataStepRate
@@ -764,9 +764,9 @@ void ShadowMappingApp::InitializeScene()
 
 	// cube
 	{
-		m_cubeVertexBufferStride = sizeof(PosVertex);
+		m_cubeVertexBufferStride = sizeof(PositionVertex3D);
 
-		PosVertex vertices[] =
+		PositionVertex3D vertices[] =
 		{
 			// position
 			{ { -0.5f,  0.5f, -0.5f } }, // 0 - 0
@@ -801,7 +801,7 @@ void ShadowMappingApp::InitializeScene()
 		};
 
 		D3D11_BUFFER_DESC vertexBufferDesc{};
-		vertexBufferDesc.ByteWidth = sizeof(PosVertex) * ARRAYSIZE(vertices);
+		vertexBufferDesc.ByteWidth = sizeof(PositionVertex3D) * ARRAYSIZE(vertices);
 		vertexBufferDesc.CPUAccessFlags = 0;
 		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		vertexBufferDesc.MiscFlags = 0;

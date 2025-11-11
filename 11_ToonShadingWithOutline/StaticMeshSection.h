@@ -14,7 +14,7 @@ class StaticMeshSection
 {
 private:
 	std::string m_name;
-	std::vector<Vertex> m_vertices;
+	std::vector<CommonVertex3D> m_vertices;
 	std::vector<DWORD> m_indices;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_vertexBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_indexBuffer;

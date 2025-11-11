@@ -284,7 +284,7 @@ void ToonShadingWithOutlineApp::InitializeScene()
 
 	m_teapot = std::make_unique<StaticMesh>(device, "Teapot.fbx", Matrix::Identity);
 
-	m_vertexBufferStride = sizeof(Vertex);
+	m_vertexBufferStride = sizeof(CommonVertex3D);
 	
 	// outline
 	{

@@ -320,7 +320,7 @@ void SkinningAnimationApp::InitializeScene()
 
 	// object
 	{
-		m_vertexBufferStride = sizeof(BoneWeightVertex);
+		m_vertexBufferStride = sizeof(BoneWeightVertex3D);
 
 		D3D11_INPUT_ELEMENT_DESC layout[]{
 			// SemanticName , SemanticIndex , Format , InputSlot , AlignedByteOffset , InputSlotClass , InstanceDataStepRate

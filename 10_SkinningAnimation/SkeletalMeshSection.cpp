@@ -14,7 +14,7 @@ SkeletalMeshSection::SkeletalMeshSection(const Microsoft::WRL::ComPtr<ID3D11Devi
 	const unsigned int numVertices = mesh->mNumVertices;
 	const unsigned int numFaces = mesh->mNumFaces;
 
-	std::vector<BoneWeightVertex> vertices;
+	std::vector<BoneWeightVertex3D> vertices;
 	std::vector<DWORD> indices;
 
 	m_indexCount = numFaces * 3;
@@ -64,7 +64,7 @@ SkeletalMeshSection::SkeletalMeshSection(const Microsoft::WRL::ComPtr<ID3D11Devi
 
 
 	D3D11_BUFFER_DESC vertexBufferDesc{};
-	vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(BoneWeightVertex) * numVertices);
+	vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(BoneWeightVertex3D) * numVertices);
 	vertexBufferDesc.CPUAccessFlags = 0;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.MiscFlags = 0;

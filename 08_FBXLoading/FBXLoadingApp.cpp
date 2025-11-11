@@ -540,7 +540,7 @@ void FBXLoadingApp::InitializeScene()
 		}
 	}
 
-	m_vertexBufferStride = sizeof(Vertex);
+	m_vertexBufferStride = sizeof(CommonVertex3D);
 	m_instanceBufferStrides[0] = m_vertexBufferStride;
 	m_instanceBufferStrides[1] = sizeof(InstanceData);
 	m_instanceBufferOffsets[0] = m_vertexBufferOffset;
@@ -548,7 +548,7 @@ void FBXLoadingApp::InitializeScene()
 
 	// Cube
 
-	Vertex vertices[] =
+	CommonVertex3D vertices[] =
 	{
 		// Normal Z -
 		// Normal Z +
@@ -590,7 +590,7 @@ void FBXLoadingApp::InitializeScene()
 	};
 
 	D3D11_BUFFER_DESC vertexBufferDesc{};
-	vertexBufferDesc.ByteWidth = sizeof(Vertex) * ARRAYSIZE(vertices);
+	vertexBufferDesc.ByteWidth = sizeof(CommonVertex3D) * ARRAYSIZE(vertices);
 	vertexBufferDesc.CPUAccessFlags = 0;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.MiscFlags = 0;

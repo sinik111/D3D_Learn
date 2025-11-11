@@ -8,7 +8,7 @@
 
 struct aiMesh;
 
-struct Vertex
+struct CommonVertex3D
 {
 	using Vector2 = DirectX::SimpleMath::Vector2;
 	using Vector3 = DirectX::SimpleMath::Vector3;
@@ -19,7 +19,7 @@ struct Vertex
 	Vector3 tangent;
 	Vector3 binormal;
 
-	Vertex(const float* position,
+	CommonVertex3D(const float* position,
 		const float* texCoord,
 		const float* normal,
 		const float* tangent,
@@ -29,7 +29,7 @@ struct Vertex
 
 	}
 
-	Vertex(const Vector3& position,
+	CommonVertex3D(const Vector3& position,
 		const Vector2& texCoord,
 		const Vector3& normal,
 		const Vector3& tangent,
@@ -44,7 +44,7 @@ class Mesh
 {
 private:
 	std::string m_name;
-	std::vector<Vertex> m_vertices;
+	std::vector<CommonVertex3D> m_vertices;
 	std::vector<DWORD> m_indices;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_vertexBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_indexBuffer;

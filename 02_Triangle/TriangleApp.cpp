@@ -7,7 +7,7 @@ using Microsoft::WRL::ComPtr;
 
 #define USE_FLIPMODE
 
-struct Vertex
+struct CommonVertex3D
 {
 	Vector3 position;
 };
@@ -40,7 +40,7 @@ void TriangleApp::CreateTriangle()
 {
 	auto device = m_graphicsDevice.GetDevice();
 
-	Vertex vertices[] {
+	CommonVertex3D vertices[] {
 		Vector3{ -0.5f, -0.5f, 0.5f },
 		Vector3{ 0.0f, 0.5f, 0.5f },
 		Vector3{ 0.5f, -0.5f, 0.5f }
@@ -49,7 +49,7 @@ void TriangleApp::CreateTriangle()
 	m_vertexCount = ARRAYSIZE(vertices);
 
 	D3D11_BUFFER_DESC vertexBufferDesc{};
-	vertexBufferDesc.ByteWidth = sizeof(Vertex) * m_vertexCount;
+	vertexBufferDesc.ByteWidth = sizeof(CommonVertex3D) * m_vertexCount;
 	vertexBufferDesc.CPUAccessFlags = 0;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.MiscFlags = 0;
@@ -60,7 +60,7 @@ void TriangleApp::CreateTriangle()
 
 	device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &m_vertexBuffer);
 
-	m_vertexBufferStride = sizeof(Vertex);
+	m_vertexBufferStride = sizeof(CommonVertex3D);
 	m_vertexBufferOffset = 0;
 
 

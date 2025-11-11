@@ -35,7 +35,7 @@ Mesh::Mesh(const Microsoft::WRL::ComPtr<ID3D11Device>& device, aiMesh* mesh)
 
 
 	D3D11_BUFFER_DESC vertexBufferDesc{};
-	vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(Vertex) * numVertices);
+	vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(CommonVertex3D) * numVertices);
 	vertexBufferDesc.CPUAccessFlags = 0;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.MiscFlags = 0;

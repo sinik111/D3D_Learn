@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="01_App">
+      <UniqueIdentifier>{3eb5b628-35b2-4cba-84d8-eaa2ad40b6e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02_Mesh">
+      <UniqueIdentifier>{1405bc6f-235d-49a7-b535-0defd58bf2c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03_ResourceManager">
+      <UniqueIdentifier>{3320603d-61f0-4553-88e3-e882aee2b036}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04_Shader">
+      <UniqueIdentifier>{31596061-9268-4bab-a3dd-647527d839be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04_Shader\Vertex">
+      <UniqueIdentifier>{d0cc8fb3-64c3-409f-ba9a-d7edef1d3aa4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04_Shader\Pixel">
+      <UniqueIdentifier>{6fd4d504-8f13-49e7-ab89-e05a55e10eb0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02_Mesh\Skeletal">
+      <UniqueIdentifier>{82ae948b-b69e-4a6b-9236-540822b238bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02_Mesh\Static">
+      <UniqueIdentifier>{9b1901a7-9608-4245-9a47-9e0a9366e70e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03_ResourceManager\AssetData">
+      <UniqueIdentifier>{3e8a6cee-d3ec-4e30-92c1-c5fa85882c21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03_ResourceManager\AssetData\Derived">
+      <UniqueIdentifier>{c7b50566-b629-4480-8acf-043ee4f594f8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ResourceManagerApp.cpp">
+      <Filter>01_App</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>01_App</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>02_Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation.cpp">
+      <Filter>02_Mesh\Skeletal</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeletalMesh.cpp">
+      <Filter>02_Mesh\Skeletal</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeletalMeshSection.cpp">
+      <Filter>02_Mesh\Skeletal</Filter>
+    </ClCompile>
+    <ClCompile Include="Skeleton.cpp">
+      <Filter>02_Mesh\Skeletal</Filter>
+    </ClCompile>
+    <ClCompile Include="StaticMesh.cpp">
+      <Filter>02_Mesh\Static</Filter>
+    </ClCompile>
+    <ClCompile Include="StaticMeshSection.cpp">
+      <Filter>02_Mesh\Static</Filter>
+    </ClCompile>
+    <ClCompile Include="AssetData.cpp">
+      <Filter>03_ResourceManager\AssetData</Filter>
+    </ClCompile>
+    <ClCompile Include="StaticMeshData.cpp">
+      <Filter>03_ResourceManager\AssetData\Derived</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialData.cpp">
+      <Filter>03_ResourceManager\AssetData\Derived</Filter>
+    </ClCompile>
+    <ClCompile Include="AssetManager.cpp">
+      <Filter>03_ResourceManager</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ResourceManagerApp.h">
+      <Filter>01_App</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>02_Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>02_Mesh\Skeletal</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletalMesh.h">
+      <Filter>02_Mesh\Skeletal</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletalMeshSection.h">
+      <Filter>02_Mesh\Skeletal</Filter>
+    </ClInclude>
+    <ClInclude Include="Skeleton.h">
+      <Filter>02_Mesh\Skeletal</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticMesh.h">
+      <Filter>02_Mesh\Static</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticMeshSection.h">
+      <Filter>02_Mesh\Static</Filter>
+    </ClInclude>
+    <ClInclude Include="AssetData.h">
+      <Filter>03_ResourceManager\AssetData</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticMeshData.h">
+      <Filter>03_ResourceManager\AssetData\Derived</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialData.h">
+      <Filter>03_ResourceManager\AssetData\Derived</Filter>
+    </ClInclude>
+    <ClInclude Include="AssetManager.h">
+      <Filter>03_ResourceManager</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="RigidAnimVS.hlsl">
+      <Filter>04_Shader\Vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="SkyboxVS.hlsl">
+      <Filter>04_Shader\Vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="SkinningAnimVS.hlsl">
+      <Filter>04_Shader\Vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="SkinningAnimLightViewVS.hlsl">
+      <Filter>04_Shader\Vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="RigidAnimLightVIewVS.hlsl">
+      <Filter>04_Shader\Vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicLightViewVS.hlsl">
+      <Filter>04_Shader\Vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS.hlsl">
+      <Filter>04_Shader\Vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="BlinnPhongPS.hlsl">
+      <Filter>04_Shader\Pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="LightViewPS.hlsl">
+      <Filter>04_Shader\Pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="SkyboxPS.hlsl">
+      <Filter>04_Shader\Pixel</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shared.hlsli">
+      <Filter>04_Shader</Filter>
+    </None>
+  </ItemGroup>
+</Project>

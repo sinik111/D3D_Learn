@@ -7,7 +7,7 @@ using Microsoft::WRL::ComPtr;
 
 #define USE_FLIPMODE
 
-struct Vertex
+struct CommonVertex3D
 {
 	Vector3 position;
 	Vector4 color;
@@ -42,7 +42,7 @@ void RectangleApp::CreateRectangle()
 {
 	auto device = m_graphicsDevice.GetDevice();
 
-	Vertex vertices[] {
+	CommonVertex3D vertices[] {
 		{
 			Vector3{ -0.5f, 0.5f, 0.5f },
 			Vector4{ 1.0f, 0.8f, 0.8f, 1.0f }
@@ -62,7 +62,7 @@ void RectangleApp::CreateRectangle()
 	};
 
 	D3D11_BUFFER_DESC vertexBufferDesc{};
-	vertexBufferDesc.ByteWidth = sizeof(Vertex) * ARRAYSIZE(vertices);
+	vertexBufferDesc.ByteWidth = sizeof(CommonVertex3D) * ARRAYSIZE(vertices);
 	vertexBufferDesc.CPUAccessFlags = 0;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.MiscFlags = 0;
@@ -73,7 +73,7 @@ void RectangleApp::CreateRectangle()
 
 	device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &m_vertexBuffer);
 
-	m_vertexBufferStride = sizeof(Vertex);
+	m_vertexBufferStride = sizeof(CommonVertex3D);
 	m_vertexBufferOffset = 0;
 
 	D3D11_INPUT_ELEMENT_DESC layout[]{
