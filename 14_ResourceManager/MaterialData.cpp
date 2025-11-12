@@ -2,13 +2,26 @@
 
 #include <filesystem>
 
+#include <assimp/Importer.hpp>
 #include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 #include "../Common/Helper.h"
+
+void MaterialData::Create(const std::wstring& filePath)
+{
+	Assimp::Importer importer;
+
+	const aiScene* scene = importer.ReadFile(ToMultibyteStr(filePath), 0);
+
+	Create(scene);
+}
 
 void MaterialData::Create(const aiScene* scene)
 {
 	namespace fs = std::filesystem;
+
+	m_name = ToWideCharStr(scene->mName.C_Str());
 
 	aiString path;
 	aiColor4D color;

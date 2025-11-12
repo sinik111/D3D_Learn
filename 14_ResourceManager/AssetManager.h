@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <string>
 #include <memory>
+#include <queue>
 
 class AssetData;
 
@@ -35,7 +36,6 @@ namespace std
         size_t operator()(const AssetKey& key) const noexcept
         {
             size_t pathHash = std::hash<std::wstring>{}(key.path);
-
             size_t kindHash = std::hash<AssetKind>{}(key.kind);
 
             return HashCombine(pathHash, kindHash);
@@ -46,6 +46,7 @@ namespace std
 class AssetManager
 {
 private:
+	std::queue<std::shared_ptr<AssetData>> m_cachedAssets;
 	std::unordered_map<AssetKey, std::weak_ptr<AssetData>> m_assets;
 
 private:
@@ -60,5 +61,5 @@ public:
 	static AssetManager& Get();
 
 public:
-	std::shared_ptr<
+	std::shared_ptr<AssetData> GetAsset(AssetKey key);
 };

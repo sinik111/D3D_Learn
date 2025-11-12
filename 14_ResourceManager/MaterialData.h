@@ -41,5 +41,6 @@ private:
     std::vector<Material> m_materials;
 
 public:
+    void Create(const std::wstring& filePath);
     void Create(const aiScene* scene);
 };

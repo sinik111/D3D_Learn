@@ -72,6 +72,9 @@
     <ClCompile Include="AssetManager.cpp">
       <Filter>03_ResourceManager</Filter>
     </ClCompile>
+    <ClCompile Include="FBXAssetData.cpp">
+      <Filter>03_ResourceManager\AssetData\Derived</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ResourceManagerApp.h">
@@ -109,6 +112,9 @@
     </ClInclude>
     <ClInclude Include="AssetManager.h">
       <Filter>03_ResourceManager</Filter>
+    </ClInclude>
+    <ClInclude Include="FBXAssetData.h">
+      <Filter>03_ResourceManager\AssetData\Derived</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

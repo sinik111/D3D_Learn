@@ -2,10 +2,27 @@
 
 #include <climits>
 
+#include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
 #include "../Common/Helper.h"
+
+void StaticMeshData::Create(const std::wstring& filePath)
+{
+	Assimp::Importer importer;
+
+	unsigned int importFlags = aiProcess_Triangulate |
+		aiProcess_GenNormals |
+		aiProcess_GenUVCoords |
+		aiProcess_CalcTangentSpace |
+		aiProcess_ConvertToLeftHanded |
+		aiProcess_PreTransformVertices;
+
+	const aiScene* scene = importer.ReadFile(ToMultibyteStr(filePath), importFlags);
+
+	Create(scene);
+}
 
 void StaticMeshData::Create(const aiScene* scene)
 {
