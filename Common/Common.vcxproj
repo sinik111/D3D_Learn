@@ -137,21 +137,51 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AssetData.h" />
+    <ClInclude Include="AssetManager.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CoInitializer.h" />
+    <ClInclude Include="ConstantBuffer.h" />
+    <ClInclude Include="D3DResource.h" />
+    <ClInclude Include="D3DResourceManager.h" />
+    <ClInclude Include="FBXAssetData.h" />
     <ClInclude Include="GraphicsDevice.h" />
     <ClInclude Include="Helper.h" />
+    <ClInclude Include="IndexBuffer.h" />
     <ClInclude Include="Input.h" />
+    <ClInclude Include="InputLayout.h" />
+    <ClInclude Include="MaterialData.h" />
     <ClInclude Include="MyTime.h" />
+    <ClInclude Include="PixelShader.h" />
+    <ClInclude Include="SamplerState.h" />
+    <ClInclude Include="ShaderResourceView.h" />
+    <ClInclude Include="StaticMeshData.h" />
     <ClInclude Include="Vertex.h" />
+    <ClInclude Include="VertexBuffer.h" />
+    <ClInclude Include="VertexShader.h" />
     <ClInclude Include="WinApp.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AssetData.cpp" />
+    <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="ConstantBuffer.cpp" />
+    <ClCompile Include="D3DResource.cpp" />
+    <ClCompile Include="D3DResourceManager.cpp" />
+    <ClCompile Include="FBXAssetData.cpp" />
     <ClCompile Include="GraphicsDevice.cpp" />
     <ClCompile Include="Helper.cpp" />
+    <ClCompile Include="IndexBuffer.cpp" />
     <ClCompile Include="Input.cpp" />
+    <ClCompile Include="InputLayout.cpp" />
+    <ClCompile Include="MaterialData.cpp" />
     <ClCompile Include="MyTime.cpp" />
+    <ClCompile Include="PixelShader.cpp" />
+    <ClCompile Include="SamplerState.cpp" />
+    <ClCompile Include="ShaderResourceView.cpp" />
+    <ClCompile Include="StaticMeshData.cpp" />
+    <ClCompile Include="VertexBuffer.cpp" />
+    <ClCompile Include="VertexShader.cpp" />
     <ClCompile Include="WinApp.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

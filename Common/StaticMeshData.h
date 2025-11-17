@@ -9,12 +9,6 @@
 
 struct aiScene;
 
-enum class IndexFormat
-{
-    R16_UINT,
-    R32_UINT
-};
-
 class StaticMeshData :
     public AssetData
 {
@@ -22,15 +16,15 @@ private:
     struct StaticMeshSection
     {
         std::wstring name;
-        std::vector<CommonVertex3D> vertices;
-        std::vector<WORD> indices16;
-        std::vector<DWORD> indices32;
-        IndexFormat indexFormat;
         unsigned int materialIndex;
+        INT vertexOffset;
+        UINT indexOffset;
         UINT indexCount;
     };
 
 private:
+    std::vector<CommonVertex3D> vertices;
+    std::vector<DWORD> indices;
     std::vector<StaticMeshSection> m_meshSections;
 
 public:

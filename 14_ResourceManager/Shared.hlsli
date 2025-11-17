@@ -1,3 +1,6 @@
+#ifndef SHARED_HLSLI
+#define SHARED_HLSLI
+
 SamplerState g_samLinear : register(s0);
 SamplerComparisonState g_samComparison : register(s1);
 
@@ -18,16 +21,20 @@ cbuffer Environment : register(b1)
     float4 g_lightColor;
     float4 g_ambientLightColor;
     int g_shadowMapSize;
+    int g_useShadow;
     int g_useShadowPCF;
-    float __pad5[2];
+    float __pad5[1];
 }
 
 cbuffer Material : register(b2)
 {
+    float4 g_materialDiffuse;
     float4 g_materialAmbient;
     float4 g_materialSpecular;
+    float4 g_materialEmissive;
     float g_shininess;
-    float __pad2[3];
+    float g_opacity;
+    float __pad2[2];
 }
 
 cbuffer BonePoseMatrix : register(b3)
@@ -108,3 +115,5 @@ float3 DecodeNormal(float3 n)
 {
     return n * 2.0f - 1.0f;
 }
+
+#endif //SHARED_HLSLI

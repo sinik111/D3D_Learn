@@ -31,6 +31,9 @@
     <Filter Include="03_ResourceManager\AssetData\Derived">
       <UniqueIdentifier>{c7b50566-b629-4480-8acf-043ee4f594f8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="04_Shader\Include">
+      <UniqueIdentifier>{3224dfdf-dcf0-4dd6-a7b2-677d8c19b52d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ResourceManagerApp.cpp">
@@ -60,21 +63,6 @@
     <ClCompile Include="StaticMeshSection.cpp">
       <Filter>02_Mesh\Static</Filter>
     </ClCompile>
-    <ClCompile Include="AssetData.cpp">
-      <Filter>03_ResourceManager\AssetData</Filter>
-    </ClCompile>
-    <ClCompile Include="StaticMeshData.cpp">
-      <Filter>03_ResourceManager\AssetData\Derived</Filter>
-    </ClCompile>
-    <ClCompile Include="MaterialData.cpp">
-      <Filter>03_ResourceManager\AssetData\Derived</Filter>
-    </ClCompile>
-    <ClCompile Include="AssetManager.cpp">
-      <Filter>03_ResourceManager</Filter>
-    </ClCompile>
-    <ClCompile Include="FBXAssetData.cpp">
-      <Filter>03_ResourceManager\AssetData\Derived</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ResourceManagerApp.h">
@@ -100,21 +88,6 @@
     </ClInclude>
     <ClInclude Include="StaticMeshSection.h">
       <Filter>02_Mesh\Static</Filter>
-    </ClInclude>
-    <ClInclude Include="AssetData.h">
-      <Filter>03_ResourceManager\AssetData</Filter>
-    </ClInclude>
-    <ClInclude Include="StaticMeshData.h">
-      <Filter>03_ResourceManager\AssetData\Derived</Filter>
-    </ClInclude>
-    <ClInclude Include="MaterialData.h">
-      <Filter>03_ResourceManager\AssetData\Derived</Filter>
-    </ClInclude>
-    <ClInclude Include="AssetManager.h">
-      <Filter>03_ResourceManager</Filter>
-    </ClInclude>
-    <ClInclude Include="FBXAssetData.h">
-      <Filter>03_ResourceManager\AssetData\Derived</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -151,7 +124,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Shared.hlsli">
-      <Filter>04_Shader</Filter>
+      <Filter>04_Shader\Include</Filter>
+    </None>
+    <None Include="TextureSampling.hlsli">
+      <Filter>04_Shader\Include</Filter>
+    </None>
+    <None Include="ShadowMapping.hlsli">
+      <Filter>04_Shader\Include</Filter>
     </None>
   </ItemGroup>
 </Project>

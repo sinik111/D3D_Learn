@@ -126,33 +126,23 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
-    <ClCompile Include="AssetData.cpp" />
-    <ClCompile Include="AssetManager.cpp" />
-    <ClCompile Include="FBXAssetData.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Material.cpp" />
-    <ClCompile Include="MaterialData.cpp" />
     <ClCompile Include="ResourceManagerApp.cpp" />
     <ClCompile Include="SkeletalMesh.cpp" />
     <ClCompile Include="SkeletalMeshSection.cpp" />
     <ClCompile Include="Skeleton.cpp" />
     <ClCompile Include="StaticMesh.cpp" />
-    <ClCompile Include="StaticMeshData.cpp" />
     <ClCompile Include="StaticMeshSection.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
-    <ClInclude Include="AssetData.h" />
-    <ClInclude Include="AssetManager.h" />
-    <ClInclude Include="FBXAssetData.h" />
     <ClInclude Include="Material.h" />
-    <ClInclude Include="MaterialData.h" />
     <ClInclude Include="ResourceManagerApp.h" />
     <ClInclude Include="SkeletalMesh.h" />
     <ClInclude Include="SkeletalMeshSection.h" />
     <ClInclude Include="Skeleton.h" />
     <ClInclude Include="StaticMesh.h" />
-    <ClInclude Include="StaticMeshData.h" />
     <ClInclude Include="StaticMeshSection.h" />
   </ItemGroup>
   <ItemGroup>
@@ -218,7 +208,9 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="ShadowMapping.hlsli" />
     <None Include="Shared.hlsli" />
+    <None Include="TextureSampling.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.vcxproj">

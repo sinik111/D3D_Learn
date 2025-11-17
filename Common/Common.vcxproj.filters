@@ -7,6 +7,21 @@
     <Filter Include="02_Module">
       <UniqueIdentifier>{9de7fa9d-d5cf-4249-bc0b-a2a6ca8af840}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02_Module\D3DResource">
+      <UniqueIdentifier>{9f951aed-aacb-4c63-87d3-c449fd910b1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02_Module\AssetManager">
+      <UniqueIdentifier>{2d4b9337-aab7-42ff-b5f0-516608338660}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02_Module\AssetManager\AssetData">
+      <UniqueIdentifier>{45641615-a687-40f2-966b-92cc69a16a87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02_Module\AssetManager\AssetData\Derived">
+      <UniqueIdentifier>{f3237fa0-b23b-47e8-a6bc-5e5e157ed606}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02_Module\D3DResource\Derived">
+      <UniqueIdentifier>{e104c790-e2ec-412e-99f9-9de7ea8caa69}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WinApp.h">
@@ -33,6 +48,51 @@
     <ClInclude Include="Vertex.h">
       <Filter>02_Module</Filter>
     </ClInclude>
+    <ClInclude Include="D3DResource.h">
+      <Filter>02_Module\D3DResource</Filter>
+    </ClInclude>
+    <ClInclude Include="FBXAssetData.h">
+      <Filter>02_Module\AssetManager\AssetData\Derived</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticMeshData.h">
+      <Filter>02_Module\AssetManager\AssetData\Derived</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialData.h">
+      <Filter>02_Module\AssetManager\AssetData\Derived</Filter>
+    </ClInclude>
+    <ClInclude Include="AssetManager.h">
+      <Filter>02_Module\AssetManager</Filter>
+    </ClInclude>
+    <ClInclude Include="AssetData.h">
+      <Filter>02_Module\AssetManager\AssetData</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexBuffer.h">
+      <Filter>02_Module\D3DResource\Derived</Filter>
+    </ClInclude>
+    <ClInclude Include="IndexBuffer.h">
+      <Filter>02_Module\D3DResource\Derived</Filter>
+    </ClInclude>
+    <ClInclude Include="ConstantBuffer.h">
+      <Filter>02_Module\D3DResource\Derived</Filter>
+    </ClInclude>
+    <ClInclude Include="PixelShader.h">
+      <Filter>02_Module\D3DResource\Derived</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexShader.h">
+      <Filter>02_Module\D3DResource\Derived</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderResourceView.h">
+      <Filter>02_Module\D3DResource\Derived</Filter>
+    </ClInclude>
+    <ClInclude Include="SamplerState.h">
+      <Filter>02_Module\D3DResource\Derived</Filter>
+    </ClInclude>
+    <ClInclude Include="D3DResourceManager.h">
+      <Filter>02_Module\D3DResource</Filter>
+    </ClInclude>
+    <ClInclude Include="InputLayout.h">
+      <Filter>02_Module\D3DResource\Derived</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinApp.cpp">
@@ -52,6 +112,51 @@
     </ClCompile>
     <ClCompile Include="Helper.cpp">
       <Filter>02_Module</Filter>
+    </ClCompile>
+    <ClCompile Include="D3DResource.cpp">
+      <Filter>02_Module\D3DResource</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialData.cpp">
+      <Filter>02_Module\AssetManager\AssetData\Derived</Filter>
+    </ClCompile>
+    <ClCompile Include="FBXAssetData.cpp">
+      <Filter>02_Module\AssetManager\AssetData\Derived</Filter>
+    </ClCompile>
+    <ClCompile Include="StaticMeshData.cpp">
+      <Filter>02_Module\AssetManager\AssetData\Derived</Filter>
+    </ClCompile>
+    <ClCompile Include="AssetManager.cpp">
+      <Filter>02_Module\AssetManager</Filter>
+    </ClCompile>
+    <ClCompile Include="AssetData.cpp">
+      <Filter>02_Module\AssetManager\AssetData</Filter>
+    </ClCompile>
+    <ClCompile Include="VertexBuffer.cpp">
+      <Filter>02_Module\D3DResource\Derived</Filter>
+    </ClCompile>
+    <ClCompile Include="IndexBuffer.cpp">
+      <Filter>02_Module\D3DResource\Derived</Filter>
+    </ClCompile>
+    <ClCompile Include="ConstantBuffer.cpp">
+      <Filter>02_Module\D3DResource\Derived</Filter>
+    </ClCompile>
+    <ClCompile Include="PixelShader.cpp">
+      <Filter>02_Module\D3DResource\Derived</Filter>
+    </ClCompile>
+    <ClCompile Include="VertexShader.cpp">
+      <Filter>02_Module\D3DResource\Derived</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderResourceView.cpp">
+      <Filter>02_Module\D3DResource\Derived</Filter>
+    </ClCompile>
+    <ClCompile Include="SamplerState.cpp">
+      <Filter>02_Module\D3DResource\Derived</Filter>
+    </ClCompile>
+    <ClCompile Include="D3DResourceManager.cpp">
+      <Filter>02_Module\D3DResource</Filter>
+    </ClCompile>
+    <ClCompile Include="InputLayout.cpp">
+      <Filter>02_Module\D3DResource\Derived</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
