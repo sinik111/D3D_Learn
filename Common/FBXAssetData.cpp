@@ -51,6 +51,9 @@ void FBXAssetData::LoadStaticMesh(const std::wstring& filePath)
 
 	const aiScene* scene = importer.ReadFile(ToMultibyteStr(filePath), importFlags);
 
+	m_staticMesh = std::make_shared<StaticMeshData>();
+	m_material = std::make_shared<MaterialData>();
+
 	m_staticMesh->Create(scene);
 	m_material->Create(scene);
 }

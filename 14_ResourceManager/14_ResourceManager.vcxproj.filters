@@ -42,9 +42,6 @@
     <ClCompile Include="Main.cpp">
       <Filter>01_App</Filter>
     </ClCompile>
-    <ClCompile Include="Material.cpp">
-      <Filter>02_Mesh</Filter>
-    </ClCompile>
     <ClCompile Include="Animation.cpp">
       <Filter>02_Mesh\Skeletal</Filter>
     </ClCompile>
@@ -60,16 +57,10 @@
     <ClCompile Include="StaticMesh.cpp">
       <Filter>02_Mesh\Static</Filter>
     </ClCompile>
-    <ClCompile Include="StaticMeshSection.cpp">
-      <Filter>02_Mesh\Static</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ResourceManagerApp.h">
       <Filter>01_App</Filter>
-    </ClInclude>
-    <ClInclude Include="Material.h">
-      <Filter>02_Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Animation.h">
       <Filter>02_Mesh\Skeletal</Filter>
@@ -84,9 +75,6 @@
       <Filter>02_Mesh\Skeletal</Filter>
     </ClInclude>
     <ClInclude Include="StaticMesh.h">
-      <Filter>02_Mesh\Static</Filter>
-    </ClInclude>
-    <ClInclude Include="StaticMeshSection.h">
       <Filter>02_Mesh\Static</Filter>
     </ClInclude>
   </ItemGroup>

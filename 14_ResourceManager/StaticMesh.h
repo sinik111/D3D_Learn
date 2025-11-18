@@ -52,13 +52,15 @@ private:
 	std::shared_ptr<SamplerState> m_samplerState;
 
 	// instance
-	MaterialBuffer m_materialCB;
+	std::vector<MaterialBuffer> m_materialCBs;
 	WorldTransformBuffer m_worldTransformCB;
 
 public:
 	StaticMesh(const std::wstring& filePath);
 
 public:
-	void DrawShadowMap(const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext);
-	void Draw(const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext);
+	void Draw(const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext) const;
+
+public:
+	void SetWorld(const DirectX::SimpleMath::Matrix& world);
 };

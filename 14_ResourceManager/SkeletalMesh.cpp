@@ -12,7 +12,6 @@
 #include "../Common/Helper.h"
 
 #include "SkeletalMeshSection.h"
-#include "Material.h"
 #include "Animation.h"
 
 using DirectX::SimpleMath::Matrix;
@@ -20,7 +19,6 @@ using DirectX::SimpleMath::Matrix;
 struct SkeletalMeshResource
 {
 	std::vector<SkeletalMeshSection> meshes;
-	std::vector<Material> materials;
 	std::vector<Animation> animations;
 	std::unique_ptr<SkeletonInfo> skeletonInfo;
 };
@@ -80,12 +78,6 @@ SkeletalMesh::SkeletalMesh(const Microsoft::WRL::ComPtr<ID3D11Device>& device, c
 		}
 
 		// material 持失
-		m_resource->materials.reserve(scene->mNumMaterials);
-
-		for (unsigned int i = 0; i < scene->mNumMaterials; ++i)
-		{
-			m_resource->materials.emplace_back(device, scene->mMaterials[i]);
-		}
 
 		// animation 持失
 		m_resource->animations.reserve(scene->mNumAnimations);
@@ -110,11 +102,6 @@ const std::wstring& SkeletalMesh::GetName() const
 const std::vector<SkeletalMeshSection>& SkeletalMesh::GetMeshes() const
 {
 	return m_resource->meshes;
-}
-
-const std::vector<Material>& SkeletalMesh::GetMaterials() const 
-{
-	return m_resource->materials;
 }
 
 const Matrix& SkeletalMesh::GetWorld() const 

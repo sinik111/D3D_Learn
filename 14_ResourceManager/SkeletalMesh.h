@@ -6,7 +6,6 @@
 #include <memory>
 
 #include "SkeletalMeshSection.h"
-#include "Material.h"
 #include "Skeleton.h"
 
 struct SkeletalMeshResource;
@@ -36,7 +35,6 @@ public:
 public:
 	const std::wstring& GetName() const;
 	const std::vector<SkeletalMeshSection>& GetMeshes() const;
-	const std::vector<Material>& GetMaterials() const;
 	const Matrix& GetWorld() const;
 	const BoneMatrixArray& GetSkeletonPose() const;
 	const BoneMatrixArray& GetBoneOffsets() const;

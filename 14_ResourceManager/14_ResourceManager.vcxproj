@@ -127,23 +127,19 @@
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Material.cpp" />
     <ClCompile Include="ResourceManagerApp.cpp" />
     <ClCompile Include="SkeletalMesh.cpp" />
     <ClCompile Include="SkeletalMeshSection.cpp" />
     <ClCompile Include="Skeleton.cpp" />
     <ClCompile Include="StaticMesh.cpp" />
-    <ClCompile Include="StaticMeshSection.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
-    <ClInclude Include="Material.h" />
     <ClInclude Include="ResourceManagerApp.h" />
     <ClInclude Include="SkeletalMesh.h" />
     <ClInclude Include="SkeletalMeshSection.h" />
     <ClInclude Include="Skeleton.h" />
     <ClInclude Include="StaticMesh.h" />
-    <ClInclude Include="StaticMeshSection.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BasicLightViewVS.hlsl">

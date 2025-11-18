@@ -2,6 +2,16 @@
 
 #include <directxtk/SimpleMath.h>
 
+enum class ConstantBufferSlot
+{
+	Transform = 0,
+	Environment = 1,
+	Material = 2,
+	BonePoseMatrix = 3,
+	BoneOffsetMatrix = 4,
+	WorldTransform = 5
+};
+
 struct WorldTransformBuffer
 {
 	DirectX::SimpleMath::Matrix world;

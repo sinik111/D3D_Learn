@@ -10,6 +10,13 @@
 #include "SamplerState.h"
 #include "GraphicsDevice.h"
 
+D3DResourceManager& D3DResourceManager::Get()
+{
+	static D3DResourceManager s_instance;
+
+	return s_instance;
+}
+
 void D3DResourceManager::SetGraphicsDevice(const GraphicsDevice* graphicsDevice)
 {
 	m_graphicsDevice = graphicsDevice;
@@ -26,7 +33,7 @@ std::shared_ptr<VertexBuffer> D3DResourceManager::GetOrCreateVertexBuffer(const 
 		}
 	}
 
-	std::shared_ptr<VertexBuffer> vertexBuffer;
+	std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>();
 	vertexBuffer->Create(m_graphicsDevice->GetDevice(), vertices);
 
 	m_vertexBuffers[filePath] = vertexBuffer;
@@ -45,7 +52,7 @@ std::shared_ptr<IndexBuffer> D3DResourceManager::GetOrCreateIndexBuffer(const st
 		}
 	}
 
-	std::shared_ptr<IndexBuffer> indexBuffer;
+	std::shared_ptr<IndexBuffer> indexBuffer = std::make_shared<IndexBuffer>();
 	indexBuffer->Create(m_graphicsDevice->GetDevice(), indices);
 
 	m_indexBuffers[filePath] = indexBuffer;
@@ -64,7 +71,7 @@ std::shared_ptr<ConstantBuffer> D3DResourceManager::GetOrCreateConstantBuffer(co
 		}
 	}
 
-	std::shared_ptr<ConstantBuffer> constantBuffer;
+	std::shared_ptr<ConstantBuffer> constantBuffer = std::make_shared<ConstantBuffer>();
 	constantBuffer->Create(m_graphicsDevice->GetDevice(), byteWidth);
 
 	m_constantBuffers[name] = constantBuffer;
@@ -83,7 +90,7 @@ std::shared_ptr<VertexShader> D3DResourceManager::GetOrCreateVertexShader(const 
 		}
 	}
 
-	std::shared_ptr<VertexShader> vertexShader;
+	std::shared_ptr<VertexShader> vertexShader = std::make_shared<VertexShader>();
 	vertexShader->Create(m_graphicsDevice->GetDevice(), filePath);
 
 	m_vertexShaders[filePath] = vertexShader;
@@ -102,7 +109,7 @@ std::shared_ptr<PixelShader> D3DResourceManager::GetOrCreatePixelShader(const st
 		}
 	}
 
-	std::shared_ptr<PixelShader> pixelShader;
+	std::shared_ptr<PixelShader> pixelShader = std::make_shared<PixelShader>();
 	pixelShader->Create(m_graphicsDevice->GetDevice(), filePath);
 
 	m_pixelShaders[filePath] = pixelShader;
@@ -121,7 +128,7 @@ std::shared_ptr<ShaderResourceView> D3DResourceManager::GetOrCreateShaderResourc
 		}
 	}
 
-	std::shared_ptr<ShaderResourceView> shaderResourceView;
+	std::shared_ptr<ShaderResourceView> shaderResourceView = std::make_shared<ShaderResourceView>();
 	shaderResourceView->Create(m_graphicsDevice->GetDevice(), filePath, type);
 
 	m_shaderResourceViews[filePath] = shaderResourceView;
@@ -141,7 +148,7 @@ std::shared_ptr<ShaderResourceView> D3DResourceManager::GetOrCreateShaderResourc
 		}
 	}
 
-	std::shared_ptr<ShaderResourceView> shaderResourceView;
+	std::shared_ptr<ShaderResourceView> shaderResourceView = std::make_shared<ShaderResourceView>();
 	shaderResourceView->Create(m_graphicsDevice->GetDevice(), textureDesc, subData);
 
 	m_shaderResourceViews[name] = shaderResourceView;
@@ -161,7 +168,7 @@ std::shared_ptr<InputLayout> D3DResourceManager::GetOrCreateInputLayout(const st
 		}
 	}
 
-	std::shared_ptr<InputLayout> inputLayout;
+	std::shared_ptr<InputLayout> inputLayout = std::make_shared<InputLayout>();
 	inputLayout->Create(m_graphicsDevice->GetDevice(), filePath, layoutDesc, numElements);
 
 	m_inputLayouts[filePath] = inputLayout;
@@ -180,7 +187,7 @@ std::shared_ptr<SamplerState> D3DResourceManager::GetOrCreateSamplerState(const 
 		}
 	}
 
-	std::shared_ptr<SamplerState> samplerState;
+	std::shared_ptr<SamplerState> samplerState = std::make_shared<SamplerState>();
 	samplerState->Create(m_graphicsDevice->GetDevice(), samplerDesc);
 
 	m_samplerStates[name] = samplerState;

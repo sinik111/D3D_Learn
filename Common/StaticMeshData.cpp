@@ -71,11 +71,11 @@ void StaticMeshData::Create(const aiScene* scene)
 				&mesh->mBitangents[j].x);
 		}
 
-		for (unsigned int j = 0; i < numFaces; ++j)
+		for (unsigned int j = 0; j < numFaces; ++j)
 		{
-			m_indices.push_back(mesh->mFaces[j].mIndices[0] + currentVertexOffset);
-			m_indices.push_back(mesh->mFaces[j].mIndices[1] + currentVertexOffset);
-			m_indices.push_back(mesh->mFaces[j].mIndices[2] + currentVertexOffset);
+			m_indices.push_back(mesh->mFaces[j].mIndices[0]);
+			m_indices.push_back(mesh->mFaces[j].mIndices[1]);
+			m_indices.push_back(mesh->mFaces[j].mIndices[2]);
 		}
 	}
 }
@@ -88,4 +88,9 @@ const std::vector<CommonVertex3D>& StaticMeshData::GetVertices() const
 const std::vector<DWORD>& StaticMeshData::GetIndices() const
 {
 	return m_indices;
+}
+
+const std::vector<StaticMeshSection>& StaticMeshData::GetMeshSections() const
+{
+	return m_meshSections;
 }

@@ -32,49 +32,49 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
     // ambient
     float4 ambient = texDiffColor * g_materialAmbient * g_ambientLightColor;
     
-    // shadow
+    //// shadow
     float shadowFactor = 1.0f;
-    float currentShadowDepth = input.lightViewPos.z / input.lightViewPos.w;
-    float2 shadowMapUV = input.lightViewPos.xy / input.lightViewPos.w;
+    //float currentShadowDepth = input.lightViewPos.z / input.lightViewPos.w;
+    //float2 shadowMapUV = input.lightViewPos.xy / input.lightViewPos.w;
     
-    shadowMapUV.y = -shadowMapUV.y;
-    shadowMapUV = shadowMapUV * 0.5f + 0.5f;
+    //shadowMapUV.y = -shadowMapUV.y;
+    //shadowMapUV = shadowMapUV * 0.5f + 0.5f;
     
-    if (shadowMapUV.x >= 0.0f && shadowMapUV.x <= 1.0f && shadowMapUV.y >= 0.0f && shadowMapUV.y <= 1.0f)
-    {
-        if (g_useShadowPCF)
-        {
-            float2 offsets[9] =
-            {
-                float2(-1.0f, -1.0f), float2(0.0f, -1.0f), float2(1.0f, -1.0f),
-                float2(-1.0f, 0.0f), float2(0.0f, 0.0f), float2(1.0f, 0.0f),
-                float2(-1.0f, 1.0f), float2(0.0f, 1.0f), float2(1.0f, 1.0f)
-            };
+    //if (shadowMapUV.x >= 0.0f && shadowMapUV.x <= 1.0f && shadowMapUV.y >= 0.0f && shadowMapUV.y <= 1.0f)
+    //{
+    //    if (g_useShadowPCF)
+    //    {
+    //        float2 offsets[9] =
+    //        {
+    //            float2(-1.0f, -1.0f), float2(0.0f, -1.0f), float2(1.0f, -1.0f),
+    //            float2(-1.0f, 0.0f), float2(0.0f, 0.0f), float2(1.0f, 0.0f),
+    //            float2(-1.0f, 1.0f), float2(0.0f, 1.0f), float2(1.0f, 1.0f)
+    //        };
             
-            float texelSize = 1.0f / g_shadowMapSize;
+    //        float texelSize = 1.0f / g_shadowMapSize;
             
-            shadowFactor = 0.0f;
-            for (int i = 0; i < 9; ++i)
-            {
-                float2 sampleUV = shadowMapUV + offsets[i] * texelSize;
-                shadowFactor += g_texShadowMap.SampleCmpLevelZero(g_samComparison, sampleUV, currentShadowDepth - 0.001f);
-            }
+    //        shadowFactor = 0.0f;
+    //        for (int i = 0; i < 9; ++i)
+    //        {
+    //            float2 sampleUV = shadowMapUV + offsets[i] * texelSize;
+    //            shadowFactor += g_texShadowMap.SampleCmpLevelZero(g_samComparison, sampleUV, currentShadowDepth - 0.001f);
+    //        }
 
-            shadowFactor = shadowFactor / 9.0f;
-        }
-        else
-        {
-            float sampleShadowDepth = g_texShadowMap.Sample(g_samLinear, shadowMapUV).r;
-            if (currentShadowDepth > sampleShadowDepth + 0.001f)
-            {
-                shadowFactor = 0.0f;
-            }
-        }
-    }
+    //        shadowFactor = shadowFactor / 9.0f;
+    //    }
+    //    else
+    //    {
+    //        float sampleShadowDepth = g_texShadowMap.Sample(g_samLinear, shadowMapUV).r;
+    //        if (currentShadowDepth > sampleShadowDepth + 0.001f)
+    //        {
+    //            shadowFactor = 0.0f;
+    //        }
+    //    }
+    //}
     
     // diffuse
     float diffuseIntensity = saturate(dot(worldNorm, -g_lightDir)) * shadowFactor;
-    float4 diffuse = texDiffColor * g_lightColor * diffuseIntensity;
+    float4 diffuse = texDiffColor * g_materialDiffuse * g_lightColor * diffuseIntensity;
     
     // specular
     float3 viewDir = normalize(g_cameraPos - input.worldPos);

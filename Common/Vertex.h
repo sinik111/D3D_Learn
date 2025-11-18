@@ -54,6 +54,14 @@ struct CommonVertex3D
 struct PositionVertex3D
 {
 	DirectX::SimpleMath::Vector3 position;
+
+	static std::array<D3D11_INPUT_ELEMENT_DESC, 1> GetLayout()
+	{
+		// SemanticName , SemanticIndex , Format , InputSlot , AlignedByteOffset , InputSlotClass , InstanceDataStepRate
+		return {
+			D3D11_INPUT_ELEMENT_DESC{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		};
+	};
 };
 
 struct BoneWeightVertex3D

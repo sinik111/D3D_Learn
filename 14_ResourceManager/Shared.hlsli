@@ -1,3 +1,6 @@
+#ifndef SHARED_HLSLI__
+#define SHARED_HLSLI__
+
 SamplerState g_samLinear : register(s0);
 SamplerComparisonState g_samComparison : register(s1);
 
@@ -24,6 +27,7 @@ cbuffer Environment : register(b1)
 
 cbuffer Material : register(b2)
 {
+    float4 g_materialDiffuse;
     float4 g_materialAmbient;
     float4 g_materialSpecular;
     float g_shininess;
@@ -108,3 +112,5 @@ float3 DecodeNormal(float3 n)
 {
     return n * 2.0f - 1.0f;
 }
+
+#endif //SHARED_HLSLI__

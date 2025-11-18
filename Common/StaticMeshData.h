@@ -9,19 +9,18 @@
 
 struct aiScene;
 
+struct StaticMeshSection
+{
+    std::wstring name;
+    unsigned int materialIndex;
+    INT vertexOffset;
+    UINT indexOffset;
+    UINT indexCount;
+};
+
 class StaticMeshData :
     public AssetData
 {
-private:
-    struct StaticMeshSection
-    {
-        std::wstring name;
-        unsigned int materialIndex;
-        INT vertexOffset;
-        UINT indexOffset;
-        UINT indexCount;
-    };
-
 private:
     std::vector<CommonVertex3D> m_vertices;
     std::vector<DWORD> m_indices;
@@ -34,4 +33,5 @@ public:
 public:
     const std::vector<CommonVertex3D>& GetVertices() const;
     const std::vector<DWORD>& GetIndices() const;
+    const std::vector<StaticMeshSection>& GetMeshSections() const;
 };
