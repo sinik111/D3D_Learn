@@ -42,9 +42,9 @@ struct EnvironmentBuffer
 
 struct MaterialBuffer
 {
-	DirectX::SimpleMath::Vector4 diffuse;
-	DirectX::SimpleMath::Vector4 ambient;
-	DirectX::SimpleMath::Vector4 specular;
-	float shininess;
+	DirectX::SimpleMath::Vector4 diffuse{ 1.0f, 1.0f, 1.0f, 1.0f };
+	DirectX::SimpleMath::Vector4 ambient{ 1.0f, 1.0f, 1.0f, 1.0f };
+	DirectX::SimpleMath::Vector4 specular{ 1.0f, 1.0f, 1.0f, 1.0f };
+	float shininess = 32.0f;
 	float __pad1[3];
 };

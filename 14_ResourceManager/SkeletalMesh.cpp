@@ -99,8 +99,6 @@ SkeletalMesh::SkeletalMesh(const std::wstring& filePath)
 			materialCB.diffuse = material.vectorValues.at(MaterialKey::DIFFUSE_COLOR);
 		}
 
-		materialCB.ambient = { 1.0f, 1.0f, 1.0f, 1.0f };
-
 		// ╢ы 0 юс..
 		//if (material.materialFlags & static_cast<unsigned long long>(MaterialKey::AMBIENT_COLOR))
 		//{
