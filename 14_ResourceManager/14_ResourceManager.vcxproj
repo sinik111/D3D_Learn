@@ -125,20 +125,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="ResourceManagerApp.cpp" />
     <ClCompile Include="SkeletalMesh.cpp" />
-    <ClCompile Include="SkeletalMeshSection.cpp" />
-    <ClCompile Include="Skeleton.cpp" />
     <ClCompile Include="StaticMesh.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Animation.h" />
     <ClInclude Include="ResourceManagerApp.h" />
     <ClInclude Include="SkeletalMesh.h" />
-    <ClInclude Include="SkeletalMeshSection.h" />
-    <ClInclude Include="Skeleton.h" />
     <ClInclude Include="StaticMesh.h" />
   </ItemGroup>
   <ItemGroup>

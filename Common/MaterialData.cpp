@@ -6,7 +6,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "../Common/Helper.h"
+#include "Helper.h"
 
 void MaterialData::Create(const std::wstring& filePath)
 {

@@ -6,6 +6,8 @@
 #include <vector>
 #include <array>
 
+#include "AssetData.h"
+
 constexpr size_t MAX_BONE_NUM = 128;
 
 using BoneMatrixArray = std::array<DirectX::SimpleMath::Matrix, MAX_BONE_NUM>;
@@ -52,7 +54,8 @@ struct Bone
 
 struct aiScene;
 
-class SkeletonInfo
+class SkeletonData :
+    public AssetData
 {
 private:
 	using BoneIndex = unsigned int;
@@ -65,7 +68,7 @@ private:
 	BoneMatrixArray m_boneOffsets;
 
 public:
-	SkeletonInfo(const aiScene* scene);
+	void Create(const aiScene* scene);
 
 public:
 	const std::vector<BoneInfo>& GetBones() const;

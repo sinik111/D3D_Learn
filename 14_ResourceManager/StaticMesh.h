@@ -2,11 +2,11 @@
 
 #include <memory>
 #include <d3d11.h>
-#include <array>
 #include <string>
 #include <wrl/client.h>
 
 #include "../Common/ShaderConstant.h"
+#include "../Common/ShaderResourceView.h"
 
 class StaticMeshData;
 class MaterialData;
@@ -19,17 +19,6 @@ class PixelShader;
 class ShaderResourceView;
 class InputLayout;
 class SamplerState;
-
-struct TextureSRVs
-{
-	std::shared_ptr<ShaderResourceView> diffuseTextureSRV;
-	std::shared_ptr<ShaderResourceView> normalTextureSRV;
-	std::shared_ptr<ShaderResourceView> specularTextureSRV;
-	std::shared_ptr<ShaderResourceView> emissiveTextureSRV;
-	std::shared_ptr<ShaderResourceView> opacityTextureSRV;
-
-	std::array<ID3D11ShaderResourceView*, 5> AsRawArray() const;
-};
 
 class StaticMesh
 {

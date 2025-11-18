@@ -56,12 +56,7 @@ void StaticMeshData::Create(const aiScene* scene)
 	{
 		const aiMesh* mesh = scene->mMeshes[i];
 
-		const unsigned int numVertices = mesh->mNumVertices;
-		const unsigned int numFaces = mesh->mNumFaces;
-
-		const INT currentVertexOffset = m_meshSections[i].vertexOffset;
-
-		for (unsigned int j = 0; j < numVertices; ++j)
+		for (unsigned int j = 0; j < mesh->mNumVertices; ++j)
 		{
 			m_vertices.emplace_back(
 				&mesh->mVertices[j].x,
@@ -71,7 +66,7 @@ void StaticMeshData::Create(const aiScene* scene)
 				&mesh->mBitangents[j].x);
 		}
 
-		for (unsigned int j = 0; j < numFaces; ++j)
+		for (unsigned int j = 0; j < mesh->mNumFaces; ++j)
 		{
 			m_indices.push_back(mesh->mFaces[j].mIndices[0]);
 			m_indices.push_back(mesh->mFaces[j].mIndices[1]);

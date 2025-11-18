@@ -10,6 +10,7 @@
 #pragma comment(lib, "dxgi.lib")
 
 #include "StaticMesh.h"
+#include "SkeletalMesh.h"
 
 class ResourceManagerApp :
 	public WinApp
@@ -25,6 +26,7 @@ private:
 	Microsoft::WRL::ComPtr<IDXGIDevice3> m_dxgiDevice;
 
 	std::vector<StaticMesh> m_staticMeshes;
+	std::vector<SkeletalMesh> m_skeletalMeshes;
 
 	Matrix m_view;
 	Matrix m_projection;

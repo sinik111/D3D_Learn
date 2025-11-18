@@ -41,6 +41,25 @@ std::shared_ptr<VertexBuffer> D3DResourceManager::GetOrCreateVertexBuffer(const 
 	return vertexBuffer;
 }
 
+std::shared_ptr<VertexBuffer> D3DResourceManager::GetOrCreateVertexBuffer(const std::wstring& filePath, const std::vector<BoneWeightVertex3D>& vertices)
+{
+	auto find = m_vertexBuffers.find(filePath);
+	if (find != m_vertexBuffers.end())
+	{
+		if (!find->second.expired())
+		{
+			return find->second.lock();
+		}
+	}
+
+	std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>();
+	vertexBuffer->Create(m_graphicsDevice->GetDevice(), vertices);
+
+	m_vertexBuffers[filePath] = vertexBuffer;
+
+	return vertexBuffer;
+}
+
 std::shared_ptr<IndexBuffer> D3DResourceManager::GetOrCreateIndexBuffer(const std::wstring& filePath, const std::vector<DWORD>& indices)
 {
 	auto find = m_indexBuffers.find(filePath);

@@ -137,6 +137,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AnimationData.h" />
     <ClInclude Include="AssetData.h" />
     <ClInclude Include="AssetManager.h" />
     <ClInclude Include="Camera.h" />
@@ -155,6 +156,8 @@
     <ClInclude Include="PixelShader.h" />
     <ClInclude Include="SamplerState.h" />
     <ClInclude Include="ShaderResourceView.h" />
+    <ClInclude Include="SkeletalMeshData.h" />
+    <ClInclude Include="SkeletonData.h" />
     <ClInclude Include="StaticMeshData.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="VertexBuffer.h" />
@@ -163,6 +166,7 @@
     <ClInclude Include="ShaderConstant.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AnimationData.cpp" />
     <ClCompile Include="AssetData.cpp" />
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="Camera.cpp" />
@@ -180,6 +184,8 @@
     <ClCompile Include="PixelShader.cpp" />
     <ClCompile Include="SamplerState.cpp" />
     <ClCompile Include="ShaderResourceView.cpp" />
+    <ClCompile Include="SkeletalMeshData.cpp" />
+    <ClCompile Include="SkeletonData.cpp" />
     <ClCompile Include="StaticMeshData.cpp" />
     <ClCompile Include="VertexBuffer.cpp" />
     <ClCompile Include="VertexShader.cpp" />

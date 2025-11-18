@@ -1,11 +1,11 @@
-#include "Skeleton.h"
+#include "SkeletonData.h"
 
 #include <assimp/scene.h>
 #include <assimp/mesh.h>
 #include <queue>
 #include <cassert>
 
-#include "../Common/Helper.h"
+#include "Helper.h"
 
 static size_t GetNodeCount(const aiNode* node)
 {
@@ -19,9 +19,8 @@ static size_t GetNodeCount(const aiNode* node)
 	return count;
 }
 
-SkeletonInfo::SkeletonInfo(const aiScene* scene)
+void SkeletonData::Create(const aiScene* scene)
 {
-	// todo: Mesh root 노드라고 간주함 (pelvis), 실제 스켈레톤 root 찾는 로직 필요
 	const aiNode* root = scene->mRootNode->mChildren[0];
 
 	const size_t nodeCount = GetNodeCount(root);
@@ -42,7 +41,7 @@ SkeletonInfo::SkeletonInfo(const aiScene* scene)
 		for (unsigned int i = 0; i < node->mNumMeshes; ++i)
 		{
 			const std::wstring meshName{ ToWideCharStr(scene->mMeshes[node->mMeshes[i]]->mName.C_Str()) };
-			
+
 			m_meshMappingTable[meshName] = index;
 		}
 
@@ -55,12 +54,12 @@ SkeletonInfo::SkeletonInfo(const aiScene* scene)
 	}
 }
 
-const std::vector<BoneInfo>& SkeletonInfo::GetBones() const
+const std::vector<BoneInfo>& SkeletonData::GetBones() const
 {
 	return m_bones;
 }
 
-unsigned int SkeletonInfo::GetBoneIndexByBoneName(const std::wstring& boneName) const
+unsigned int SkeletonData::GetBoneIndexByBoneName(const std::wstring& boneName) const
 {
 	auto find = m_boneMappingTable.find(boneName);
 
@@ -69,7 +68,7 @@ unsigned int SkeletonInfo::GetBoneIndexByBoneName(const std::wstring& boneName) 
 	return find->second;
 }
 
-unsigned int SkeletonInfo::GetBoneIndexByMeshName(const std::wstring& meshName) const
+unsigned int SkeletonData::GetBoneIndexByMeshName(const std::wstring& meshName) const
 {
 	auto find = m_meshMappingTable.find(meshName);
 
@@ -78,22 +77,22 @@ unsigned int SkeletonInfo::GetBoneIndexByMeshName(const std::wstring& meshName) 
 	return find->second;
 }
 
-BoneInfo* SkeletonInfo::GetBoneInfoByIndex(size_t index)
+BoneInfo* SkeletonData::GetBoneInfoByIndex(size_t index)
 {
 	return &m_bones[index];
 }
 
-const BoneMatrixArray& SkeletonInfo::GetBoneOffsets() const
+const BoneMatrixArray& SkeletonData::GetBoneOffsets() const
 {
 	return m_boneOffsets;
 }
 
-void SkeletonInfo::SetBoneOffset(const DirectX::SimpleMath::Matrix& offset, unsigned int boneIndex)
+void SkeletonData::SetBoneOffset(const DirectX::SimpleMath::Matrix& offset, unsigned int boneIndex)
 {
 	m_boneOffsets[boneIndex] = offset;
 }
 
-void SkeletonInfo::SetupSkeletonInstance(std::vector<Bone>& out) const
+void SkeletonData::SetupSkeletonInstance(std::vector<Bone>& out) const
 {
 	out.reserve(m_bones.size());
 

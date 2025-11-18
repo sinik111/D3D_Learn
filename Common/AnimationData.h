@@ -3,10 +3,11 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
-
 #include <directxtk/SimpleMath.h>
+#include <memory>
 
-#include "Skeleton.h"
+#include "SkeletonData.h"
+#include "AssetData.h"
 
 struct PositionKey
 {
@@ -28,7 +29,7 @@ struct RotationKey
 	RotationKey(float time, const float* f)
 		: time{ time }, value{ f[1], f[2], f[3], f[0] }
 	{
-		
+
 	}
 };
 
@@ -59,28 +60,31 @@ struct BoneAnimation
 	void Evaluate(float time, LastKeyIndex& inOutLastKeyIndex, Vector3& outPosition, Quaternion& outRotation, Vector3& outScale) const;
 };
 
-struct aiAnimation;
-class SkeletonInfo;
-
-class Animation
+struct Animation
 {
-private:
 	using BoneName = std::wstring;
 	using BoneAnimIndex = unsigned int;
 
-	std::wstring m_name;
-	std::vector<BoneAnimation> m_boneAnimations;
-	std::unordered_map<BoneName, BoneAnimIndex> m_animMappingTable;
-	float m_duration;
+	std::wstring name;
+	std::vector<BoneAnimation> boneAnimations;
+	std::unordered_map<BoneName, BoneAnimIndex> animMappingTable;
+	float duration;
 
-public:
-	Animation(const aiAnimation* animation, const SkeletonInfo* skeletonInfo);
-
-public:
-	const BoneAnimation* GetBoneAnimationByBoneName(const std::wstring& boneName) const;
-	float GetDuration() const;
-
-public:
 	void SetupBoneAnimation(std::vector<Bone>& out) const;
 };
 
+struct aiScene;
+class SkeletonData;
+
+class AnimationData :
+    public AssetData
+{
+private:
+	std::vector<Animation> m_animations;
+
+public:
+	void Create(const aiScene* scene, const std::shared_ptr<SkeletonData>& skeletonData);
+
+public:
+	const std::vector<Animation>& GetAnimations() const;
+};

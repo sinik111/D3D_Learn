@@ -7,31 +7,22 @@
     <Filter Include="02_Mesh">
       <UniqueIdentifier>{1405bc6f-235d-49a7-b535-0defd58bf2c4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03_ResourceManager">
-      <UniqueIdentifier>{3320603d-61f0-4553-88e3-e882aee2b036}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="04_Shader">
-      <UniqueIdentifier>{31596061-9268-4bab-a3dd-647527d839be}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="04_Shader\Vertex">
-      <UniqueIdentifier>{d0cc8fb3-64c3-409f-ba9a-d7edef1d3aa4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="04_Shader\Pixel">
-      <UniqueIdentifier>{6fd4d504-8f13-49e7-ab89-e05a55e10eb0}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02_Mesh\Skeletal">
       <UniqueIdentifier>{82ae948b-b69e-4a6b-9236-540822b238bd}</UniqueIdentifier>
     </Filter>
     <Filter Include="02_Mesh\Static">
       <UniqueIdentifier>{9b1901a7-9608-4245-9a47-9e0a9366e70e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03_ResourceManager\AssetData">
-      <UniqueIdentifier>{3e8a6cee-d3ec-4e30-92c1-c5fa85882c21}</UniqueIdentifier>
+    <Filter Include="03_Shader">
+      <UniqueIdentifier>{31596061-9268-4bab-a3dd-647527d839be}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03_ResourceManager\AssetData\Derived">
-      <UniqueIdentifier>{c7b50566-b629-4480-8acf-043ee4f594f8}</UniqueIdentifier>
+    <Filter Include="03_Shader\Vertex">
+      <UniqueIdentifier>{d0cc8fb3-64c3-409f-ba9a-d7edef1d3aa4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="04_Shader\Include">
+    <Filter Include="03_Shader\Pixel">
+      <UniqueIdentifier>{6fd4d504-8f13-49e7-ab89-e05a55e10eb0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03_Shader\Include">
       <UniqueIdentifier>{3224dfdf-dcf0-4dd6-a7b2-677d8c19b52d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -42,16 +33,7 @@
     <ClCompile Include="Main.cpp">
       <Filter>01_App</Filter>
     </ClCompile>
-    <ClCompile Include="Animation.cpp">
-      <Filter>02_Mesh\Skeletal</Filter>
-    </ClCompile>
     <ClCompile Include="SkeletalMesh.cpp">
-      <Filter>02_Mesh\Skeletal</Filter>
-    </ClCompile>
-    <ClCompile Include="SkeletalMeshSection.cpp">
-      <Filter>02_Mesh\Skeletal</Filter>
-    </ClCompile>
-    <ClCompile Include="Skeleton.cpp">
       <Filter>02_Mesh\Skeletal</Filter>
     </ClCompile>
     <ClCompile Include="StaticMesh.cpp">
@@ -62,16 +44,7 @@
     <ClInclude Include="ResourceManagerApp.h">
       <Filter>01_App</Filter>
     </ClInclude>
-    <ClInclude Include="Animation.h">
-      <Filter>02_Mesh\Skeletal</Filter>
-    </ClInclude>
     <ClInclude Include="SkeletalMesh.h">
-      <Filter>02_Mesh\Skeletal</Filter>
-    </ClInclude>
-    <ClInclude Include="SkeletalMeshSection.h">
-      <Filter>02_Mesh\Skeletal</Filter>
-    </ClInclude>
-    <ClInclude Include="Skeleton.h">
       <Filter>02_Mesh\Skeletal</Filter>
     </ClInclude>
     <ClInclude Include="StaticMesh.h">
@@ -80,45 +53,45 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="RigidAnimVS.hlsl">
-      <Filter>04_Shader\Vertex</Filter>
+      <Filter>03_Shader\Vertex</Filter>
     </FxCompile>
     <FxCompile Include="SkyboxVS.hlsl">
-      <Filter>04_Shader\Vertex</Filter>
+      <Filter>03_Shader\Vertex</Filter>
     </FxCompile>
     <FxCompile Include="SkinningAnimVS.hlsl">
-      <Filter>04_Shader\Vertex</Filter>
+      <Filter>03_Shader\Vertex</Filter>
     </FxCompile>
     <FxCompile Include="SkinningAnimLightViewVS.hlsl">
-      <Filter>04_Shader\Vertex</Filter>
+      <Filter>03_Shader\Vertex</Filter>
     </FxCompile>
     <FxCompile Include="RigidAnimLightVIewVS.hlsl">
-      <Filter>04_Shader\Vertex</Filter>
+      <Filter>03_Shader\Vertex</Filter>
     </FxCompile>
     <FxCompile Include="BasicLightViewVS.hlsl">
-      <Filter>04_Shader\Vertex</Filter>
+      <Filter>03_Shader\Vertex</Filter>
     </FxCompile>
     <FxCompile Include="BasicVS.hlsl">
-      <Filter>04_Shader\Vertex</Filter>
+      <Filter>03_Shader\Vertex</Filter>
     </FxCompile>
     <FxCompile Include="BlinnPhongPS.hlsl">
-      <Filter>04_Shader\Pixel</Filter>
+      <Filter>03_Shader\Pixel</Filter>
     </FxCompile>
     <FxCompile Include="LightViewPS.hlsl">
-      <Filter>04_Shader\Pixel</Filter>
+      <Filter>03_Shader\Pixel</Filter>
     </FxCompile>
     <FxCompile Include="SkyboxPS.hlsl">
-      <Filter>04_Shader\Pixel</Filter>
+      <Filter>03_Shader\Pixel</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shared.hlsli">
-      <Filter>04_Shader\Include</Filter>
+      <Filter>03_Shader\Include</Filter>
     </None>
     <None Include="TextureSampling.hlsli">
-      <Filter>04_Shader\Include</Filter>
+      <Filter>03_Shader\Include</Filter>
     </None>
     <None Include="ShadowMapping.hlsli">
-      <Filter>04_Shader\Include</Filter>
+      <Filter>03_Shader\Include</Filter>
     </None>
   </ItemGroup>
 </Project>

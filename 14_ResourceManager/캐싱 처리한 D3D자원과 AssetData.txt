@@ -1,0 +1,18 @@
+D3D자원
+- VertexBuffer
+- IndexBuffer
+- ConstantBuffer
+- VertexShader
+- PixelShader
+- InputLayout
+- SamplerState
+- ShaderResourceView
+
+AssetData
+- FBXAssetData
+  FBX 파일 여러번 읽지 않게 내부 데이터들 전부 캐싱할 수 있게 해주는 임시 데이터
+- StaticMeshData
+- SkeletalMeshData
+- MaterialData
+- SkeletonData
+- AnimationData

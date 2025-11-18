@@ -79,6 +79,11 @@ void ResourceManagerApp::OnUpdate()
 
 	m_lightDirection = DirectX::XMVector3TransformNormal(m_originalLightDir, m_lightRotationMatrix);
 	m_lightDirection.Normalize();
+
+	for (auto& mesh : m_skeletalMeshes)
+	{
+		mesh.Update(MyTime::DeltaTime());
+	}
 }
 
 void ResourceManagerApp::OnRender()
@@ -142,9 +147,14 @@ void ResourceManagerApp::RenderFinal()
 {
 	const auto& deviceContext = m_graphicsDevice.GetDeviceContext();
 
-	for (const auto& staticMesh : m_staticMeshes)
+	for (auto& mesh : m_staticMeshes)
 	{
-		staticMesh.Draw(deviceContext);
+		mesh.Draw(deviceContext);
+	}
+
+	for (auto& mesh : m_skeletalMeshes)
+	{
+		mesh.Draw(deviceContext);
 	}
 }
 
@@ -248,20 +258,43 @@ void ResourceManagerApp::RenderImGui()
 		m_dxgiDevice->Trim();
 	}
 
-	if (ImGui::Button("Add Mesh"))
+	if (ImGui::Button("Add Static Mesh"))
 	{
 		auto size = m_staticMeshes.size();
 		m_staticMeshes.emplace_back(L"zeldaPosed001.fbx");
 
-		float x = (size % 5) * 200.0f;
+		float x = (size % 5) * 200.0f + 100.0f;
 		float z = (size / 5) * 200.0f;
 
 		m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(x, 0.0f, z).Transpose());
 	}
 
-	if (ImGui::Button("Remove Mesh"))
+	if (ImGui::Button("Remove Static Mesh"))
 	{
-		m_staticMeshes.pop_back();
+		if (!m_staticMeshes.empty())
+		{
+			m_staticMeshes.pop_back();
+		}
+	}
+
+	if (ImGui::Button("Add Skeletal Mesh"))
+	{
+		auto size = m_skeletalMeshes.size();
+		m_skeletalMeshes.emplace_back(L"SkinningTest.fbx");
+
+		float x = (size % 5) * -200.0f - 100.0f;
+		float z = (size / 5) * 200.0f;
+
+		m_skeletalMeshes.back().PlayAnimation(0);
+		m_skeletalMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(x, 0.0f, z).Transpose());
+	}
+
+	if (ImGui::Button("Remove Skeletal Mesh"))
+	{
+		if (!m_skeletalMeshes.empty())
+		{
+			m_skeletalMeshes.pop_back();
+		}
 	}
 
 	ImGui::End();
@@ -296,6 +329,11 @@ void ResourceManagerApp::InitializeScene()
 	device->CreateBuffer(&constantBufferDesc, nullptr, &m_environmentCB);
 
 	m_staticMeshes.emplace_back(L"zeldaPosed001.fbx");
+	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(100.0f, 0.0f, 0.0f).Transpose());
+
+	m_skeletalMeshes.emplace_back(L"SkinningTest.fbx");
+	m_skeletalMeshes.back().PlayAnimation(0);
+	m_skeletalMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(-100.0f, 0.0f, 0.0f).Transpose());
 }
 
 void ResourceManagerApp::ShutdownImGui()

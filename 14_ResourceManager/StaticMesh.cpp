@@ -21,17 +21,6 @@
 #include "../Common/InputLayout.h"
 #include "../Common/SamplerState.h"
 
-std::array<ID3D11ShaderResourceView*, 5> TextureSRVs::AsRawArray() const
-{
-	return {
-		diffuseTextureSRV->GetShaderResourceView().Get(),
-		normalTextureSRV->GetShaderResourceView().Get(),
-		specularTextureSRV->GetShaderResourceView().Get(),
-		emissiveTextureSRV->GetShaderResourceView().Get(),
-		opacityTextureSRV->GetShaderResourceView().Get()
-	};
-}
-
 StaticMesh::StaticMesh(const std::wstring& filePath)
 {
 	m_staticMeshData = AssetManager::Get().GetOrCreateStaticMeshAsset(filePath);
@@ -159,7 +148,7 @@ StaticMesh::StaticMesh(const std::wstring& filePath)
 		m_materialCBs.push_back(materialCB);
 	}
 	
-	static const auto& s_layout = CommonVertex3D::GetLayout();
+	static const auto s_layout = CommonVertex3D::GetLayout();
 	m_inputLayout = D3DResourceManager::Get().GetOrCreateInputLayout(L"BasicVS.hlsl", s_layout.data(), static_cast<UINT>(s_layout.size()));
 
 	static const D3D11_SAMPLER_DESC s_samplerDesc{
@@ -198,11 +187,10 @@ void StaticMesh::Draw(const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceC
 		1, m_materialBuffer->GetBuffer().GetAddressOf());
 
 	const auto& meshSections = m_staticMeshData->GetMeshSections();
-	const auto& materials = m_materialData->GetMaterials();
 
 	for (const auto& meshSection : meshSections)
 	{
-		auto textureSRVs = m_textureSRVs[meshSection.materialIndex].AsRawArray();
+		const auto textureSRVs = m_textureSRVs[meshSection.materialIndex].AsRawArray();
 
 		deviceContext->PSSetShaderResources(0, static_cast<UINT>(textureSRVs.size()), textureSRVs.data());
 		deviceContext->UpdateSubresource(m_materialBuffer->GetBuffer().Get(), 0, nullptr, &m_materialCBs[meshSection.materialIndex], 0, 0);

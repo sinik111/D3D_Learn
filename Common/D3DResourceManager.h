@@ -48,6 +48,7 @@ public:
 public:
 	void SetGraphicsDevice(const GraphicsDevice* graphicsDevice);
 	std::shared_ptr<VertexBuffer> GetOrCreateVertexBuffer(const std::wstring& filePath, const std::vector<CommonVertex3D>& vertices);
+	std::shared_ptr<VertexBuffer> GetOrCreateVertexBuffer(const std::wstring& filePath, const std::vector<BoneWeightVertex3D>& vertices);
 	std::shared_ptr<IndexBuffer> GetOrCreateIndexBuffer(const std::wstring& filePath, const std::vector<DWORD>& indices);
 	std::shared_ptr<ConstantBuffer> GetOrCreateConstantBuffer(const std::wstring& name, UINT byteWidth);
 	std::shared_ptr<VertexShader> GetOrCreateVertexShader(const std::wstring& filePath);
