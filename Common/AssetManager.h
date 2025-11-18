@@ -6,42 +6,8 @@
 #include <array>
 
 class AssetData;
-
-enum class AssetKind
-{
-	StaticMesh, Material
-};
-
-struct AssetKey
-{
-	std::wstring path;
-	AssetKind kind;
-
-	bool operator==(const AssetKey& other) const
-	{
-		return path == other.path && kind == other.kind;
-	}
-};
-
-namespace std
-{
-    template <>
-    struct hash<AssetKey>
-    {
-        size_t HashCombine(size_t seed, size_t hashVal) const
-        {
-            return seed ^ (hashVal + 0x9e3779b9 + (seed << 6) + (seed >> 2));
-        }
-
-        size_t operator()(const AssetKey& key) const noexcept
-        {
-            size_t pathHash = std::hash<std::wstring>{}(key.path);
-            size_t kindHash = std::hash<AssetKind>{}(key.kind);
-
-            return HashCombine(pathHash, kindHash);
-        }
-    };
-}
+class StaticMeshData;
+class MaterialData;
 
 class AssetManager
 {
@@ -51,7 +17,8 @@ private:
 	// 개별 파일로 분리하면 필요없음
 	std::array<std::shared_ptr<AssetData>, 10> m_tempAssets;
 	size_t m_tempAssetIndex = 0;
-	std::unordered_map<AssetKey, std::weak_ptr<AssetData>> m_assets;
+	std::unordered_map<std::wstring, std::weak_ptr<StaticMeshData>> m_staticMeshAssets;
+	std::unordered_map<std::wstring, std::weak_ptr<MaterialData>> m_materialAssets;
 
 private:
 	AssetManager() = default;
@@ -65,5 +32,6 @@ public:
 	static AssetManager& Get();
 
 public:
-	std::shared_ptr<AssetData> GetOrCreateAsset(AssetKey key);
+	std::shared_ptr<StaticMeshData> GetOrCreateStaticMeshAsset(const std::wstring& filePath);
+	std::shared_ptr<MaterialData> GetOrCreateMaterialAsset(const std::wstring& filePath);
 };

@@ -3,11 +3,10 @@
 #include <unordered_map>
 #include <memory>
 #include <string>
+#include <d3d11.h>
 
 #include "Vertex.h"
 
-
-class D3DResource;
 class VertexBuffer;
 class IndexBuffer;
 class ConstantBuffer;
@@ -24,11 +23,11 @@ class D3DResourceManager
 private:
 	std::unordered_map<std::wstring, std::weak_ptr<VertexBuffer>> m_vertexBuffers;
 	std::unordered_map<std::wstring, std::weak_ptr<IndexBuffer>> m_indexBuffers;
-	std::unordered_map<std::pair<std::wstring, UINT>, std::weak_ptr<ConstantBuffer>> m_constantBuffers;
+	std::unordered_map<std::wstring, std::weak_ptr<ConstantBuffer>> m_constantBuffers;
 	std::unordered_map<std::wstring, std::weak_ptr<VertexShader>> m_vertexShaders;
-	std::unordered_map<std::pair<std::wstring, unsigned long long>, std::weak_ptr<PixelShader>> m_pixelShaders;
+	std::unordered_map<std::wstring, std::weak_ptr<PixelShader>> m_pixelShaders;
 	std::unordered_map<std::wstring, std::weak_ptr<ShaderResourceView>> m_shaderResourceViews;
-	std::unordered_map<std::type_info, std::weak_ptr<InputLayout>> m_inputLayouts;
+	std::unordered_map<std::wstring, std::weak_ptr<InputLayout>> m_inputLayouts;
 	std::unordered_map<std::wstring, std::weak_ptr<SamplerState>> m_samplerStates;
 
 	GraphicsDevice* m_graphicsDevice = nullptr;
@@ -45,4 +44,12 @@ public:
 	static D3DResourceManager& Get();
 
 public:
+	std::shared_ptr<VertexBuffer> GetOrCreateVertexBuffer(const std::wstring& filePath, const std::vector<CommonVertex3D>& vertices);
+	std::shared_ptr<IndexBuffer> GetOrCreateIndexBuffer(const std::wstring& filePath, const std::vector<DWORD>& indices);
+	std::shared_ptr<ConstantBuffer> GetOrCreateConstantBuffer(const std::wstring& name, UINT byteWidth);
+	std::shared_ptr<VertexShader> GetOrCreateVertexShader(const std::wstring& filePath);
+	std::shared_ptr<PixelShader> GetOrCreatePixelShader(const std::wstring& filePath);
+	std::shared_ptr<ShaderResourceView> GetOrCreateShaderResourceView(const std::wstring& filePath);
+	std::shared_ptr<InputLayout> GetOrCreateInputLayout(const std::wstring& filePath, const D3D11_INPUT_ELEMENT_DESC& layoutDesc);
+	std::shared_ptr<SamplerState> GetOrCreateSamplerState(const std::wstring& name, const D3D11_SAMPLER_DESC& samplerDesc);
 };
