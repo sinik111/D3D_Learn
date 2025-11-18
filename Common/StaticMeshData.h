@@ -23,11 +23,15 @@ private:
     };
 
 private:
-    std::vector<CommonVertex3D> vertices;
-    std::vector<DWORD> indices;
+    std::vector<CommonVertex3D> m_vertices;
+    std::vector<DWORD> m_indices;
     std::vector<StaticMeshSection> m_meshSections;
 
 public:
     void Create(const std::wstring& filePath);
     void Create(const aiScene* scene);
+
+public:
+    const std::vector<CommonVertex3D>& GetVertices() const;
+    const std::vector<DWORD>& GetIndices() const;
 };

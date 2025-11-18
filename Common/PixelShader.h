@@ -20,8 +20,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D11PixelShader> m_pixelShader;
 
 public:
-    void Create(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const std::wstring& filePath,
-        unsigned long long materialFlags, unsigned long long renderFlags);
+    void Create(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const std::wstring& filePath);
 
 public:
     const Microsoft::WRL::ComPtr<ID3D11PixelShader>& GetShader() const;

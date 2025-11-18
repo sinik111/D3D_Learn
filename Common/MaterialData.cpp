@@ -21,8 +21,6 @@ void MaterialData::Create(const aiScene* scene)
 {
 	namespace fs = std::filesystem;
 
-	m_name = ToWideCharStr(scene->mName.C_Str());
-
 	aiString path;
 	aiColor4D color;
 	float scalar = 0.0f;
@@ -103,4 +101,9 @@ void MaterialData::Create(const aiScene* scene)
 
 		m_materials.push_back(std::move(material));
 	}
+}
+
+const std::vector<Material>& MaterialData::GetMaterials() const
+{
+	return m_materials;
 }

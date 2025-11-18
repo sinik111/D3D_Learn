@@ -26,8 +26,6 @@ void StaticMeshData::Create(const std::wstring& filePath)
 
 void StaticMeshData::Create(const aiScene* scene)
 {
-	m_name = ToWideCharStr(scene->mName.C_Str());
-
 	m_meshSections.reserve(scene->mNumMeshes);
 
 	int totalVertices = 0;
@@ -51,8 +49,8 @@ void StaticMeshData::Create(const aiScene* scene)
 		totalIndices += mesh->mNumFaces * 3;
 	}
 
-	vertices.reserve(totalVertices);
-	indices.reserve(totalIndices);
+	m_vertices.reserve(totalVertices);
+	m_indices.reserve(totalIndices);
 
 	for (unsigned int i = 0; i < scene->mNumMeshes; ++i)
 	{
@@ -65,7 +63,7 @@ void StaticMeshData::Create(const aiScene* scene)
 
 		for (unsigned int j = 0; j < numVertices; ++j)
 		{
-			vertices.emplace_back(
+			m_vertices.emplace_back(
 				&mesh->mVertices[j].x,
 				&mesh->mTextureCoords[0][j].x,
 				&mesh->mNormals[j].x,
@@ -75,9 +73,19 @@ void StaticMeshData::Create(const aiScene* scene)
 
 		for (unsigned int j = 0; i < numFaces; ++j)
 		{
-			indices.push_back(mesh->mFaces[j].mIndices[0] + currentVertexOffset);
-			indices.push_back(mesh->mFaces[j].mIndices[1] + currentVertexOffset);
-			indices.push_back(mesh->mFaces[j].mIndices[2] + currentVertexOffset);
+			m_indices.push_back(mesh->mFaces[j].mIndices[0] + currentVertexOffset);
+			m_indices.push_back(mesh->mFaces[j].mIndices[1] + currentVertexOffset);
+			m_indices.push_back(mesh->mFaces[j].mIndices[2] + currentVertexOffset);
 		}
 	}
+}
+
+const std::vector<CommonVertex3D>& StaticMeshData::GetVertices() const
+{
+	return m_vertices;
+}
+
+const std::vector<DWORD>& StaticMeshData::GetIndices() const
+{
+	return m_indices;
 }

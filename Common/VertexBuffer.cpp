@@ -2,6 +2,8 @@
 
 void VertexBuffer::Create(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const std::vector<CommonVertex3D>& vertices)
 {
+	m_bufferStride = sizeof(CommonVertex3D);
+
 	D3D11_BUFFER_DESC vertexBufferDesc{};
 	vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(CommonVertex3D) * vertices.size());
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -16,4 +18,9 @@ void VertexBuffer::Create(const Microsoft::WRL::ComPtr<ID3D11Device>& device, co
 const Microsoft::WRL::ComPtr<ID3D11Buffer>& VertexBuffer::GetBuffer() const
 {
 	return m_buffer;
+}
+
+UINT VertexBuffer::GetBufferStride() const
+{
+	return m_bufferStride;
 }

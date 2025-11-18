@@ -19,7 +19,7 @@ private:
     Microsoft::WRL::ComPtr<ID3D11SamplerState> m_samplerState;
 
 public:
-    void Create(const Microsoft::WRL::ComPtr<ID3D11Device>& device, SamplerType type);
+    void Create(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const D3D11_SAMPLER_DESC& samplerDesc);
 
 public:
     const Microsoft::WRL::ComPtr<ID3D11SamplerState>& GetSamplerState() const;

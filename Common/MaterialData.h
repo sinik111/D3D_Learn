@@ -42,4 +42,7 @@ private:
 public:
     void Create(const std::wstring& filePath);
     void Create(const aiScene* scene);
+
+public:
+    const std::vector<Material>& GetMaterials() const;
 };

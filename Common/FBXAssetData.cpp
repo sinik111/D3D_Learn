@@ -13,8 +13,6 @@
 
 void FBXAssetData::Create(FBXAssetKind kind, const std::wstring& filePath)
 {
-	m_name = filePath;
-
 	switch (kind)
 	{
 	case FBXAssetKind::Static:

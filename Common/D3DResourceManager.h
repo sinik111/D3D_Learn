@@ -18,6 +18,8 @@ class SamplerState;
 
 class GraphicsDevice;
 
+enum class TextureType;
+
 class D3DResourceManager
 {
 private:
@@ -30,7 +32,7 @@ private:
 	std::unordered_map<std::wstring, std::weak_ptr<InputLayout>> m_inputLayouts;
 	std::unordered_map<std::wstring, std::weak_ptr<SamplerState>> m_samplerStates;
 
-	GraphicsDevice* m_graphicsDevice = nullptr;
+	const GraphicsDevice* m_graphicsDevice = nullptr;
 
 private:
 	D3DResourceManager() = default;
@@ -44,12 +46,15 @@ public:
 	static D3DResourceManager& Get();
 
 public:
+	void SetGraphicsDevice(const GraphicsDevice* graphicsDevice);
 	std::shared_ptr<VertexBuffer> GetOrCreateVertexBuffer(const std::wstring& filePath, const std::vector<CommonVertex3D>& vertices);
 	std::shared_ptr<IndexBuffer> GetOrCreateIndexBuffer(const std::wstring& filePath, const std::vector<DWORD>& indices);
 	std::shared_ptr<ConstantBuffer> GetOrCreateConstantBuffer(const std::wstring& name, UINT byteWidth);
 	std::shared_ptr<VertexShader> GetOrCreateVertexShader(const std::wstring& filePath);
 	std::shared_ptr<PixelShader> GetOrCreatePixelShader(const std::wstring& filePath);
-	std::shared_ptr<ShaderResourceView> GetOrCreateShaderResourceView(const std::wstring& filePath);
-	std::shared_ptr<InputLayout> GetOrCreateInputLayout(const std::wstring& filePath, const D3D11_INPUT_ELEMENT_DESC& layoutDesc);
+	std::shared_ptr<ShaderResourceView> GetOrCreateShaderResourceView(const std::wstring& filePath, TextureType type);
+	std::shared_ptr<ShaderResourceView> GetOrCreateShaderResourceView(const std::wstring& name, const D3D11_TEXTURE2D_DESC& textureDesc,
+		const D3D11_SUBRESOURCE_DATA& subData);
+	std::shared_ptr<InputLayout> GetOrCreateInputLayout(const std::wstring& filePath, const D3D11_INPUT_ELEMENT_DESC* layoutDesc, UINT numElements);
 	std::shared_ptr<SamplerState> GetOrCreateSamplerState(const std::wstring& name, const D3D11_SAMPLER_DESC& samplerDesc);
 };

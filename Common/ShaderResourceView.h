@@ -16,14 +16,14 @@ class ShaderResourceView :
     public D3DResource
 {
 private:
-    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_srv;
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_shaderResourceView;
 
 public:
     void Create(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const std::wstring& filePath, TextureType type);
-    void Create(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const Microsoft::WRL::ComPtr<ID3D11Texture2D>& texture,
-        const D3D11_SHADER_RESOURCE_VIEW_DESC& srvDesc);
+    void Create(const Microsoft::WRL::ComPtr<ID3D11Device>& device,const D3D11_TEXTURE2D_DESC& textureDesc,
+        const D3D11_SUBRESOURCE_DATA& subData);
 
 public:
-    const Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>& GetSRV() const;
+    const Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>& GetShaderResourceView() const;
 };
 

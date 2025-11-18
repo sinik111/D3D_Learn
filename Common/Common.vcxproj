@@ -160,6 +160,7 @@
     <ClInclude Include="VertexBuffer.h" />
     <ClInclude Include="VertexShader.h" />
     <ClInclude Include="WinApp.h" />
+    <ClInclude Include="ShaderConstant.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssetData.cpp" />

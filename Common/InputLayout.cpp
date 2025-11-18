@@ -1,10 +1,12 @@
 #include "InputLayout.h"
 
 #include <d3dcompiler.h>
+#include <d3d11.h>
 
 #include "Vertex.h"
 
-void InputLayout::Create(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const std::wstring& filePath, std::type_info type)
+void InputLayout::Create(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const std::wstring& filePath,
+	const D3D11_INPUT_ELEMENT_DESC* layoutDesc, UINT numElements)
 {
 	HRESULT hr = S_OK;
 
@@ -36,25 +38,13 @@ void InputLayout::Create(const Microsoft::WRL::ComPtr<ID3D11Device>& device, con
 		}
 	}
 
-	if (type == typeid(CommonVertex3D))
-	{
-		D3D11_INPUT_ELEMENT_DESC layout[]{
-			// SemanticName , SemanticIndex , Format , InputSlot , AlignedByteOffset , InputSlotClass , InstanceDataStepRate
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "BINORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		};
-
-		device->CreateInputLayout(
-			layout,
-			ARRAYSIZE(layout),
-			vertexShaderBuffer->GetBufferPointer(),
-			vertexShaderBuffer->GetBufferSize(),
-			&m_inputLayout
-		);
-	}
+	device->CreateInputLayout(
+		layoutDesc,
+		numElements,
+		vertexShaderBuffer->GetBufferPointer(),
+		vertexShaderBuffer->GetBufferSize(),
+		&m_inputLayout
+	);
 }
 
 const Microsoft::WRL::ComPtr<ID3D11InputLayout>& InputLayout::GetInputLayout() const

@@ -12,10 +12,12 @@ class VertexBuffer :
 {
 private:
     Microsoft::WRL::ComPtr<ID3D11Buffer> m_buffer;
+    UINT m_bufferStride = 0;
 
 public:
     void Create(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const std::vector<CommonVertex3D>& vertices);
 
 public:
     const Microsoft::WRL::ComPtr<ID3D11Buffer>& GetBuffer() const;
+    UINT GetBufferStride() const;
 };

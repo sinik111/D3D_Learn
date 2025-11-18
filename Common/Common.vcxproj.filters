@@ -93,6 +93,9 @@
     <ClInclude Include="InputLayout.h">
       <Filter>02_Module\D3DResource\Derived</Filter>
     </ClInclude>
+    <ClInclude Include="ShaderConstant.h">
+      <Filter>02_Module</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinApp.cpp">

@@ -1,54 +1,64 @@
 #pragma once
 
-//#include <string>
-//#include <vector>
-//#include <directxtk/SimpleMath.h>
-//
-//#include "StaticMeshSection.h"
-//#include "Material.h"
-//
-//struct aiNode;
-//
-//class StaticMesh
-//{
-//private:
-//	using Matrix = DirectX::SimpleMath::Matrix;
-//
-//private:
-//	std::wstring m_name;
-//	std::vector<StaticMeshSection> m_meshes;
-//	std::vector<Material> m_materials;
-//	Matrix m_world;
-//
-//public:
-//	StaticMesh(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const std::string& fileName, const Matrix& world = Matrix::Identity);
-//
-//public:
-//	const std::wstring& GetName() const;
-//	const std::vector<StaticMeshSection>& GetMeshes() const;
-//	const std::vector<Material>& GetMaterials() const;
-//	const Matrix& GetWorld() const;
-//
-//	void SetWorld(const Matrix& world);
-//};
-
-#include <string>
 #include <memory>
+#include <d3d11.h>
+#include <array>
+#include <string>
+#include <wrl/client.h>
 
-#include "../Common/StaticMeshData.h"
-#include "../Common/MaterialData.h"
+#include "../Common/ShaderConstant.h"
 
-struct aiNode;
+class StaticMeshData;
+class MaterialData;
+
+class VertexBuffer;
+class IndexBuffer;
+class ConstantBuffer;
+class VertexShader;
+class PixelShader;
+class ShaderResourceView;
+class InputLayout;
+class SamplerState;
+
+struct TextureSRVs
+{
+	std::shared_ptr<ShaderResourceView> diffuseTextureSRV;
+	std::shared_ptr<ShaderResourceView> normalTextureSRV;
+	std::shared_ptr<ShaderResourceView> specularTextureSRV;
+	std::shared_ptr<ShaderResourceView> emissiveTextureSRV;
+	std::shared_ptr<ShaderResourceView> opacityTextureSRV;
+
+	std::array<ID3D11ShaderResourceView*, 5> AsRawArray() const;
+};
 
 class StaticMesh
 {
 private:
+	// assets
 	std::shared_ptr<StaticMeshData> m_staticMeshData;
 	std::shared_ptr<MaterialData> m_materialData;
+
+	// resources
+	std::shared_ptr<VertexBuffer> m_vertexBuffer;
+	std::shared_ptr<IndexBuffer> m_indexBuffer;
+	std::shared_ptr<ConstantBuffer> m_materialBuffer;
+	std::shared_ptr<ConstantBuffer> m_worldTransformBuffer;
+	std::shared_ptr<VertexShader> m_finalPassVertexShader;
+	std::shared_ptr<VertexShader> m_shadowPassVertexShader;
+	std::shared_ptr<PixelShader> m_finalPassPixelShader;
+	std::shared_ptr<PixelShader> m_shadowPassPixelShader;
+	std::vector<TextureSRVs> m_textureSRVs;
+	std::shared_ptr<InputLayout> m_inputLayout;
+	std::shared_ptr<SamplerState> m_samplerState;
+
+	// instance
+	MaterialBuffer m_materialCB;
+	WorldTransformBuffer m_worldTransformCB;
 
 public:
 	StaticMesh(const std::wstring& filePath);
 
 public:
-	void Draw();
+	void DrawShadowMap(const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext);
+	void Draw(const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext);
 };
