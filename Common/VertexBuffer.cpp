@@ -35,6 +35,11 @@ const Microsoft::WRL::ComPtr<ID3D11Buffer>& VertexBuffer::GetBuffer() const
 	return m_buffer;
 }
 
+ID3D11Buffer* VertexBuffer::GetRawBuffer() const
+{
+	return m_buffer.Get();
+}
+
 UINT VertexBuffer::GetBufferStride() const
 {
 	return m_bufferStride;

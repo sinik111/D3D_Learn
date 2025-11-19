@@ -36,3 +36,8 @@ const Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>& ShaderResourceView::GetS
 {
 	return m_shaderResourceView;
 }
+
+ID3D11ShaderResourceView* ShaderResourceView::GetRawShaderResourceView() const
+{
+	return m_shaderResourceView.Get();
+}

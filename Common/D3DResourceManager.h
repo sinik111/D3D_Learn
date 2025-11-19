@@ -6,6 +6,7 @@
 #include <d3d11.h>
 
 #include "Vertex.h"
+#include "ResourceKey.h"
 
 class VertexBuffer;
 class IndexBuffer;
@@ -23,7 +24,7 @@ enum class TextureType;
 class D3DResourceManager
 {
 private:
-	std::unordered_map<std::wstring, std::weak_ptr<VertexBuffer>> m_vertexBuffers;
+	std::unordered_map<VertexBufferKey, std::weak_ptr<VertexBuffer>> m_vertexBuffers;
 	std::unordered_map<std::wstring, std::weak_ptr<IndexBuffer>> m_indexBuffers;
 	std::unordered_map<std::wstring, std::weak_ptr<ConstantBuffer>> m_constantBuffers;
 	std::unordered_map<std::wstring, std::weak_ptr<VertexShader>> m_vertexShaders;

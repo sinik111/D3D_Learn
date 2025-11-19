@@ -26,6 +26,7 @@ public:
 
 public:
     const Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>& GetShaderResourceView() const;
+    ID3D11ShaderResourceView* GetRawShaderResourceView() const;
 };
 
 struct TextureSRVs
@@ -39,11 +40,11 @@ struct TextureSRVs
     std::array<ID3D11ShaderResourceView*, 5> AsRawArray() const
     {
         return {
-            diffuseTextureSRV->GetShaderResourceView().Get(),
-            normalTextureSRV->GetShaderResourceView().Get(),
-            specularTextureSRV->GetShaderResourceView().Get(),
-            emissiveTextureSRV->GetShaderResourceView().Get(),
-            opacityTextureSRV->GetShaderResourceView().Get()
+            diffuseTextureSRV->GetRawShaderResourceView(),
+            normalTextureSRV->GetRawShaderResourceView(),
+            specularTextureSRV->GetRawShaderResourceView(),
+            emissiveTextureSRV->GetRawShaderResourceView(),
+            opacityTextureSRV->GetRawShaderResourceView()
         };
     }
 };

@@ -17,4 +17,5 @@ public:
 
 public:
 	const Microsoft::WRL::ComPtr<ID3D11VertexShader>& GetShader() const;
+	ID3D11VertexShader* GetRawShader() const;
 };

@@ -49,3 +49,8 @@ const Microsoft::WRL::ComPtr<ID3D11PixelShader>& PixelShader::GetShader() const
 {
 	return m_pixelShader;
 }
+
+ID3D11PixelShader* PixelShader::GetRawShader() const
+{
+	return m_pixelShader.Get();
+}

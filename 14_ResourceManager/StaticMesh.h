@@ -49,7 +49,5 @@ public:
 
 public:
 	void Draw(const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext) const;
-
-public:
 	void SetWorld(const DirectX::SimpleMath::Matrix& world);
 };

@@ -25,19 +25,15 @@ std::shared_ptr<StaticMeshData> AssetManager::GetOrCreateStaticMeshAsset(const s
 		}
 	}
 
-	FBXAssetData fbx;
-	fbx.Create(FBXAssetKind::Static, filePath);
+	std::shared_ptr<FBXAssetData> fbx = std::make_shared<FBXAssetData>();
+	fbx->Create(FBXAssetKind::Static, filePath);
 
-	const auto& meshData = fbx.GetStaticMeshData();
-	const auto& materialData = fbx.GetMaterialData();
+	m_staticMeshAssets[filePath] = fbx->GetStaticMeshData();
+	m_materialAssets[filePath] = fbx->GetMaterialData();
 
-	m_staticMeshAssets[filePath] = meshData;
-	m_materialAssets[filePath] = materialData;
+	m_tempAssets[m_tempAssetIndex++ % MAX_TEMP_ASSET] = fbx;
 
-	m_tempAssets[m_tempAssetIndex++ % 10] = meshData;
-	m_tempAssets[m_tempAssetIndex++ % 10] = materialData;
-
-	return meshData;
+	return fbx->GetStaticMeshData();
 }
 
 std::shared_ptr<MaterialData> AssetManager::GetOrCreateMaterialAsset(const std::wstring& filePath)
@@ -51,19 +47,15 @@ std::shared_ptr<MaterialData> AssetManager::GetOrCreateMaterialAsset(const std::
 		}
 	}
 
-	FBXAssetData fbx;
-	fbx.Create(FBXAssetKind::Static, filePath);
+	std::shared_ptr<FBXAssetData> fbx = std::make_shared<FBXAssetData>();
+	fbx->Create(FBXAssetKind::Static, filePath);
 
-	const auto& meshData = fbx.GetStaticMeshData();
-	const auto& materialData = fbx.GetMaterialData();
+	m_staticMeshAssets[filePath] = fbx->GetStaticMeshData();
+	m_materialAssets[filePath] = fbx->GetMaterialData();
 
-	m_staticMeshAssets[filePath] = meshData;
-	m_materialAssets[filePath] = materialData;
+	m_tempAssets[m_tempAssetIndex++ % MAX_TEMP_ASSET] = fbx;
 
-	m_tempAssets[m_tempAssetIndex++ % 10] = meshData;
-	m_tempAssets[m_tempAssetIndex++ % 10] = materialData;
-
-	return materialData;
+	return fbx->GetMaterialData();
 }
 
 std::shared_ptr<SkeletalMeshData> AssetManager::GetOrCreateSkeletalMeshAsset(const std::wstring& filePath)
@@ -77,25 +69,17 @@ std::shared_ptr<SkeletalMeshData> AssetManager::GetOrCreateSkeletalMeshAsset(con
 		}
 	}
 
-	FBXAssetData fbx;
-	fbx.Create(FBXAssetKind::Skeletal, filePath);
+	std::shared_ptr<FBXAssetData> fbx = std::make_shared<FBXAssetData>();
+	fbx->Create(FBXAssetKind::Skeletal, filePath);
 
-	const auto& meshData = fbx.GetSkeletalMeshData();
-	const auto& materialData = fbx.GetMaterialData();
-	const auto& animationData = fbx.GetAnimationData();
-	const auto& skeletonData = fbx.GetSkeletonData();
+	m_skeletalMeshAssets[filePath] = fbx->GetSkeletalMeshData();
+	m_materialAssets[filePath] = fbx->GetMaterialData();
+	m_animationAssets[filePath] = fbx->GetAnimationData();
+	m_skeletonAssets[filePath] = fbx->GetSkeletonData();
 
-	m_skeletalMeshAssets[filePath] = meshData;
-	m_materialAssets[filePath] = materialData;
-	m_animationAssets[filePath] = animationData;
-	m_skeletonAssets[filePath] = skeletonData;
+	m_tempAssets[m_tempAssetIndex++ % MAX_TEMP_ASSET] = fbx;
 
-	m_tempAssets[m_tempAssetIndex++ % 10] = meshData;
-	m_tempAssets[m_tempAssetIndex++ % 10] = materialData;
-	m_tempAssets[m_tempAssetIndex++ % 10] = animationData;
-	m_tempAssets[m_tempAssetIndex++ % 10] = skeletonData;
-
-	return meshData;
+	return fbx->GetSkeletalMeshData();
 }
 
 std::shared_ptr<AnimationData> AssetManager::GetOrCreateAnimationAsset(const std::wstring& filePath)
@@ -109,25 +93,17 @@ std::shared_ptr<AnimationData> AssetManager::GetOrCreateAnimationAsset(const std
 		}
 	}
 
-	FBXAssetData fbx;
-	fbx.Create(FBXAssetKind::Skeletal, filePath);
+	std::shared_ptr<FBXAssetData> fbx = std::make_shared<FBXAssetData>();
+	fbx->Create(FBXAssetKind::Skeletal, filePath);
 
-	const auto& meshData = fbx.GetSkeletalMeshData();
-	const auto& materialData = fbx.GetMaterialData();
-	const auto& animationData = fbx.GetAnimationData();
-	const auto& skeletonData = fbx.GetSkeletonData();
+	m_skeletalMeshAssets[filePath] = fbx->GetSkeletalMeshData();
+	m_materialAssets[filePath] = fbx->GetMaterialData();
+	m_animationAssets[filePath] = fbx->GetAnimationData();
+	m_skeletonAssets[filePath] = fbx->GetSkeletonData();
 
-	m_skeletalMeshAssets[filePath] = meshData;
-	m_materialAssets[filePath] = materialData;
-	m_animationAssets[filePath] = animationData;
-	m_skeletonAssets[filePath] = skeletonData;
+	m_tempAssets[m_tempAssetIndex++ % MAX_TEMP_ASSET] = fbx;
 
-	m_tempAssets[m_tempAssetIndex++ % 10] = meshData;
-	m_tempAssets[m_tempAssetIndex++ % 10] = materialData;
-	m_tempAssets[m_tempAssetIndex++ % 10] = animationData;
-	m_tempAssets[m_tempAssetIndex++ % 10] = skeletonData;
-
-	return animationData;
+	return fbx->GetAnimationData();
 }
 
 std::shared_ptr<SkeletonData> AssetManager::GetOrCreateSkeletonAsset(const std::wstring& filePath)
@@ -141,23 +117,15 @@ std::shared_ptr<SkeletonData> AssetManager::GetOrCreateSkeletonAsset(const std::
 		}
 	}
 
-	FBXAssetData fbx;
-	fbx.Create(FBXAssetKind::Skeletal, filePath);
+	std::shared_ptr<FBXAssetData> fbx = std::make_shared<FBXAssetData>();
+	fbx->Create(FBXAssetKind::Skeletal, filePath);
 
-	const auto& meshData = fbx.GetSkeletalMeshData();
-	const auto& materialData = fbx.GetMaterialData();
-	const auto& animationData = fbx.GetAnimationData();
-	const auto& skeletonData = fbx.GetSkeletonData();
+	m_skeletalMeshAssets[filePath] = fbx->GetSkeletalMeshData();
+	m_materialAssets[filePath] = fbx->GetMaterialData();
+	m_animationAssets[filePath] = fbx->GetAnimationData();
+	m_skeletonAssets[filePath] = fbx->GetSkeletonData();
 
-	m_skeletalMeshAssets[filePath] = meshData;
-	m_materialAssets[filePath] = materialData;
-	m_animationAssets[filePath] = animationData;
-	m_skeletonAssets[filePath] = skeletonData;
+	m_tempAssets[m_tempAssetIndex++ % MAX_TEMP_ASSET] = fbx;
 
-	m_tempAssets[m_tempAssetIndex++ % 10] = meshData;
-	m_tempAssets[m_tempAssetIndex++ % 10] = materialData;
-	m_tempAssets[m_tempAssetIndex++ % 10] = animationData;
-	m_tempAssets[m_tempAssetIndex++ % 10] = skeletonData;
-
-	return skeletonData;
+	return fbx->GetSkeletonData();
 }

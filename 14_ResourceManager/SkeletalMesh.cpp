@@ -24,6 +24,7 @@
 #include "../Common/SamplerState.h"
 #include "../Common/SkeletonData.h"
 #include "../Common/AnimationData.h"
+#include "../Common/MaterialHelper.h"
 
 using DirectX::SimpleMath::Matrix;
 
@@ -34,9 +35,7 @@ SkeletalMesh::SkeletalMesh(const std::wstring& filePath)
 	m_animationData = AssetManager::Get().GetOrCreateAnimationAsset(filePath);
 	m_skeletonData = AssetManager::Get().GetOrCreateSkeletonAsset(filePath);
 
-	bool isRigid = m_skeletalMeshData->IsRigid();
-
-	if (isRigid)
+	if (m_skeletalMeshData->IsRigid())
 	{
 		m_vertexBuffer = D3DResourceManager::Get().GetOrCreateVertexBuffer(filePath, m_skeletalMeshData->GetVertices());
 		m_finalPassVertexShader = D3DResourceManager::Get().GetOrCreateVertexShader(L"RigidAnimVS.hlsl");
@@ -62,110 +61,24 @@ SkeletalMesh::SkeletalMesh(const std::wstring& filePath)
 
 	const auto& materials = m_materialData->GetMaterials();
 	m_textureSRVs.reserve(materials.size());
-
-	static const D3D11_TEXTURE2D_DESC s_texDesc{
-		1,
-		1,
-		1,
-		1,
-		DXGI_FORMAT_R8G8B8A8_UNORM,
-		{ 1, 0 },
-		D3D11_USAGE_IMMUTABLE,
-		D3D11_BIND_SHADER_RESOURCE,
-		0,
-		0
-	};
+	m_materialCBs.reserve(materials.size());
 
 	for (const auto& material : materials)
 	{
 		TextureSRVs srvs{};
 		MaterialBuffer materialCB{};
 
-		if (material.materialFlags & static_cast<unsigned long long>(MaterialKey::DIFFUSE_TEXTURE))
-		{
-			srvs.diffuseTextureSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(
-				material.texturePaths.at(MaterialKey::DIFFUSE_TEXTURE), TextureType::Texture2D);
-		}
-		else
-		{
-			static const unsigned char s_data[4]{ 255, 255, 255, 255 };
-			static const D3D11_SUBRESOURCE_DATA subData{ s_data, 4 };
+		MaterialHelper::SetupTextureSRV(srvs.diffuseTextureSRV, material, MaterialKey::DIFFUSE_TEXTURE, L"DummyTexWhite", MaterialHelper::WHITE_DATA);
+		MaterialHelper::SetupTextureSRV(srvs.normalTextureSRV, material, MaterialKey::NORMAL_TEXTURE, L"DummyTexFlat", MaterialHelper::FLAT_DATA);
+		MaterialHelper::SetupTextureSRV(srvs.specularTextureSRV, material, MaterialKey::SPECULAR_TEXTURE, L"DummyTexBlack", MaterialHelper::BLACK_DATA);
+		MaterialHelper::SetupTextureSRV(srvs.emissiveTextureSRV, material, MaterialKey::EMISSIVE_TEXTURE, L"DummyTexBlack", MaterialHelper::BLACK_DATA);
+		MaterialHelper::SetupTextureSRV(srvs.opacityTextureSRV, material, MaterialKey::OPACITY_TEXTURE, L"DummyTexWhite", MaterialHelper::WHITE_DATA);
 
-			srvs.diffuseTextureSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"DummyTexWhite", s_texDesc, subData);
-		}
+		MaterialHelper::SetupMaterialVector(materialCB.diffuse, material, MaterialKey::DIFFUSE_COLOR);
+		//MaterialHelper::SetupMaterialVector(materialCB.ambient, material, MaterialKey::AMBIENT_COLOR); // 다 0임..
+		MaterialHelper::SetupMaterialVector(materialCB.specular, material, MaterialKey::SPECULAR_COLOR);
 
-		if (material.materialFlags & static_cast<unsigned long long>(MaterialKey::DIFFUSE_COLOR))
-		{
-			materialCB.diffuse = material.vectorValues.at(MaterialKey::DIFFUSE_COLOR);
-		}
-
-		// 다 0 임..
-		//if (material.materialFlags & static_cast<unsigned long long>(MaterialKey::AMBIENT_COLOR))
-		//{
-		//	materialCB.ambient = material.vectorValues.at(MaterialKey::AMBIENT_COLOR);
-		//}
-
-		if (material.materialFlags & static_cast<unsigned long long>(MaterialKey::NORMAL_TEXTURE))
-		{
-			srvs.normalTextureSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(
-				material.texturePaths.at(MaterialKey::NORMAL_TEXTURE), TextureType::Texture2D);
-		}
-		else
-		{
-			static const unsigned char s_data[4]{ 128, 128, 255, 255 };
-			static const D3D11_SUBRESOURCE_DATA subData{ s_data, 4 };
-
-			srvs.normalTextureSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"DummyTexFlat", s_texDesc, subData);
-		}
-
-		if (material.materialFlags & static_cast<unsigned long long>(MaterialKey::SPECULAR_TEXTURE))
-		{
-			srvs.specularTextureSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(
-				material.texturePaths.at(MaterialKey::SPECULAR_TEXTURE), TextureType::Texture2D);
-		}
-		else
-		{
-			static const unsigned char s_data[4]{ 0, 0, 0, 0 };
-			static const D3D11_SUBRESOURCE_DATA subData{ s_data, 4 };
-
-			srvs.specularTextureSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"DummyTexBlack", s_texDesc, subData);
-		}
-
-		if (material.materialFlags & static_cast<unsigned long long>(MaterialKey::SPECULAR_COLOR))
-		{
-			materialCB.specular = material.vectorValues.at(MaterialKey::SPECULAR_COLOR);
-		}
-
-		if (material.materialFlags & static_cast<unsigned long long>(MaterialKey::SHININESS_FACTOR))
-		{
-			materialCB.shininess = material.scalarValues.at(MaterialKey::SHININESS_FACTOR);
-		}
-
-		if (material.materialFlags & static_cast<unsigned long long>(MaterialKey::EMISSIVE_TEXTURE))
-		{
-			srvs.emissiveTextureSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(
-				material.texturePaths.at(MaterialKey::EMISSIVE_TEXTURE), TextureType::Texture2D);
-		}
-		else
-		{
-			static const unsigned char s_data[4]{ 0, 0, 0, 0 };
-			static const D3D11_SUBRESOURCE_DATA subData{ s_data, 4 };
-
-			srvs.emissiveTextureSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"DummyTexBlack", s_texDesc, subData);
-		}
-
-		if (material.materialFlags & static_cast<unsigned long long>(MaterialKey::OPACITY_TEXTURE))
-		{
-			srvs.opacityTextureSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(
-				material.texturePaths.at(MaterialKey::OPACITY_TEXTURE), TextureType::Texture2D);
-		}
-		else
-		{
-			static const unsigned char s_data[4]{ 255, 255, 255, 255 };
-			static const D3D11_SUBRESOURCE_DATA subData{ s_data, 4 };
-
-			srvs.opacityTextureSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"DummyTexWhite", s_texDesc, subData);
-		}
+		MaterialHelper::SetupMaterialScalar(materialCB.shininess, material, MaterialKey::SHININESS_FACTOR);
 
 		m_textureSRVs.push_back(std::move(srvs));
 		m_materialCBs.push_back(materialCB);
@@ -239,55 +152,52 @@ void SkeletalMesh::Draw(const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& devic
 {
 	static const UINT s_vertexBufferOffset = 0;
 	const UINT s_vertexBufferStride = m_vertexBuffer->GetBufferStride();
-	const bool isRigid = m_skeletalMeshData->IsRigid();
 
 	deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer->GetBuffer().GetAddressOf(), &s_vertexBufferStride, &s_vertexBufferOffset);
-	deviceContext->IASetIndexBuffer(m_indexBuffer->GetBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
-	deviceContext->IASetInputLayout(m_inputLayout->GetInputLayout().Get());
+	deviceContext->IASetIndexBuffer(m_indexBuffer->GetRawBuffer(), DXGI_FORMAT_R32_UINT, 0);
+	deviceContext->IASetInputLayout(m_inputLayout->GetRawInputLayout());
 
-	deviceContext->VSSetShader(m_finalPassVertexShader->GetShader().Get(), nullptr, 0);
+	deviceContext->VSSetShader(m_finalPassVertexShader->GetRawShader(), nullptr, 0);
 	deviceContext->VSSetConstantBuffers(static_cast<UINT>(ConstantBufferSlot::WorldTransform),
 		1, m_worldTransformBuffer->GetBuffer().GetAddressOf());
 	deviceContext->VSSetConstantBuffers(static_cast<UINT>(ConstantBufferSlot::BonePoseMatrix),
 		1, m_bonePoseBuffer->GetBuffer().GetAddressOf());
-	deviceContext->UpdateSubresource(m_bonePoseBuffer->GetBuffer().Get(), 0, nullptr, m_skeletonPose.data(), 0, 0);
-	if (!isRigid)
-	{
-		deviceContext->VSSetConstantBuffers(static_cast<UINT>(ConstantBufferSlot::BoneOffsetMatrix),
-			1, m_boneOffsetBuffer->GetBuffer().GetAddressOf());
-		deviceContext->UpdateSubresource(m_worldTransformBuffer->GetBuffer().Get(), 0, nullptr, &m_worldTransformCB, 0, 0);
-		deviceContext->UpdateSubresource(m_boneOffsetBuffer->GetBuffer().Get(), 0, nullptr, m_skeletonData->GetBoneOffsets().data(), 0, 0);
-	}
+	deviceContext->UpdateSubresource(m_bonePoseBuffer->GetRawBuffer(), 0, nullptr, m_skeletonPose.data(), 0, 0);
 
 	deviceContext->PSSetSamplers(0, 1, m_samplerState->GetSamplerState().GetAddressOf());
-	deviceContext->PSSetShader(m_finalPassPixelShader->GetShader().Get(), nullptr, 0);
+	deviceContext->PSSetShader(m_finalPassPixelShader->GetRawShader(), nullptr, 0);
 	deviceContext->PSSetConstantBuffers(static_cast<UINT>(ConstantBufferSlot::Material),
 		1, m_materialBuffer->GetBuffer().GetAddressOf());
 
 	const auto& meshSections = m_skeletalMeshData->GetMeshSections();
 
-	if (isRigid)
+	if (m_skeletalMeshData->IsRigid())
 	{
 		for (const auto& meshSection : meshSections)
 		{
 			m_worldTransformCB.refBoneIndex = meshSection.m_boneReference;
-			deviceContext->UpdateSubresource(m_worldTransformBuffer->GetBuffer().Get(), 0, nullptr, &m_worldTransformCB, 0, 0);
+			deviceContext->UpdateSubresource(m_worldTransformBuffer->GetRawBuffer(), 0, nullptr, &m_worldTransformCB, 0, 0);
 
 			const auto textureSRVs = m_textureSRVs[meshSection.materialIndex].AsRawArray();
 
 			deviceContext->PSSetShaderResources(0, static_cast<UINT>(textureSRVs.size()), textureSRVs.data());
-			deviceContext->UpdateSubresource(m_materialBuffer->GetBuffer().Get(), 0, nullptr, &m_materialCBs[meshSection.materialIndex], 0, 0);
+			deviceContext->UpdateSubresource(m_materialBuffer->GetRawBuffer(), 0, nullptr, &m_materialCBs[meshSection.materialIndex], 0, 0);
 			deviceContext->DrawIndexed(meshSection.indexCount, meshSection.indexOffset, meshSection.vertexOffset);
 		}
 	}
 	else
 	{
+		deviceContext->VSSetConstantBuffers(static_cast<UINT>(ConstantBufferSlot::BoneOffsetMatrix),
+			1, m_boneOffsetBuffer->GetBuffer().GetAddressOf());
+		deviceContext->UpdateSubresource(m_worldTransformBuffer->GetRawBuffer(), 0, nullptr, &m_worldTransformCB, 0, 0);
+		deviceContext->UpdateSubresource(m_boneOffsetBuffer->GetRawBuffer(), 0, nullptr, m_skeletonData->GetBoneOffsets().data(), 0, 0);
+
 		for (const auto& meshSection : meshSections)
 		{
 			const auto textureSRVs = m_textureSRVs[meshSection.materialIndex].AsRawArray();
 
 			deviceContext->PSSetShaderResources(0, static_cast<UINT>(textureSRVs.size()), textureSRVs.data());
-			deviceContext->UpdateSubresource(m_materialBuffer->GetBuffer().Get(), 0, nullptr, &m_materialCBs[meshSection.materialIndex], 0, 0);
+			deviceContext->UpdateSubresource(m_materialBuffer->GetRawBuffer(), 0, nullptr, &m_materialCBs[meshSection.materialIndex], 0, 0);
 			deviceContext->DrawIndexed(meshSection.indexCount, meshSection.indexOffset, meshSection.vertexOffset);
 		}
 	}

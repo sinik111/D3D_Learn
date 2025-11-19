@@ -9,3 +9,8 @@ const Microsoft::WRL::ComPtr<ID3D11SamplerState>& SamplerState::GetSamplerState(
 {
 	return m_samplerState;
 }
+
+ID3D11SamplerState* SamplerState::GetRawSamplerState() const
+{
+	return m_samplerState.Get();
+}

@@ -24,7 +24,8 @@ void D3DResourceManager::SetGraphicsDevice(const GraphicsDevice* graphicsDevice)
 
 std::shared_ptr<VertexBuffer> D3DResourceManager::GetOrCreateVertexBuffer(const std::wstring& filePath, const std::vector<CommonVertex3D>& vertices)
 {
-	auto find = m_vertexBuffers.find(filePath);
+	VertexBufferKey key{ filePath, VertexFormat::Common3D };
+	auto find = m_vertexBuffers.find(key);
 	if (find != m_vertexBuffers.end())
 	{
 		if (!find->second.expired())
@@ -36,14 +37,15 @@ std::shared_ptr<VertexBuffer> D3DResourceManager::GetOrCreateVertexBuffer(const 
 	std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>();
 	vertexBuffer->Create(m_graphicsDevice->GetDevice(), vertices);
 
-	m_vertexBuffers[filePath] = vertexBuffer;
+	m_vertexBuffers[key] = vertexBuffer;
 
 	return vertexBuffer;
 }
 
 std::shared_ptr<VertexBuffer> D3DResourceManager::GetOrCreateVertexBuffer(const std::wstring& filePath, const std::vector<BoneWeightVertex3D>& vertices)
 {
-	auto find = m_vertexBuffers.find(filePath);
+	VertexBufferKey key{ filePath, VertexFormat::BoneWeight3D };
+	auto find = m_vertexBuffers.find(key);
 	if (find != m_vertexBuffers.end())
 	{
 		if (!find->second.expired())
@@ -55,7 +57,7 @@ std::shared_ptr<VertexBuffer> D3DResourceManager::GetOrCreateVertexBuffer(const 
 	std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>();
 	vertexBuffer->Create(m_graphicsDevice->GetDevice(), vertices);
 
-	m_vertexBuffers[filePath] = vertexBuffer;
+	m_vertexBuffers[key] = vertexBuffer;
 
 	return vertexBuffer;
 }

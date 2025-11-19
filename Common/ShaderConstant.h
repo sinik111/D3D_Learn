@@ -2,7 +2,7 @@
 
 #include <directxtk/SimpleMath.h>
 
-enum class ConstantBufferSlot
+enum class ConstantBufferSlot : UINT
 {
 	Transform = 0,
 	Environment = 1,

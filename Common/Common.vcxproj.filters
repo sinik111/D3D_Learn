@@ -105,6 +105,12 @@
     <ClInclude Include="AnimationData.h">
       <Filter>02_Module\AssetManager\AssetData\Derived</Filter>
     </ClInclude>
+    <ClInclude Include="ResourceKey.h">
+      <Filter>02_Module\D3DResource</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialHelper.h">
+      <Filter>02_Module</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinApp.cpp">
@@ -178,6 +184,9 @@
     </ClCompile>
     <ClCompile Include="AnimationData.cpp">
       <Filter>02_Module\AssetManager\AssetData\Derived</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialHelper.cpp">
+      <Filter>02_Module</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -23,5 +23,6 @@ public:
 
 public:
     const Microsoft::WRL::ComPtr<ID3D11SamplerState>& GetSamplerState() const;
+    ID3D11SamplerState* GetRawSamplerState() const;
 };
 

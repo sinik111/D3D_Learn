@@ -5,6 +5,13 @@
 #include <d3d11.h>
 #include <array>
 
+enum class VertexFormat : size_t
+{
+	Common3D,
+	Position3D,
+	BoneWeight3D
+};
+
 struct CommonVertex3D
 {
 	using Vector2 = DirectX::SimpleMath::Vector2;
@@ -38,7 +45,7 @@ struct CommonVertex3D
 
 	}
 
-	static std::array<D3D11_INPUT_ELEMENT_DESC, 5> GetLayout()
+	static constexpr std::array<D3D11_INPUT_ELEMENT_DESC, 5> GetLayout()
 	{
 		// SemanticName , SemanticIndex , Format , InputSlot , AlignedByteOffset , InputSlotClass , InstanceDataStepRate
 		return {
@@ -55,7 +62,7 @@ struct PositionVertex3D
 {
 	DirectX::SimpleMath::Vector3 position;
 
-	static std::array<D3D11_INPUT_ELEMENT_DESC, 1> GetLayout()
+	static constexpr std::array<D3D11_INPUT_ELEMENT_DESC, 1> GetLayout()
 	{
 		// SemanticName , SemanticIndex , Format , InputSlot , AlignedByteOffset , InputSlotClass , InstanceDataStepRate
 		return {
@@ -115,7 +122,7 @@ struct BoneWeightVertex3D
 		}
 	}
 
-	static std::array<D3D11_INPUT_ELEMENT_DESC, 7> GetLayout()
+	static constexpr std::array<D3D11_INPUT_ELEMENT_DESC, 7> GetLayout()
 	{
 		// SemanticName , SemanticIndex , Format , InputSlot , AlignedByteOffset , InputSlotClass , InstanceDataStepRate
 		return {

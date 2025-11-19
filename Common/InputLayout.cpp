@@ -51,3 +51,8 @@ const Microsoft::WRL::ComPtr<ID3D11InputLayout>& InputLayout::GetInputLayout() c
 {
 	return m_inputLayout;
 }
+
+ID3D11InputLayout* InputLayout::GetRawInputLayout() const
+{
+	return m_inputLayout.Get();
+}

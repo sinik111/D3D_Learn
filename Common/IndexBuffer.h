@@ -17,4 +17,5 @@ public:
 
 public:
     const Microsoft::WRL::ComPtr<ID3D11Buffer>& GetBuffer() const;
+    ID3D11Buffer* GetRawBuffer() const;
 };

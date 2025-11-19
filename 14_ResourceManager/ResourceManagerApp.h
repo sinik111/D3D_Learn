@@ -5,12 +5,14 @@
 #include <wrl/client.h>
 #include <d3d11.h>
 #include <directxtk/SimpleMath.h>
+#include <memory>
 
 #include <dxgi1_6.h> // IDXGIFactory7
 #pragma comment(lib, "dxgi.lib")
 
 #include "StaticMesh.h"
 #include "SkeletalMesh.h"
+#include "../Common/ConstantBuffer.h"
 
 class ResourceManagerApp :
 	public WinApp
@@ -20,8 +22,9 @@ private:
 	using Vector4 = DirectX::SimpleMath::Vector4;
 	using Matrix = DirectX::SimpleMath::Matrix;
 
-	Microsoft::WRL::ComPtr<ID3D11Buffer> m_transformCB;
-	Microsoft::WRL::ComPtr<ID3D11Buffer> m_environmentCB;
+	std::shared_ptr<ConstantBuffer> m_transformBuffer;
+	std::shared_ptr<ConstantBuffer> m_environmentBuffer;
+
 	Microsoft::WRL::ComPtr<IDXGIAdapter3> m_dxgiAdapter;
 	Microsoft::WRL::ComPtr<IDXGIDevice3> m_dxgiDevice;
 

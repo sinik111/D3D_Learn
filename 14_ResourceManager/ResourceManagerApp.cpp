@@ -109,8 +109,7 @@ void ResourceManagerApp::OnRender()
 	transformBuffer.lightView = m_lightView.Transpose();
 	transformBuffer.lightProjection = m_lightProjection.Transpose();
 
-	deviceContext->VSSetConstantBuffers(0, 1, m_transformCB.GetAddressOf());
-	deviceContext->UpdateSubresource(m_transformCB.Get(), 0, nullptr, &transformBuffer, 0, 0);
+	deviceContext->UpdateSubresource(m_transformBuffer->GetRawBuffer(), 0, nullptr, &transformBuffer, 0, 0);
 
 	EnvironmentBuffer environmentBuffer{};
 	environmentBuffer.cameraPos = m_camera.GetPosition();
@@ -119,9 +118,7 @@ void ResourceManagerApp::OnRender()
 	environmentBuffer.ambientLightColor = m_ambientLightColor;
 	environmentBuffer.useShadowPCF = m_useShadowPCF;
 
-	deviceContext->VSSetConstantBuffers(1, 1, m_environmentCB.GetAddressOf());
-	deviceContext->PSSetConstantBuffers(1, 1, m_environmentCB.GetAddressOf());
-	deviceContext->UpdateSubresource(m_environmentCB.Get(), 0, nullptr, &environmentBuffer, 0, 0);
+	deviceContext->UpdateSubresource(m_environmentBuffer->GetRawBuffer(), 0, nullptr, &environmentBuffer, 0, 0);
 
 	// common
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -317,16 +314,14 @@ void ResourceManagerApp::InitializeImGui()
 void ResourceManagerApp::InitializeScene()
 {
 	const auto& device = m_graphicsDevice.GetDevice();
+	auto deviceContext = m_graphicsDevice.GetDeviceContext();
 
-	D3D11_BUFFER_DESC constantBufferDesc{};
-	constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	m_transformBuffer = D3DResourceManager::Get().GetOrCreateConstantBuffer(L"Transform", sizeof(TransformBuffer));
+	m_environmentBuffer = D3DResourceManager::Get().GetOrCreateConstantBuffer(L"Environment", sizeof(EnvironmentBuffer));
 
-	constantBufferDesc.ByteWidth = sizeof(TransformBuffer);
-	device->CreateBuffer(&constantBufferDesc, nullptr, &m_transformCB);
-
-	constantBufferDesc.ByteWidth = sizeof(EnvironmentBuffer);
-	device->CreateBuffer(&constantBufferDesc, nullptr, &m_environmentCB);
+	deviceContext->VSSetConstantBuffers(static_cast<UINT>(ConstantBufferSlot::Transform), 1, m_transformBuffer->GetBuffer().GetAddressOf());
+	deviceContext->VSSetConstantBuffers(static_cast<UINT>(ConstantBufferSlot::Environment), 1, m_environmentBuffer->GetBuffer().GetAddressOf());
+	deviceContext->PSSetConstantBuffers(static_cast<UINT>(ConstantBufferSlot::Environment), 1, m_environmentBuffer->GetBuffer().GetAddressOf());
 
 	m_staticMeshes.emplace_back(L"zeldaPosed001.fbx");
 	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(100.0f, 0.0f, 0.0f).Transpose());

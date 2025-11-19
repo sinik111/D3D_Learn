@@ -14,3 +14,8 @@ const Microsoft::WRL::ComPtr<ID3D11Buffer>& ConstantBuffer::GetBuffer() const
 {
 	return m_buffer;
 }
+
+ID3D11Buffer* ConstantBuffer::GetRawBuffer() const
+{
+	return m_buffer.Get();
+}

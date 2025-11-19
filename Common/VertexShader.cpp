@@ -46,3 +46,8 @@ const Microsoft::WRL::ComPtr<ID3D11VertexShader>& VertexShader::GetShader() cons
 {
 	return m_vertexShader;
 }
+
+ID3D11VertexShader* VertexShader::GetRawShader() const
+{
+	return m_vertexShader.Get();
+}

@@ -18,5 +18,6 @@ public:
 
 public:
 	const Microsoft::WRL::ComPtr<ID3D11InputLayout>& GetInputLayout() const;
+	ID3D11InputLayout* GetRawInputLayout() const;
 };
 
