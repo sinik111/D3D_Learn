@@ -87,11 +87,5 @@
     <None Include="Shared.hlsli">
       <Filter>03_Shader\Include</Filter>
     </None>
-    <None Include="TextureSampling.hlsli">
-      <Filter>03_Shader\Include</Filter>
-    </None>
-    <None Include="ShadowMapping.hlsli">
-      <Filter>03_Shader\Include</Filter>
-    </None>
   </ItemGroup>
 </Project>

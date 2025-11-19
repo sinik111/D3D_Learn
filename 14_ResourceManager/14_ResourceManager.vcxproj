@@ -198,9 +198,7 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ShadowMapping.hlsli" />
     <None Include="Shared.hlsli" />
-    <None Include="TextureSampling.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.vcxproj">
