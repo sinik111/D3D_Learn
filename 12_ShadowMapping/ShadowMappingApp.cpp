@@ -121,7 +121,7 @@ void ShadowMappingApp::OnUpdate()
 	lightUp.Normalize();
 
 
-	m_lightFOV = std::min<float>(std::max<float>(m_camera.GetPosition().y / 100.0f, 1.0f), 5.0f);
+	//m_lightFOV = std::min<float>(std::max<float>(m_camera.GetPosition().y / 100.0f, 1.0f), 5.0f);
 
 	if (m_lightFOV == 0.0f)
 	{
@@ -140,7 +140,7 @@ void ShadowMappingApp::OnUpdate()
 
 	Vector3 focusPosition = m_camera.GetPosition() + m_camera.GetForward() * 
 		(m_camera.GetPosition().y < 1000.0f ? m_camera.GetPosition().y : (m_lightForwardDistFromCam + m_camera.GetPosition().y));
-	m_lightPosition = focusPosition + -m_lightDirection * m_lightFar * 0.95f;
+	m_lightPosition = focusPosition + -m_lightDirection * m_lightFar * 0.92f;
 	m_lightView = DirectX::XMMatrixLookAtLH(m_lightPosition, focusPosition, lightUp);
 
 	m_lightProjection = DirectX::XMMatrixPerspectiveFovLH(
@@ -1022,10 +1022,10 @@ void ShadowMappingApp::InitializeScene()
 
 		D3D11_RASTERIZER_DESC shadowRastDesc = {};
 		shadowRastDesc.FillMode = D3D11_FILL_SOLID;
-		shadowRastDesc.CullMode = D3D11_CULL_BACK; // Front face culling
-		shadowRastDesc.DepthBias = 1000; // 이 값 조정
+		shadowRastDesc.CullMode = D3D11_CULL_BACK;
+		shadowRastDesc.DepthBias = 5000;
 		shadowRastDesc.DepthBiasClamp = 0.0f;
-		shadowRastDesc.SlopeScaledDepthBias = 2.0f; // 이 값도 조정
+		shadowRastDesc.SlopeScaledDepthBias = 2.0f;
 		shadowRastDesc.DepthClipEnable = true;
 
 		device->CreateRasterizerState(&shadowRastDesc, &m_shadowMapRSState);

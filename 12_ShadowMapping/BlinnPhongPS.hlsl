@@ -50,23 +50,19 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
             }
             else
             {
-                float2 offsets[9] =
-                {
-                    float2(-1.0f, -1.0f), float2(0.0f, -1.0f), float2(1.0f, -1.0f),
-                float2(-1.0f, 0.0f), float2(0.0f, 0.0f), float2(1.0f, 0.0f),
-                float2(-1.0f, 1.0f), float2(0.0f, 1.0f), float2(1.0f, 1.0f)
-                };
-            
                 float texelSize = 1.0f / g_shadowMapSize;
-            
                 shadowFactor = 0.0f;
-                for (int i = 0; i < 9; ++i)
-                {
-                    float2 sampleUV = shadowMapUV + offsets[i] * texelSize;
-                    shadowFactor += g_texShadowMap.SampleCmpLevelZero(g_samComparison, sampleUV, currentShadowDepth - 0.001f);
-                }
 
-                shadowFactor = shadowFactor / 9.0f;
+                for (int y = -2; y <= 2; ++y)
+                {
+                    for (int x = -2; x <= 2; ++x)
+                    {
+                        float2 offset = float2(x, y) * texelSize;
+                        float2 sampleUV = shadowMapUV + offset;
+                        shadowFactor += g_texShadowMap.SampleCmpLevelZero(g_samComparison, sampleUV, currentShadowDepth - 0.0001f);
+                    }
+                }
+                shadowFactor = shadowFactor / 25.0f;
             }
         }
         else
@@ -76,7 +72,7 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
             {
                 shadowFactor = 1.0f;
             }
-            else if (currentShadowDepth > sampleShadowDepth + 0.001f)
+            else if (currentShadowDepth > sampleShadowDepth + 0.0001f)
             {
                 shadowFactor = 0.0f;
             }
