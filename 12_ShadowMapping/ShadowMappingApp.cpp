@@ -9,10 +9,12 @@
 #include "../Common/MyTime.h"
 #include "../Common/Helper.h"
 #include "../Common/Vertex.h"
+#include "../Common/DebugDraw.h"
 
 #include "Material.h"
 
 using namespace DirectX::SimpleMath;
+using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 
 #define USE_FLIPMODE
@@ -64,13 +66,36 @@ void ShadowMappingApp::Initialize()
 
 	m_camera.SetSpeed(100.0f);
 	m_camera.SetPosition({ 0.0f, 40.0f, -500.0f });
-	m_camera.SetFar(3000.0f);
+	m_camera.SetFar(300000.0f);
 
 	Material::CreateDefaultTextureSRV(m_graphicsDevice.GetDevice());
 
 	InitializeImGui();
 
 	InitializeScene();
+
+	auto device = m_graphicsDevice.GetDevice();
+	auto context = m_graphicsDevice.GetDeviceContext();
+
+	m_states = std::make_unique<CommonStates>(device.Get());
+	m_batch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(context.Get());
+
+	m_effect = std::make_unique<BasicEffect>(device.Get());
+	m_effect->SetVertexColorEnabled(true);
+	m_effect->SetView(m_view);
+	m_effect->SetProjection(m_projection);
+
+	{
+		void const* shaderByteCode;
+		size_t byteCodeLength;
+
+		m_effect->GetVertexShaderBytecode(&shaderByteCode, &byteCodeLength);
+
+			device->CreateInputLayout(
+				VertexPositionColor::InputElements, VertexPositionColor::InputElementCount,
+				shaderByteCode, byteCodeLength,
+				m_inputLayout.ReleaseAndGetAddressOf());
+	}
 }
 
 void ShadowMappingApp::OnUpdate()
@@ -95,6 +120,9 @@ void ShadowMappingApp::OnUpdate()
 	lightUp = DirectX::XMVector3TransformNormal(lightUp, m_lightRotationMatrix);
 	lightUp.Normalize();
 
+
+	m_lightFOV = std::min<float>(std::max<float>(m_camera.GetPosition().y / 100.0f, 1.0f), 5.0f);
+
 	if (m_lightFOV == 0.0f)
 	{
 		m_lightFOV = 0.01f;
@@ -110,7 +138,8 @@ void ShadowMappingApp::OnUpdate()
 		m_lightFar = 1000.0f;
 	}
 
-	Vector3 focusPosition = m_camera.GetPosition() + m_camera.GetForward() * m_lightForwardDistFromCam;
+	Vector3 focusPosition = m_camera.GetPosition() + m_camera.GetForward() * 
+		(m_camera.GetPosition().y < 1000.0f ? m_camera.GetPosition().y : (m_lightForwardDistFromCam + m_camera.GetPosition().y));
 	m_lightPosition = focusPosition + -m_lightDirection * m_lightFar * 0.95f;
 	m_lightView = DirectX::XMMatrixLookAtLH(m_lightPosition, focusPosition, lightUp);
 
@@ -209,6 +238,26 @@ void ShadowMappingApp::OnRender()
 	//RenderShadowMap();
 	RenderFinal();
 
+	deviceContext->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
+	//deviceContext->OMSetDepthStencilState(m_states->DepthNone(), 0);
+	deviceContext->RSSetState(m_states->CullNone());
+
+	m_effect->SetView(m_view);
+	m_effect->SetProjection(m_projection);
+	m_effect->Apply(deviceContext.Get());
+
+	deviceContext->IASetInputLayout(m_inputLayout.Get());
+	m_batch->Begin();
+
+	// Frustum을 월드 공간에 배치
+	DirectX::BoundingFrustum frustum(m_lightProjection);
+	Matrix lightWorldMatrix = m_lightView.Invert();
+	frustum.Transform(frustum, lightWorldMatrix);
+
+	DX::Draw(m_batch.get(), frustum, Colors::Blue);
+
+	m_batch->End();
+
 	RenderImGui();
 
 	m_graphicsDevice.EndDraw();
@@ -228,6 +277,7 @@ void ShadowMappingApp::RenderShadowMap()
 	WorldTransformBuffer worldtransformBuffer{};
 	deviceContext->VSSetConstantBuffers(5, 1, m_worldTransformCB.GetAddressOf());
 	deviceContext->OMSetDepthStencilState(m_shadowMapDSState.Get(), 0);
+	deviceContext->RSSetState(m_shadowMapRSState.Get());
 
 	// common pixel shader
 	deviceContext->PSSetShader(m_lightViewPS.Get(), nullptr, 0);
@@ -968,6 +1018,17 @@ void ShadowMappingApp::InitializeScene()
 		depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
 
 		device->CreateDepthStencilState(&depthStencilDesc, &m_shadowMapDSState);
+
+
+		D3D11_RASTERIZER_DESC shadowRastDesc = {};
+		shadowRastDesc.FillMode = D3D11_FILL_SOLID;
+		shadowRastDesc.CullMode = D3D11_CULL_BACK; // Front face culling
+		shadowRastDesc.DepthBias = 1000; // 이 값 조정
+		shadowRastDesc.DepthBiasClamp = 0.0f;
+		shadowRastDesc.SlopeScaledDepthBias = 2.0f; // 이 값도 조정
+		shadowRastDesc.DepthClipEnable = true;
+
+		device->CreateRasterizerState(&shadowRastDesc, &m_shadowMapRSState);
 	}
 
 	// constant buffer

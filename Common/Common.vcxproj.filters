@@ -22,6 +22,9 @@
     <Filter Include="02_Module\D3DResource\Derived">
       <UniqueIdentifier>{e104c790-e2ec-412e-99f9-9de7ea8caa69}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02_Module\DebugDraw">
+      <UniqueIdentifier>{702c0fc3-292d-4262-863e-bd4baac30601}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WinApp.h">
@@ -111,6 +114,9 @@
     <ClInclude Include="MaterialHelper.h">
       <Filter>02_Module</Filter>
     </ClInclude>
+    <ClInclude Include="DebugDraw.h">
+      <Filter>02_Module\DebugDraw</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinApp.cpp">
@@ -187,6 +193,9 @@
     </ClCompile>
     <ClCompile Include="MaterialHelper.cpp">
       <Filter>02_Module</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugDraw.cpp">
+      <Filter>02_Module\DebugDraw</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

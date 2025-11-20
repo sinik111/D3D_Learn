@@ -145,6 +145,7 @@
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="D3DResource.h" />
     <ClInclude Include="D3DResourceManager.h" />
+    <ClInclude Include="DebugDraw.h" />
     <ClInclude Include="FBXAssetData.h" />
     <ClInclude Include="GraphicsDevice.h" />
     <ClInclude Include="Helper.h" />
@@ -175,6 +176,7 @@
     <ClCompile Include="ConstantBuffer.cpp" />
     <ClCompile Include="D3DResource.cpp" />
     <ClCompile Include="D3DResourceManager.cpp" />
+    <ClCompile Include="DebugDraw.cpp" />
     <ClCompile Include="FBXAssetData.cpp" />
     <ClCompile Include="GraphicsDevice.cpp" />
     <ClCompile Include="Helper.cpp" />

@@ -5,6 +5,10 @@
 #include <wrl/client.h>
 #include <d3d11.h>
 #include <directxtk/SimpleMath.h>
+#include <directxtk/CommonStates.h>
+#include <directxtk/Effects.h>
+#include <directxtk/PrimitiveBatch.h>
+#include <directxtk/VertexTypes.h>
 
 #include "StaticMesh.h"
 #include "SkeletalMesh.h"
@@ -61,6 +65,14 @@ private:
 	std::vector<StaticMesh> m_staticMeshes;
 	std::vector<SkeletalMesh> m_rigidAnimMeshes;
 	std::vector<SkeletalMesh> m_skinningAnimMeshes;
+
+	// Debug Draw
+	using VertexType = DirectX::VertexPositionColor;
+
+	std::unique_ptr<DirectX::CommonStates> m_states;
+	std::unique_ptr<DirectX::BasicEffect> m_effect;
+	std::unique_ptr<DirectX::PrimitiveBatch<VertexType>> m_batch;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
 
 	UINT m_boneWeightVertexBufferStride = 0;
 	UINT m_commonVertexBufferStride = 0;
