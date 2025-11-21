@@ -53,16 +53,18 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
                 float texelSize = 1.0f / g_shadowMapSize;
                 shadowFactor = 0.0f;
 
-                for (int y = -2; y <= 2; ++y)
+                int max = 1;
+                
+                for (int y = -max; y <= max; ++y)
                 {
-                    for (int x = -2; x <= 2; ++x)
+                    for (int x = -max; x <= max; ++x)
                     {
                         float2 offset = float2(x, y) * texelSize;
                         float2 sampleUV = shadowMapUV + offset;
                         shadowFactor += g_texShadowMap.SampleCmpLevelZero(g_samComparison, sampleUV, currentShadowDepth - 0.0001f);
                     }
                 }
-                shadowFactor = shadowFactor / 25.0f;
+                shadowFactor = shadowFactor / ((max * 2 + 1) * (max * 2 + 1));
             }
         }
         else
