@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="01_App">
+      <UniqueIdentifier>{b5a0f883-1444-4d82-bb7c-54652dd44619}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02_Mesh">
+      <UniqueIdentifier>{4d89d911-cff1-401f-ab10-dcd5312e06f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03_Shader">
+      <UniqueIdentifier>{392893b2-06c1-47e8-95f0-2e3eaea99f2f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03_Shader\Vertex">
+      <UniqueIdentifier>{0d38bc70-7b8f-438e-8064-75509f768a32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03_Shader\Pixel">
+      <UniqueIdentifier>{9c258e3b-c1cf-496a-9e34-b5516725c165}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03_Shader\Include">
+      <UniqueIdentifier>{61334f4a-d5a2-4aba-bed2-63ae1961c08e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02_Mesh\Static">
+      <UniqueIdentifier>{76670bc6-a804-4d4d-bdd8-b1a71321596f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02_Mesh\Skeletal">
+      <UniqueIdentifier>{d01f497d-9acc-4027-8fce-9042ade3621f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="RigidAnimLightVIewVS.hlsl">
+      <Filter>03_Shader\Vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="RigidAnimVS.hlsl">
+      <Filter>03_Shader\Vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="SkinningAnimLightViewVS.hlsl">
+      <Filter>03_Shader\Vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="SkinningAnimVS.hlsl">
+      <Filter>03_Shader\Vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="SkyboxVS.hlsl">
+      <Filter>03_Shader\Vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicLightViewVS.hlsl">
+      <Filter>03_Shader\Vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVS.hlsl">
+      <Filter>03_Shader\Vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="BlinnPhongPS.hlsl">
+      <Filter>03_Shader\Pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="LightViewPS.hlsl">
+      <Filter>03_Shader\Pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="SkyboxPS.hlsl">
+      <Filter>03_Shader\Pixel</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>01_App</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceManagerApp.cpp">
+      <Filter>01_App</Filter>
+    </ClCompile>
+    <ClCompile Include="StaticMesh.cpp">
+      <Filter>02_Mesh\Static</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeletalMesh.cpp">
+      <Filter>02_Mesh\Skeletal</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ResourceManagerApp.h">
+      <Filter>01_App</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticMesh.h">
+      <Filter>02_Mesh\Static</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletalMesh.h">
+      <Filter>02_Mesh\Skeletal</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shared.hlsli">
+      <Filter>03_Shader\Include</Filter>
+    </None>
+  </ItemGroup>
+</Project>
