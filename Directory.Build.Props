@@ -12,10 +12,11 @@
     <ItemDefinitionGroup>
         <ClCompile>
             <AdditionalIncludeDirectories>
-                $(VcpkgRoot)\installed\$(TripletStatic)\include;
-                $(VcpkgRoot)\installed\$(TripletDynamic)\include;
-                %(AdditionalIncludeDirectories)
-            </AdditionalIncludeDirectories>
+				$(VcpkgRoot)\installed\$(TripletStatic)\include;
+				$(VcpkgRoot)\installed\$(TripletDynamic)\include;
+				$(VcpkgRoot)\installed\$(TripletDynamic)\include\Imath;
+				%(AdditionalIncludeDirectories)
+			</AdditionalIncludeDirectories>
         </ClCompile>
     </ItemDefinitionGroup>
 
@@ -30,11 +31,18 @@
 			
             <!-- DX11 기준: directxtk.lib / directxtex.lib / imgui.lib + Assimp import lib -->
             <AdditionalDependencies>
-                directxtk.lib;
-                directxtex.lib;
-                imguid.lib;
-                assimp-vc143-mtd.lib;
-                %(AdditionalDependencies)
+				directxtk.lib;
+				directxtex.lib;
+				imguid.lib;
+				assimp-vc143-mtd.lib;
+				Imath-3_2_d.lib;
+				deflate.lib;
+				Iex-3_3_d.lib;
+				OpenEXRCore-3_3_d.lib;
+				IlmThread-3_3_d.lib;
+				OpenEXR-3_3_d.lib;
+				OpenEXRUtil-3_3_d.lib;
+				%(AdditionalDependencies)
 			</AdditionalDependencies>
         </Link>
 
@@ -47,6 +55,12 @@
 				xcopy /Y /D "$(VcpkgRoot)\installed\$(TripletDynamic)\debug\bin\poly2tri.dll" "$(OutDir)"
 				xcopy /Y /D "$(VcpkgRoot)\installed\$(TripletDynamic)\debug\bin\pugixml.dll" "$(OutDir)"
 				xcopy /Y /D "$(VcpkgRoot)\installed\$(TripletDynamic)\debug\bin\zlibd1.dll" "$(OutDir)"
+				xcopy /Y /D "$(VcpkgRoot)\installed\$(TripletDynamic)\debug\bin\OpenEXR-3_3_d.dll" "$(OutDir)"
+				xcopy /Y /D "$(VcpkgRoot)\installed\$(TripletDynamic)\debug\bin\IlmThread-3_3_d.dll" "$(OutDir)"
+				xcopy /Y /D "$(VcpkgRoot)\installed\$(TripletDynamic)\debug\bin\Iex-3_3_d.dll" "$(OutDir)"
+				xcopy /Y /D "$(VcpkgRoot)\installed\$(TripletDynamic)\debug\bin\OpenEXRCore-3_3_d.dll" "$(OutDir)"
+				xcopy /Y /D "$(VcpkgRoot)\installed\$(TripletDynamic)\debug\bin\Imath-3_2_d.dll" "$(OutDir)"
+				xcopy /Y /D "$(VcpkgRoot)\installed\$(TripletDynamic)\debug\bin\deflate.dll" "$(OutDir)"
 			</Command>
         </PostBuildEvent>
     </ItemDefinitionGroup>
@@ -60,11 +74,18 @@
                 %(AdditionalLibraryDirectories)
 			</AdditionalLibraryDirectories>
             <AdditionalDependencies>
-                directxtk.lib;
-                directxtex.lib;
-                imgui.lib;
-                assimp-vc143-mt.lib;
-                %(AdditionalDependencies)
+				directxtk.lib;
+				directxtex.lib;
+				imgui.lib;
+				assimp-vc143-mt.lib;
+				Imath-3_2.lib;
+				deflate.lib;
+				Iex-3_3.lib;
+				IlmThread-3_3.lib;
+				OpenEXRCore-3_3.lib;
+				OpenEXR-3_3.lib;
+				OpenEXRUtil-3_3.lib;
+				%(AdditionalDependencies)
 			</AdditionalDependencies>
         </Link>
 
@@ -77,6 +98,12 @@
 				xcopy /Y /D "$(VcpkgRoot)\installed\$(TripletDynamic)\bin\poly2tri.dll" "$(OutDir)"
 				xcopy /Y /D "$(VcpkgRoot)\installed\$(TripletDynamic)\bin\pugixml.dll" "$(OutDir)"
 				xcopy /Y /D "$(VcpkgRoot)\installed\$(TripletDynamic)\bin\zlib1.dll" "$(OutDir)"
+				xcopy /Y /D "$(VcpkgRoot)\installed\$(TripletDynamic)\bin\OpenEXR-3_3.dll" "$(OutDir)"
+				xcopy /Y /D "$(VcpkgRoot)\installed\$(TripletDynamic)\bin\IlmThread-3_3.dll" "$(OutDir)"
+				xcopy /Y /D "$(VcpkgRoot)\installed\$(TripletDynamic)\bin\Iex-3_3.dll" "$(OutDir)"
+				xcopy /Y /D "$(VcpkgRoot)\installed\$(TripletDynamic)\bin\OpenEXRCore-3_3.dll" "$(OutDir)"
+				xcopy /Y /D "$(VcpkgRoot)\installed\$(TripletDynamic)\bin\Imath-3_2.dll" "$(OutDir)"
+				xcopy /Y /D "$(VcpkgRoot)\installed\$(TripletDynamic)\bin\deflate.dll" "$(OutDir)"
 			</Command>
         </PostBuildEvent>
     </ItemDefinitionGroup>

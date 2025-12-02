@@ -44,23 +44,20 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
     float3 texDiffColor = pow(g_texDiffuse.Sample(g_samLinear, input.tex).rgb, 2.2f);
     //float3 texDiffColor = g_texDiffuse.Sample(g_samLinear, input.tex).rgb;
     float4 texNormColor = g_texNormal.Sample(g_samLinear, input.tex);
-    float4 texSpecColor = g_texSpecular.Sample(g_samLinear, input.tex);
+    float3 texSpecColor = g_texSpecular.Sample(g_samLinear, input.tex).rgb;
     float opacityFactor = g_texOpacity.Sample(g_samLinear, input.tex).a;
-    float4 texEmsvColor = g_texEmissive.Sample(g_samLinear, input.tex);
+    float3 texEmsvColor = g_texEmissive.Sample(g_samLinear, input.tex).rgb;
     float metalnessFactor = g_texMetalness.Sample(g_samLinear, input.tex).r;
     float roughnessFactor = g_texRoughness.Sample(g_samLinear, input.tex).r;
     
     if (g_overrideMaterial)
     {
-        texDiffColor = g_overrideBaseColor;
+        texDiffColor = (float3) g_overrideBaseColor;
         metalnessFactor = g_overrideMetalness;
         roughnessFactor = g_overrideRoughness;
     }
     
     clip(opacityFactor - 0.5f);
-    
-    // emissive
-    float4 emissive = texEmsvColor;
     
     // normal
     float3x3 tbn = float3x3(normalize(input.tan), normalize(input.binorm), normalize(input.norm));
@@ -138,7 +135,16 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
     
     float d = NDFGGXTR(nDotH, roughnessFactor);
     
-    float3 f0 = lerp(DielectricFactor, texDiffColor, metalnessFactor);
+    float3 f0 = 0.0f;
+    //if (length(texSpecColor) > 0.0f)
+    //{
+    //    f0 = lerp(texSpecColor, texDiffColor, metalnessFactor);
+    //}
+    //else
+    {
+        f0 = lerp(DielectricFactor, texDiffColor, metalnessFactor);
+    }
+    
     float3 f = FresnelSchlick(f0, hDotV);
     
     float g = GAFSchlickGGX(nDotV, nDotL, roughnessFactor);
@@ -148,11 +154,7 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
     float3 diffuseBRDF = kd * texDiffColor / PI;
     float3 specularBRDF = (f * d * g) / max(EPSILON, 4.0f * nDotL * nDotV);
     
-    float3 directLighting = (diffuseBRDF + specularBRDF) * (float3) g_lightColor * nDotL * shadowFactor;
-    
-    float3 indirectDiffuse = kd * texDiffColor * (float3) g_ambientLightColor;
-    
-    float3 totalLighting = directLighting + indirectDiffuse;
+    float3 directLighting = (diffuseBRDF + specularBRDF) * (float3) g_lightColor * nDotL * shadowFactor + texEmsvColor;
     
     return float4(pow(directLighting, 1.0f / 2.2f), 1.0f);
 }

@@ -491,6 +491,18 @@ void PBRApp::InitializeScene()
 	m_staticMeshes.emplace_back(L"wooden_axe_1k.fbx", L"PBRPS.hlsl");
 	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(-100.0f, 30.0f, 0.0f).Transpose());
 
+	m_staticMeshes.emplace_back(L"brass_goblets_1k.fbx", L"PBRPS.hlsl");
+	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(-200.0f, 30.0f, 0.0f).Transpose());
+
+	m_staticMeshes.emplace_back(L"cannon_01_1k.fbx", L"PBRPS.hlsl");
+	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(200.0f, 30.0f, 0.0f).Transpose());
+
+	m_staticMeshes.emplace_back(L"mid_century_lounge_chair_1k.fbx", L"PBRPS.hlsl");
+	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(-300.0f, 30.0f, 0.0f).Transpose());
+
+	m_staticMeshes.emplace_back(L"vintage_video_camera_1k.fbx", L"PBRPS.hlsl");
+	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(300.0f, 30.0f, 0.0f).Transpose());
+
 	m_staticMeshes.emplace_back(L"Floor.fbx");
 
 	//m_skeletalMeshes.emplace_back(L"SkinningTest.fbx");
