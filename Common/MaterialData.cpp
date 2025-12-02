@@ -63,6 +63,23 @@ void MaterialData::Create(const aiScene* scene)
 			material.materialFlags |= static_cast<unsigned long long>(MaterialKey::OPACITY_TEXTURE);
 		}
 
+		if (aiReturn_SUCCESS == aiMaterial->GetTexture(aiTextureType_METALNESS, 0, &path))
+		{
+			material.texturePaths[MaterialKey::METALNESS_TEXTURE] = fs::path(ToWideCharStr(path.C_Str())).filename();
+			material.materialFlags |= static_cast<unsigned long long>(MaterialKey::METALNESS_TEXTURE);
+		}
+
+		if (aiReturn_SUCCESS == aiMaterial->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &path))
+		{
+			material.texturePaths[MaterialKey::ROUGHNESS_TEXTURE] = fs::path(ToWideCharStr(path.C_Str())).filename();
+			material.materialFlags |= static_cast<unsigned long long>(MaterialKey::ROUGHNESS_TEXTURE);
+		}
+		else if (aiReturn_SUCCESS == aiMaterial->GetTexture(aiTextureType_SHININESS, 0, &path))
+		{
+			material.texturePaths[MaterialKey::ROUGHNESS_TEXTURE] = fs::path(ToWideCharStr(path.C_Str())).filename();
+			material.materialFlags |= static_cast<unsigned long long>(MaterialKey::ROUGHNESS_TEXTURE);
+		}
+
 		if (aiReturn_SUCCESS == aiMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, color))
 		{
 			material.vectorValues[MaterialKey::DIFFUSE_COLOR] = { color.r, color.g, color.b, color.a };

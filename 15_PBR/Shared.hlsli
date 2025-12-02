@@ -51,6 +51,15 @@ cbuffer WorldTransform : register(b5)
     float __pad1[3];
 }
 
+cbuffer OverrideMaterial : register(b6)
+{
+    float4 g_overrideBaseColor;
+    float g_overrideMetalness;
+    float g_overrideRoughness;
+    int g_overrideMaterial;
+    float __pad6;
+}
+
 struct VS_INPUT_SKINNING
 {
     float3 pos : POSITION;
@@ -102,6 +111,9 @@ struct PS_INPUT_SKYBOX
     float4 pos : SV_Position;
     float3 localPos : TEXCOORD0;
 };
+
+static const float PI = 3.141592f;
+static const float EPSILON = 0.00001f;
 
 float3 EncodeNormal(float3 n)
 {

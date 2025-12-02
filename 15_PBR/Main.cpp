@@ -2,7 +2,7 @@
 
 #include "../Common/Helper.h"
 
-#include "ResourceManagerApp.h"
+#include "PBRApp.h"
 
 int APIENTRY wWinMain(
     _In_ HINSTANCE hInstance,
@@ -14,7 +14,7 @@ int APIENTRY wWinMain(
 	LeakCheck lc;
 #endif // _DEBUG
 
-	ResourceManagerApp app;
+	PBRApp app;
 
 	app.Initialize();
 	app.Run();

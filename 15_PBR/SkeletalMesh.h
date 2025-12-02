@@ -47,6 +47,7 @@ private:
 	std::vector<TextureSRVs> m_textureSRVs;
 	std::shared_ptr<InputLayout> m_inputLayout;
 	std::shared_ptr<SamplerState> m_samplerState;
+	std::shared_ptr<SamplerState> m_comparisonSamplerState;
 
 	// instance
 	std::vector<MaterialBuffer> m_materialCBs;
@@ -66,4 +67,5 @@ public:
 	void Update(float deltaTime);
 	void PlayAnimation(size_t index);
 	void Draw(const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext);
+	void DrawShadowMap(const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext);
 };

@@ -17,12 +17,14 @@ enum class MaterialKey : unsigned long long
     SPECULAR_TEXTURE    = 1ULL << 2,
     EMISSIVE_TEXTURE    = 1ULL << 3,
     OPACITY_TEXTURE     = 1ULL << 4,
-    DIFFUSE_COLOR       = 1ULL << 5,
-    AMBIENT_COLOR       = 1ULL << 6,
-    SPECULAR_COLOR      = 1ULL << 7,
-    EMISSIVE_COLOR      = 1ULL << 8,
-    SHININESS_FACTOR    = 1ULL << 9,
-    OPACITY_FACTOR      = 1ULL << 10,
+    METALNESS_TEXTURE   = 1ULL << 5,
+    ROUGHNESS_TEXTURE   = 1ULL << 6,
+    DIFFUSE_COLOR       = 1ULL << 7,
+    AMBIENT_COLOR       = 1ULL << 8,
+    SPECULAR_COLOR      = 1ULL << 9,
+    EMISSIVE_COLOR      = 1ULL << 10,
+    SHININESS_FACTOR    = 1ULL << 11,
+    OPACITY_FACTOR      = 1ULL << 12,
 };
 
 struct Material

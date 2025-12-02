@@ -57,12 +57,15 @@
     <FxCompile Include="SkyboxPS.hlsl">
       <Filter>03_Shader\Pixel</Filter>
     </FxCompile>
+    <FxCompile Include="PBRPS.hlsl">
+      <Filter>03_Shader\Pixel</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
       <Filter>01_App</Filter>
     </ClCompile>
-    <ClCompile Include="ResourceManagerApp.cpp">
+    <ClCompile Include="PBRApp.cpp">
       <Filter>01_App</Filter>
     </ClCompile>
     <ClCompile Include="StaticMesh.cpp">
@@ -73,7 +76,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ResourceManagerApp.h">
+    <ClInclude Include="PBRApp.h">
       <Filter>01_App</Filter>
     </ClInclude>
     <ClInclude Include="StaticMesh.h">

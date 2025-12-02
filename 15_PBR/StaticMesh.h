@@ -39,15 +39,19 @@ private:
 	std::vector<TextureSRVs> m_textureSRVs;
 	std::shared_ptr<InputLayout> m_inputLayout;
 	std::shared_ptr<SamplerState> m_samplerState;
+	std::shared_ptr<SamplerState> m_comparisonSamplerState;
 
 	// instance
 	std::vector<MaterialBuffer> m_materialCBs;
 	WorldTransformBuffer m_worldTransformCB;
 
 public:
-	StaticMesh(const std::wstring& filePath);
+	StaticMesh(const std::wstring& filePath, const std::wstring& psFilePath = L"BlinnPhongPS.hlsl");
 
 public:
-	void Draw(const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext) const;
 	void SetWorld(const DirectX::SimpleMath::Matrix& world);
+	void SetPixelShader(const std::wstring& filePath);
+
+	void Draw(const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext) const;
+	void DrawShadowMap(const Microsoft::WRL::ComPtr<ID3D11DeviceContext>& deviceContext) const;
 };

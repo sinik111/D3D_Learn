@@ -146,6 +146,8 @@
     <ClInclude Include="D3DResource.h" />
     <ClInclude Include="D3DResourceManager.h" />
     <ClInclude Include="DebugDraw.h" />
+    <ClInclude Include="DepthStencilState.h" />
+    <ClInclude Include="DepthStencilView.h" />
     <ClInclude Include="FBXAssetData.h" />
     <ClInclude Include="GraphicsDevice.h" />
     <ClInclude Include="Helper.h" />
@@ -156,12 +158,14 @@
     <ClInclude Include="MaterialHelper.h" />
     <ClInclude Include="MyTime.h" />
     <ClInclude Include="PixelShader.h" />
+    <ClInclude Include="RasterizerState.h" />
     <ClInclude Include="ResourceKey.h" />
     <ClInclude Include="SamplerState.h" />
     <ClInclude Include="ShaderResourceView.h" />
     <ClInclude Include="SkeletalMeshData.h" />
     <ClInclude Include="SkeletonData.h" />
     <ClInclude Include="StaticMeshData.h" />
+    <ClInclude Include="Texture2D.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="VertexBuffer.h" />
     <ClInclude Include="VertexShader.h" />
@@ -177,6 +181,8 @@
     <ClCompile Include="D3DResource.cpp" />
     <ClCompile Include="D3DResourceManager.cpp" />
     <ClCompile Include="DebugDraw.cpp" />
+    <ClCompile Include="DepthStencilState.cpp" />
+    <ClCompile Include="DepthStencilView.cpp" />
     <ClCompile Include="FBXAssetData.cpp" />
     <ClCompile Include="GraphicsDevice.cpp" />
     <ClCompile Include="Helper.cpp" />
@@ -187,11 +193,13 @@
     <ClCompile Include="MaterialHelper.cpp" />
     <ClCompile Include="MyTime.cpp" />
     <ClCompile Include="PixelShader.cpp" />
+    <ClCompile Include="RasterizerState.cpp" />
     <ClCompile Include="SamplerState.cpp" />
     <ClCompile Include="ShaderResourceView.cpp" />
     <ClCompile Include="SkeletalMeshData.cpp" />
     <ClCompile Include="SkeletonData.cpp" />
     <ClCompile Include="StaticMeshData.cpp" />
+    <ClCompile Include="Texture2D.cpp" />
     <ClCompile Include="VertexBuffer.cpp" />
     <ClCompile Include="VertexShader.cpp" />
     <ClCompile Include="WinApp.cpp" />
