@@ -489,30 +489,11 @@ void PBRApp::InitializeScene()
 	m_staticMeshes.emplace_back(L"char.fbx", L"PBRPS.hlsl");
 	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(0.0f, 30.0f, 0.0f).Transpose());
 
-	m_staticMeshes.emplace_back(L"machete_2k.fbx", L"PBRPS.hlsl");
-	m_staticMeshes.back().SetWorld(
-		(DirectX::SimpleMath::Matrix::CreateRotationY(ToRadian(90.0f)) *
-			DirectX::SimpleMath::Matrix::CreateTranslation(100.0f, 30.0f, 0.0f)).Transpose());
-
-	m_staticMeshes.emplace_back(L"wooden_axe_2k.fbx", L"PBRPS.hlsl");
-	m_staticMeshes.back().SetWorld(
-		(DirectX::SimpleMath::Matrix::CreateRotationY(ToRadian(90.0f)) *
-			DirectX::SimpleMath::Matrix::CreateTranslation(-100.0f, 30.0f, 0.0f)).Transpose());
-
-	m_staticMeshes.emplace_back(L"mid_century_lounge_chair_2k.fbx", L"PBRPS.hlsl");
-	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(200.0f, 30.0f, 0.0f).Transpose());
-
 	m_staticMeshes.emplace_back(L"BarberShopChair_01_2k.fbx", L"PBRPS.hlsl");
 	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(-200.0f, 30.0f, 0.0f).Transpose());
 
-	m_staticMeshes.emplace_back(L"brass_goblets_2k.fbx", L"PBRPS.hlsl");
-	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(300.0f, 30.0f, 0.0f).Transpose());
-
 	m_staticMeshes.emplace_back(L"treasure_chest_2k.fbx", L"PBRPS.hlsl");
-	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(-300.0f, 30.0f, 0.0f).Transpose());
-
-	m_staticMeshes.emplace_back(L"cannon_01_2k.fbx", L"PBRPS.hlsl");
-	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(-400.0f, 30.0f, 0.0f).Transpose());
+	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(200.0f, 30.0f, 0.0f).Transpose());
 
 	m_staticMeshes.emplace_back(L"Floor.fbx");
 
