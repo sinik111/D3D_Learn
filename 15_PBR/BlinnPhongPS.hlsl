@@ -40,7 +40,7 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
     shadowMapUV.y = -shadowMapUV.y;
     shadowMapUV = shadowMapUV * 0.5f + 0.5f;
     
-    if (shadowMapUV.x >= 0.0f && shadowMapUV.x <= 1.0f && shadowMapUV.y >= 0.0f && shadowMapUV.y <= 1.0f)
+    if (all(shadowMapUV >= 0.0f) && all(shadowMapUV.x <= 1.0f))
     {
         if (g_useShadowPCF)
         {
@@ -51,20 +51,19 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
             else
             {
                 float texelSize = 1.0f / g_shadowMapSize;
-                shadowFactor = 0.0f;
 
-                int max = 1;
-                
+                int max = g_pcfSize;
+                float sum = 0.0f;
                 for (int y = -max; y <= max; ++y)
                 {
                     for (int x = -max; x <= max; ++x)
                     {
                         float2 offset = float2(x, y) * texelSize;
                         float2 sampleUV = shadowMapUV + offset;
-                        shadowFactor += g_texShadowMap.SampleCmpLevelZero(g_samComparison, sampleUV, currentShadowDepth - 0.0001f);
+                        sum += g_texShadowMap.SampleCmpLevelZero(g_samComparison, sampleUV, currentShadowDepth - 0.0001f);
                     }
                 }
-                shadowFactor = shadowFactor / ((max * 2 + 1) * (max * 2 + 1));
+                shadowFactor = sum / ((max * 2 + 1) * (max * 2 + 1));
             }
         }
         else

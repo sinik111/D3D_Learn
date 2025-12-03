@@ -2,7 +2,6 @@
 
 Texture2D g_texDiffuse : register(t0);
 Texture2D g_texNormal : register(t1);
-Texture2D g_texSpecular : register(t2);
 Texture2D g_texEmissive : register(t3);
 Texture2D g_texOpacity : register(t4);
 Texture2D g_texMetalness : register(t5);
@@ -42,11 +41,9 @@ float GAFSchlickGGX(float nDotV, float nDotL, float roughness)
 float4 main(PS_INPUT_SHADOW input) : SV_Target
 {
     float3 texDiffColor = pow(g_texDiffuse.Sample(g_samLinear, input.tex).rgb, 2.2f);
-    //float3 texDiffColor = g_texDiffuse.Sample(g_samLinear, input.tex).rgb;
     float3 texNormColor = g_texNormal.Sample(g_samLinear, input.tex).rgb;
-    float3 texSpecColor = g_texSpecular.Sample(g_samLinear, input.tex).rgb;
     float opacityFactor = g_texOpacity.Sample(g_samLinear, input.tex).a;
-    float3 texEmsvColor = g_texEmissive.Sample(g_samLinear, input.tex).rgb;
+    float3 texEmsvColor = pow(g_texEmissive.Sample(g_samLinear, input.tex).rgb, 2.2f);
     float metalnessFactor = g_texMetalness.Sample(g_samLinear, input.tex).r;
     float roughnessFactor = g_texRoughness.Sample(g_samLinear, input.tex).r;
     
@@ -90,7 +87,7 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
     shadowMapUV.y = -shadowMapUV.y;
     shadowMapUV = shadowMapUV * 0.5f + 0.5f;
     
-    if (shadowMapUV.x >= 0.0f && shadowMapUV.x <= 1.0f && shadowMapUV.y >= 0.0f && shadowMapUV.y <= 1.0f)
+    if (all(shadowMapUV >= 0.0f) && all(shadowMapUV.x <= 1.0f))
     {
         if (g_useShadowPCF)
         {
@@ -101,20 +98,20 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
             else
             {
                 float texelSize = 1.0f / g_shadowMapSize;
-                shadowFactor = 0.0f;
 
-                int max = 1;
-                
+                int max = g_pcfSize;
+                float sum = 0.0f;
                 for (int y = -max; y <= max; ++y)
                 {
                     for (int x = -max; x <= max; ++x)
                     {
                         float2 offset = float2(x, y) * texelSize;
                         float2 sampleUV = shadowMapUV + offset;
-                        shadowFactor += g_texShadowMap.SampleCmpLevelZero(g_samComparison, sampleUV, currentShadowDepth - 0.0001f);
+
+                        sum += g_texShadowMap.SampleCmpLevelZero(g_samComparison, sampleUV, currentShadowDepth - 0.0001f);
                     }
                 }
-                shadowFactor = shadowFactor / ((max * 2 + 1) * (max * 2 + 1));
+                shadowFactor = sum / ((max * 2 + 1) * (max * 2 + 1));
             }
         }
         else
@@ -146,6 +143,7 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
     
     float3 directLighting = (diffuseBRDF + specularBRDF) * (float3) g_lightColor * nDotL * shadowFactor;
     
-    //return float4(directLighting, 1.0f) + float4(texEmsvColor, 0.0f);
-    return float4(pow(directLighting, 1.0f / 2.2f), 1.0f) + float4(texEmsvColor, 0.0f);
+    float3 final = directLighting + texEmsvColor;
+    
+    return float4(pow(final, 1.0f / 2.2f), 1.0f);
 }

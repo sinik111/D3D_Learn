@@ -89,6 +89,7 @@ private:
 	float m_lightForwardDistFromCam = 1000.0f;
 	int m_shadowMapWidth = 8192;
 	int m_shadowMapHeight = 8192;
+	int m_pcfSize = 1;
 	bool m_useShadowPCF = true;
 
 public:

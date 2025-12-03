@@ -382,8 +382,8 @@ void PBRApp::RenderImGui()
 
 	ImGui::DragFloat2("Rotation(x, y)##2", &m_lightRotation.x, 0.5f);
 	ImGui::InputFloat3("Direction", &m_lightDirection.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
-	ImGui::ColorEdit3("DirectLightColor", &m_lightColor.x);
-	ImGui::ColorEdit3("AmbientLightColor", &m_ambientLightColor.x);
+	ImGui::ColorEdit3("Direct", &m_lightColor.x);
+	ImGui::ColorEdit3("Ambient", &m_ambientLightColor.x);
 	ImGui::DragFloat("LightNear", &m_lightNear);
 	ImGui::DragFloat("LightFar", &m_lightFar);
 	ImGui::DragFloat("LightFOV", &m_lightFOV, 0.0001f);

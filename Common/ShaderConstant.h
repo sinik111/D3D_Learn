@@ -36,8 +36,9 @@ struct EnvironmentBuffer
 	DirectX::SimpleMath::Vector4 lightColor;
 	DirectX::SimpleMath::Vector4 ambientLightColor;
 	int shadowMapSize;
-	int useShadowPCF;
-	float __pad3[2];
+	int useShadowPCF = 1;
+	int pcfSize = 1;
+	float __pad3;
 };
 
 struct MaterialBuffer

@@ -22,7 +22,8 @@ cbuffer Environment : register(b1)
     float4 g_ambientLightColor;
     int g_shadowMapSize;
     int g_useShadowPCF;
-    float __pad5[2];
+    int g_pcfSize;
+    float __pad5;
 }
 
 cbuffer Material : register(b2)
