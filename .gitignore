@@ -58,3 +58,5 @@ dkms.conf
 /.vs
 *.cso
 x64
+!Vendor/**/*.lib
+!Vendor/**/*.dll
