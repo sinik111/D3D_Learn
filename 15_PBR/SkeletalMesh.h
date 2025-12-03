@@ -58,10 +58,11 @@ private:
 	float m_animationProgressTime = 0.0f;
 
 public:
-	SkeletalMesh(const std::wstring& filePath);
+	SkeletalMesh(const std::wstring& filePath, const std::wstring& psFilePath = L"BlinnPhongPS.hlsl");
 
 public:
 	void SetWorld(const DirectX::SimpleMath::Matrix& world);
+	void SetPixelShader(const std::wstring& filePath);
 
 public:
 	void Update(float deltaTime);

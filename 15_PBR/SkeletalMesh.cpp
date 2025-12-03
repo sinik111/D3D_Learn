@@ -28,7 +28,7 @@
 
 using DirectX::SimpleMath::Matrix;
 
-SkeletalMesh::SkeletalMesh(const std::wstring& filePath)
+SkeletalMesh::SkeletalMesh(const std::wstring& filePath, const std::wstring& psFilePath)
 {
 	m_skeletalMeshData = AssetManager::Get().GetOrCreateSkeletalMeshAsset(filePath);
 	m_materialData = AssetManager::Get().GetOrCreateMaterialAsset(filePath);
@@ -56,7 +56,7 @@ SkeletalMesh::SkeletalMesh(const std::wstring& filePath)
 	m_materialBuffer = D3DResourceManager::Get().GetOrCreateConstantBuffer(L"Material", sizeof(MaterialBuffer));
 	m_worldTransformBuffer = D3DResourceManager::Get().GetOrCreateConstantBuffer(L"WorldTransform", sizeof(WorldTransformBuffer));
 	m_bonePoseBuffer = D3DResourceManager::Get().GetOrCreateConstantBuffer(L"BonePose", sizeof(Matrix) * MAX_BONE_NUM);
-	m_finalPassPixelShader = D3DResourceManager::Get().GetOrCreatePixelShader(L"BlinnPhongPS.hlsl");
+	m_finalPassPixelShader = D3DResourceManager::Get().GetOrCreatePixelShader(psFilePath);
 	m_shadowPassPixelShader = D3DResourceManager::Get().GetOrCreatePixelShader(L"LightViewPS.hlsl");
 
 	const auto& materials = m_materialData->GetMaterials();
@@ -115,6 +115,11 @@ SkeletalMesh::SkeletalMesh(const std::wstring& filePath)
 void SkeletalMesh::SetWorld(const Matrix& world) 
 {
 	m_worldTransformCB.world = world;
+}
+
+void SkeletalMesh::SetPixelShader(const std::wstring& filePath)
+{
+	m_finalPassPixelShader = D3DResourceManager::Get().GetOrCreatePixelShader(filePath);
 }
 
 void SkeletalMesh::Update(float deltaTime)
