@@ -27,9 +27,9 @@ class DepthStencilState;
 
 struct OverrideMaterial
 {
-	DirectX::SimpleMath::Vector4 baseColor;
-	float metalness;
-	float roughness;
+	DirectX::SimpleMath::Vector4 baseColor{ 1.0f, 1.0f, 1.0f, 1.0f };
+	float metalness = 0.0f;
+	float roughness = 0.0f;
 	int overrideMaterial = 0;
 	float pad;
 };
@@ -74,7 +74,7 @@ private:
 	Matrix m_lightRotationMatrix;
 	const Vector3 m_originalLightDir{ 0.0f, -1.0f, 0.0f };
 	Vector3 m_lightDirection;
-	Vector3 m_lightRotation{ -40.0f, 25.0f, 0.0f };
+	Vector3 m_lightRotation{ -65.0f, -35.0f, 0.0f };
 	Vector4 m_lightColor{ 1.0f, 1.0f, 1.0f, 1.0f };
 	Vector4 m_ambientLightColor{ 0.1f, 0.1f, 0.1f, 1.0f };
 

@@ -173,6 +173,11 @@ void PBRApp::OnRender()
 	auto renderTargetView = m_graphicsDevice.GetRenderTargetView();
 	auto depthStencilView = m_graphicsDevice.GetDepthStencilView();
 
+	deviceContext->VSSetConstantBuffers(static_cast<UINT>(ConstantBufferSlot::Transform), 1, m_transformBuffer->GetBuffer().GetAddressOf());
+	deviceContext->VSSetConstantBuffers(static_cast<UINT>(ConstantBufferSlot::Environment), 1, m_environmentBuffer->GetBuffer().GetAddressOf());
+	deviceContext->PSSetConstantBuffers(static_cast<UINT>(ConstantBufferSlot::Environment), 1, m_environmentBuffer->GetBuffer().GetAddressOf());
+	deviceContext->PSSetConstantBuffers(6, 1, m_overrideMatBuffer->GetBuffer().GetAddressOf());
+
 	// constant buffers
 	TransformBuffer transformBuffer{};
 	transformBuffer.view = m_view.Transpose();
@@ -222,25 +227,25 @@ void PBRApp::OnRender()
 
 	RenderFinal();
 
-	//deviceContext->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
-	////deviceContext->OMSetDepthStencilState(m_states->DepthNone(), 0);
-	//deviceContext->RSSetState(m_states->CullNone());
+	deviceContext->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
+	//deviceContext->OMSetDepthStencilState(m_states->DepthNone(), 0);
+	deviceContext->RSSetState(m_states->CullNone());
 
-	//m_effect->SetView(m_view);
-	//m_effect->SetProjection(m_projection);
-	//m_effect->Apply(deviceContext.Get());
+	m_effect->SetView(m_view);
+	m_effect->SetProjection(m_projection);
+	m_effect->Apply(deviceContext.Get());
 
-	//deviceContext->IASetInputLayout(m_inputLayout.Get());
-	//m_batch->Begin();
+	deviceContext->IASetInputLayout(m_inputLayout.Get());
+	m_batch->Begin();
 
-	//// Frustum을 월드 공간에 배치
-	//DirectX::BoundingFrustum frustum(m_lightProjection);
-	//Matrix lightWorldMatrix = m_lightView.Invert();
-	//frustum.Transform(frustum, lightWorldMatrix);
+	// Frustum을 월드 공간에 배치
+	DirectX::BoundingFrustum frustum(m_lightProjection);
+	Matrix lightWorldMatrix = m_lightView.Invert();
+	frustum.Transform(frustum, lightWorldMatrix);
 
-	//DX::Draw(m_batch.get(), frustum, DirectX::Colors::Blue);
+	DX::Draw(m_batch.get(), frustum, DirectX::Colors::Blue);
 
-	//m_batch->End();
+	m_batch->End();
 
 	RenderImGui();
 
@@ -379,10 +384,14 @@ void PBRApp::RenderImGui()
 	ImGui::InputFloat3("Direction", &m_lightDirection.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
 	ImGui::ColorEdit3("DirectLightColor", &m_lightColor.x);
 	ImGui::ColorEdit3("AmbientLightColor", &m_ambientLightColor.x);
+	ImGui::DragFloat("LightNear", &m_lightNear);
+	ImGui::DragFloat("LightFar", &m_lightFar);
+	ImGui::DragFloat("LightFOV", &m_lightFOV, 0.0001f);
+	ImGui::DragFloat("ForwardFromCam", &m_lightForwardDistFromCam, 0.1f);
 	
 	if (ImGui::Button("Reset##3"))
 	{
-		m_lightRotation = { -40.0f, 25.0f, 0.0f };
+		m_lightRotation = { -65.0f, -35.0f, 0.0f };
 		m_lightColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 		m_ambientLightColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 	}
@@ -412,7 +421,7 @@ void PBRApp::RenderImGui()
 		m_dxgiDevice->Trim();
 	}
 
-	if (ImGui::Button("Add Static Mesh"))
+	/*if (ImGui::Button("Add Static Mesh"))
 	{
 		auto size = m_staticMeshes.size();
 		m_staticMeshes.emplace_back(L"zeldaPosed001.fbx");
@@ -449,7 +458,7 @@ void PBRApp::RenderImGui()
 		{
 			m_skeletalMeshes.pop_back();
 		}
-	}
+	}*/
 
 	ImGui::End();
 
@@ -477,34 +486,33 @@ void PBRApp::InitializeScene()
 	m_environmentBuffer = D3DResourceManager::Get().GetOrCreateConstantBuffer(L"Environment", sizeof(EnvironmentBuffer));
 	m_overrideMatBuffer = D3DResourceManager::Get().GetOrCreateConstantBuffer(L"OverrideMat", sizeof(OverrideMaterial));
 
-	deviceContext->VSSetConstantBuffers(static_cast<UINT>(ConstantBufferSlot::Transform), 1, m_transformBuffer->GetBuffer().GetAddressOf());
-	deviceContext->VSSetConstantBuffers(static_cast<UINT>(ConstantBufferSlot::Environment), 1, m_environmentBuffer->GetBuffer().GetAddressOf());
-	deviceContext->PSSetConstantBuffers(static_cast<UINT>(ConstantBufferSlot::Environment), 1, m_environmentBuffer->GetBuffer().GetAddressOf());
-	deviceContext->PSSetConstantBuffers(6, 1, m_overrideMatBuffer->GetBuffer().GetAddressOf());
-
 	m_staticMeshes.emplace_back(L"char.fbx", L"PBRPS.hlsl");
 	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(0.0f, 30.0f, 0.0f).Transpose());
 
-	m_staticMeshes.emplace_back(L"machete_1k.fbx", L"PBRPS.hlsl");
-	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(100.0f, 30.0f, 0.0f).Transpose());
+	m_staticMeshes.emplace_back(L"machete_2k.fbx", L"PBRPS.hlsl");
+	m_staticMeshes.back().SetWorld(
+		(DirectX::SimpleMath::Matrix::CreateRotationY(ToRadian(90.0f)) *
+			DirectX::SimpleMath::Matrix::CreateTranslation(100.0f, 30.0f, 0.0f)).Transpose());
 
-	m_staticMeshes.emplace_back(L"wooden_axe_1k.fbx", L"PBRPS.hlsl");
-	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(-100.0f, 30.0f, 0.0f).Transpose());
+	m_staticMeshes.emplace_back(L"wooden_axe_2k.fbx", L"PBRPS.hlsl");
+	m_staticMeshes.back().SetWorld(
+		(DirectX::SimpleMath::Matrix::CreateRotationY(ToRadian(90.0f)) *
+			DirectX::SimpleMath::Matrix::CreateTranslation(-100.0f, 30.0f, 0.0f)).Transpose());
 
-	m_staticMeshes.emplace_back(L"brass_goblets_1k.fbx", L"PBRPS.hlsl");
-	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(-200.0f, 30.0f, 0.0f).Transpose());
-
-	m_staticMeshes.emplace_back(L"cannon_01_1k.fbx", L"PBRPS.hlsl");
+	m_staticMeshes.emplace_back(L"mid_century_lounge_chair_2k.fbx", L"PBRPS.hlsl");
 	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(200.0f, 30.0f, 0.0f).Transpose());
 
-	m_staticMeshes.emplace_back(L"mid_century_lounge_chair_1k.fbx", L"PBRPS.hlsl");
-	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(-300.0f, 30.0f, 0.0f).Transpose());
+	m_staticMeshes.emplace_back(L"BarberShopChair_01_2k.fbx", L"PBRPS.hlsl");
+	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(-200.0f, 30.0f, 0.0f).Transpose());
 
-	m_staticMeshes.emplace_back(L"vintage_video_camera_1k.fbx", L"PBRPS.hlsl");
+	m_staticMeshes.emplace_back(L"brass_goblets_2k.fbx", L"PBRPS.hlsl");
 	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(300.0f, 30.0f, 0.0f).Transpose());
 
-	m_staticMeshes.emplace_back(L"ornate_medieval_mace_1k.fbx", L"PBRPS.hlsl");
-	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(400.0f, 30.0f, 0.0f).Transpose());
+	m_staticMeshes.emplace_back(L"treasure_chest_2k.fbx", L"PBRPS.hlsl");
+	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(-300.0f, 30.0f, 0.0f).Transpose());
+
+	m_staticMeshes.emplace_back(L"cannon_01_2k.fbx", L"PBRPS.hlsl");
+	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(-400.0f, 30.0f, 0.0f).Transpose());
 
 	m_staticMeshes.emplace_back(L"Floor.fbx");
 

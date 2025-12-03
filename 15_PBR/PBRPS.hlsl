@@ -43,7 +43,7 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
 {
     float3 texDiffColor = pow(g_texDiffuse.Sample(g_samLinear, input.tex).rgb, 2.2f);
     //float3 texDiffColor = g_texDiffuse.Sample(g_samLinear, input.tex).rgb;
-    float4 texNormColor = g_texNormal.Sample(g_samLinear, input.tex);
+    float3 texNormColor = g_texNormal.Sample(g_samLinear, input.tex).rgb;
     float3 texSpecColor = g_texSpecular.Sample(g_samLinear, input.tex).rgb;
     float opacityFactor = g_texOpacity.Sample(g_samLinear, input.tex).a;
     float3 texEmsvColor = g_texEmissive.Sample(g_samLinear, input.tex).rgb;
@@ -57,11 +57,13 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
         roughnessFactor = g_overrideRoughness;
     }
     
+    roughnessFactor = max(EPSILON, roughnessFactor);
+    
     clip(opacityFactor - 0.5f);
     
     // normal
     float3x3 tbn = float3x3(normalize(input.tan), normalize(input.binorm), normalize(input.norm));
-    float3 n = normalize(mul(DecodeNormal(texNormColor.rgb), tbn));
+    float3 n = normalize(mul(DecodeNormal(texNormColor), tbn));
     
     // view
     float3 v = normalize(g_cameraPos - input.worldPos);
@@ -72,16 +74,12 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
     // l-v half
     float3 h = normalize(l + v);
     
-    // n dot h
     float nDotH = max(0.0f, dot(n, h));
     
-    // n dot l
     float nDotL = max(0.0f, dot(n, l));
     
-    // n dot v
     float nDotV = max(0.0f, dot(n, v));
     
-    // h dot v
     float hDotV = max(0.0f, dot(h, v));
     
     // shadow
@@ -135,15 +133,7 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
     
     float d = NDFGGXTR(nDotH, roughnessFactor);
     
-    float3 f0 = 0.0f;
-    //if (length(texSpecColor) > 0.0f)
-    //{
-    //    f0 = lerp(texSpecColor, texDiffColor, metalnessFactor);
-    //}
-    //else
-    {
-        f0 = lerp(DielectricFactor, texDiffColor, metalnessFactor);
-    }
+    float3 f0 = lerp(DielectricFactor, texDiffColor, metalnessFactor);
     
     float3 f = FresnelSchlick(f0, hDotV);
     
@@ -154,7 +144,8 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
     float3 diffuseBRDF = kd * texDiffColor / PI;
     float3 specularBRDF = (f * d * g) / max(EPSILON, 4.0f * nDotL * nDotV);
     
-    float3 directLighting = (diffuseBRDF + specularBRDF) * (float3) g_lightColor * nDotL * shadowFactor + texEmsvColor;
+    float3 directLighting = (diffuseBRDF + specularBRDF) * (float3) g_lightColor * nDotL * shadowFactor;
     
-    return float4(pow(directLighting, 1.0f / 2.2f), 1.0f);
+    //return float4(directLighting, 1.0f) + float4(texEmsvColor, 0.0f);
+    return float4(pow(directLighting, 1.0f / 2.2f), 1.0f) + float4(texEmsvColor, 0.0f);
 }
