@@ -9,6 +9,7 @@ enum class VertexFormat : size_t
 {
 	Common3D,
 	Position3D,
+	PositionNormal3D,
 	BoneWeight3D
 };
 
@@ -67,6 +68,21 @@ struct PositionVertex3D
 		// SemanticName , SemanticIndex , Format , InputSlot , AlignedByteOffset , InputSlotClass , InstanceDataStepRate
 		return {
 			D3D11_INPUT_ELEMENT_DESC{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		};
+	};
+};
+
+struct PositionNormalVertex3D
+{
+	DirectX::SimpleMath::Vector3 position;
+	DirectX::SimpleMath::Vector3 normal;
+
+	static constexpr std::array<D3D11_INPUT_ELEMENT_DESC, 2> GetLayout()
+	{
+		// SemanticName , SemanticIndex , Format , InputSlot , AlignedByteOffset , InputSlotClass , InstanceDataStepRate
+		return {
+			D3D11_INPUT_ELEMENT_DESC{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			D3D11_INPUT_ELEMENT_DESC{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
 	};
 };

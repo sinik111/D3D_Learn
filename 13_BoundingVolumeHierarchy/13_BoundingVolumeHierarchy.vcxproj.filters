@@ -4,115 +4,35 @@
     <Filter Include="01_App">
       <UniqueIdentifier>{7311bda6-326e-43f3-835e-ef0b954ee0e7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02_Mesh">
-      <UniqueIdentifier>{dc3c97e8-eb17-476c-94c1-bdde4170472c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02_Mesh\Static">
-      <UniqueIdentifier>{d98277da-9b7b-4bae-89cf-32c12bb7891c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02_Mesh\Skeletal">
-      <UniqueIdentifier>{0d3d583d-4ec1-4c9b-a959-ad53ae4690be}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03_Shader">
+    <Filter Include="02_Shader">
       <UniqueIdentifier>{1a14e75a-6b29-48a7-9673-d91414e631ac}</UniqueIdentifier>
     </Filter>
-    <Filter Include="03_Shader\Vertex">
-      <UniqueIdentifier>{7a6e93bc-654d-4712-92bc-9f0907aaf1b2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="03_Shader\Pixel">
-      <UniqueIdentifier>{b94131d3-8464-42bb-8785-232f9fb062fd}</UniqueIdentifier>
-    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BVHApp.h">
+      <Filter>01_App</Filter>
+    </ClInclude>
+    <ClInclude Include="BVH.h">
+      <Filter>01_App</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
       <Filter>01_App</Filter>
     </ClCompile>
-    <ClCompile Include="ShadowMappingApp.cpp">
+    <ClCompile Include="BVHApp.cpp">
       <Filter>01_App</Filter>
     </ClCompile>
-    <ClCompile Include="Material.cpp">
-      <Filter>02_Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="SkeletalMesh.cpp">
-      <Filter>02_Mesh\Skeletal</Filter>
-    </ClCompile>
-    <ClCompile Include="SkeletalMeshSection.cpp">
-      <Filter>02_Mesh\Skeletal</Filter>
-    </ClCompile>
-    <ClCompile Include="Skeleton.cpp">
-      <Filter>02_Mesh\Skeletal</Filter>
-    </ClCompile>
-    <ClCompile Include="StaticMeshSection.cpp">
-      <Filter>02_Mesh\Static</Filter>
-    </ClCompile>
-    <ClCompile Include="StaticMesh.cpp">
-      <Filter>02_Mesh\Static</Filter>
-    </ClCompile>
-    <ClCompile Include="Animation.cpp">
-      <Filter>02_Mesh\Skeletal</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="ShadowMappingApp.h">
+    <ClCompile Include="BVH.cpp">
       <Filter>01_App</Filter>
-    </ClInclude>
-    <ClInclude Include="Material.h">
-      <Filter>02_Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="SkeletalMesh.h">
-      <Filter>02_Mesh\Skeletal</Filter>
-    </ClInclude>
-    <ClInclude Include="SkeletalMeshSection.h">
-      <Filter>02_Mesh\Skeletal</Filter>
-    </ClInclude>
-    <ClInclude Include="Skeleton.h">
-      <Filter>02_Mesh\Skeletal</Filter>
-    </ClInclude>
-    <ClInclude Include="StaticMeshSection.h">
-      <Filter>02_Mesh\Static</Filter>
-    </ClInclude>
-    <ClInclude Include="StaticMesh.h">
-      <Filter>02_Mesh\Static</Filter>
-    </ClInclude>
-    <ClInclude Include="Animation.h">
-      <Filter>02_Mesh\Skeletal</Filter>
-    </ClInclude>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shared.hlsli">
-      <Filter>03_Shader</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="BlinnPhongPS.hlsl">
-      <Filter>03_Shader\Pixel</Filter>
+    <FxCompile Include="PositionNormalVS.hlsl">
+      <Filter>02_Shader</Filter>
     </FxCompile>
-    <FxCompile Include="LightViewPS.hlsl">
-      <Filter>03_Shader\Pixel</Filter>
-    </FxCompile>
-    <FxCompile Include="BasicLightViewVS.hlsl">
-      <Filter>03_Shader\Vertex</Filter>
-    </FxCompile>
-    <FxCompile Include="BasicVS.hlsl">
-      <Filter>03_Shader\Vertex</Filter>
-    </FxCompile>
-    <FxCompile Include="RigidAnimLightVIewVS.hlsl">
-      <Filter>03_Shader\Vertex</Filter>
-    </FxCompile>
-    <FxCompile Include="RigidAnimVS.hlsl">
-      <Filter>03_Shader\Vertex</Filter>
-    </FxCompile>
-    <FxCompile Include="SkinningAnimLightViewVS.hlsl">
-      <Filter>03_Shader\Vertex</Filter>
-    </FxCompile>
-    <FxCompile Include="SkinningAnimVS.hlsl">
-      <Filter>03_Shader\Vertex</Filter>
-    </FxCompile>
-    <FxCompile Include="SkyboxVS.hlsl">
-      <Filter>03_Shader\Vertex</Filter>
-    </FxCompile>
-    <FxCompile Include="SkyboxPS.hlsl">
-      <Filter>03_Shader\Pixel</Filter>
+    <FxCompile Include="LambertPS.hlsl">
+      <Filter>02_Shader</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

@@ -2,7 +2,7 @@
 
 #include "../Common/Helper.h"
 
-#include "ShadowMappingApp.h"
+#include "BVHApp.h"
 
 int APIENTRY wWinMain(
     _In_ HINSTANCE hInstance,
@@ -14,7 +14,7 @@ int APIENTRY wWinMain(
 	LeakCheck lc;
 #endif // _DEBUG
 
-	ShadowMappingApp app;
+	BVHApp app;
 
 	app.Initialize();
 	app.Run();
