@@ -34,10 +34,63 @@ void BVH::Insert(const std::vector<DirectX::BoundingBox>& aabbs)
 {
 	// todo: 이거 뒤에 추가하는 식으로 바꿔야함
 	m_objectIndices.resize(aabbs.size());
+	m_objectToLeafIndices.resize(aabbs.size());
 	std::iota(m_objectIndices.begin(), m_objectIndices.end(), 0);
 	m_objectAABBs.insert(m_objectAABBs.end(), aabbs.begin(), aabbs.end());
 
 	BuildBVH(0, static_cast<std::uint32_t>(aabbs.size()));
+}
+
+void BVH::ChangeAABB(std::uint32_t index, const DirectX::BoundingBox& newAABB)
+{
+	m_objectAABBs[index] = newAABB;
+	m_changedObjectIndices.push_back(index);
+}
+
+void BVH::FullyRebuild()
+{
+	m_nodes.clear();
+	BuildBVH(0, static_cast<std::uint32_t>(m_objectAABBs.size()));
+	m_changedObjectIndices.clear();
+}
+
+void BVH::Refit()
+{
+	for (auto objIndex : m_changedObjectIndices)
+	{
+		std::uint32_t leafIndex = m_objectToLeafIndices[objIndex];
+
+		auto& leafNode = m_nodes[leafIndex];
+
+		Vector3 min{ INFINITY, INFINITY, INFINITY };
+		Vector3 max{ -INFINITY, -INFINITY, -INFINITY };
+
+		for (std::uint32_t i = 0; i < leafNode.objectCount; ++i)
+		{
+			std::uint32_t currentObjIdx = m_objectIndices[leafNode.firstObject + i];
+			const auto& bounds = m_objectAABBs[currentObjIdx];
+
+			min = Vector3::Min(min, CalcAABBMin(bounds));
+			max = Vector3::Max(max, CalcAABBMax(bounds));
+		}
+		leafNode.aabb = MakeWithMinMax(min, max);
+
+		std::int32_t parentIndex = leafNode.parent;
+
+		while (parentIndex != -1)
+		{
+			auto& parentNode = m_nodes[parentIndex];
+
+			const auto& leftChild = m_nodes[parentNode.left];
+			const auto& rightChild = m_nodes[parentNode.right];
+
+			BoundingBox::CreateMerged(parentNode.aabb, leftChild.aabb, rightChild.aabb);
+
+			parentIndex = parentNode.parent;
+		}
+	}
+
+	m_changedObjectIndices.clear();
 }
 
 const std::vector<BVHNode>& BVH::GetNodes() const
@@ -61,15 +114,21 @@ std::uint32_t BVH::BuildBVH(std::uint32_t begin, std::uint32_t end)
 		max = Vector3::Max(max, CalcAABBMax(bounds));
 	}
 
+	std::int32_t myIndex = static_cast<std::int32_t>(m_nodes.size());
+	m_nodes.push_back({ MakeWithMinMax(min, max), -1, 0, 0, 0, 0 });
+
 	if (end - begin <= LEAF_LIMITS)
 	{
-		m_nodes.push_back({ MakeWithMinMax(min, max), 0, 0, begin, end - begin });
+		m_nodes[myIndex].firstObject = begin;
+		m_nodes[myIndex].objectCount = end - begin;
 
-		return static_cast<std::uint32_t>(m_nodes.size() - 1);
+		for (std::uint32_t i = begin; i < end; ++i)
+		{
+			m_objectToLeafIndices[m_objectIndices[i]] = myIndex;
+		}
+
+		return myIndex;
 	}
-
-	std::uint32_t currentNodeIndex = static_cast<std::uint32_t>(m_nodes.size());
-	m_nodes.push_back({ MakeWithMinMax(min, max), 0, 0, 0, 0 });
 
 	float lengthX = centerMax.x - centerMin.x;
 	float lengthY = centerMax.y - centerMin.y;
@@ -108,8 +167,11 @@ std::uint32_t BVH::BuildBVH(std::uint32_t begin, std::uint32_t end)
 	std::uint32_t leftIndex = BuildBVH(begin, mid);
 	std::uint32_t rightIndex = BuildBVH(mid, end);
 
-	m_nodes[currentNodeIndex].left = leftIndex;
-	m_nodes[currentNodeIndex].right = rightIndex;
+	m_nodes[myIndex].left = leftIndex;
+	m_nodes[myIndex].right = rightIndex;
 
-	return currentNodeIndex;
+	m_nodes[leftIndex].parent = myIndex;
+	m_nodes[rightIndex].parent = myIndex;
+
+	return myIndex;
 }

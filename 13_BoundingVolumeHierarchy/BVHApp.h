@@ -65,6 +65,8 @@ private:
 
 	UINT m_indexCount = 0;
 	BVH m_bvh;
+	int m_currentMethodIndex = 0;
+	bool m_changed = false;
 
 public:
 	void Initialize() override;

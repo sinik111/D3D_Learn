@@ -90,6 +90,61 @@ void BVHApp::OnUpdate()
 
 	m_lightDirection = DirectX::XMVector3TransformNormal(m_originalLightDir, m_lightRotationMatrix);
 	m_lightDirection.Normalize();
+
+	
+	auto& info = m_cubeInfo.front();
+	float speed = 25.0f;
+	if (Input::IsKeyHeld(DirectX::Keyboard::Keys::Up))
+	{
+		info.position.z += speed * MyTime::DeltaTime();
+		m_changed = true;
+	}
+
+	if (Input::IsKeyHeld(DirectX::Keyboard::Keys::Down))
+	{
+		info.position.z -= speed * MyTime::DeltaTime();
+		m_changed = true;
+	}
+
+	if (Input::IsKeyHeld(DirectX::Keyboard::Keys::Left))
+	{
+		info.position.x -= speed * MyTime::DeltaTime();
+		m_changed = true;
+	}
+
+	if (Input::IsKeyHeld(DirectX::Keyboard::Keys::Right))
+	{
+		info.position.x += speed * MyTime::DeltaTime();
+		m_changed = true;
+	}
+
+	if (Input::IsKeyHeld(DirectX::Keyboard::Keys::PageUp))
+	{
+		info.position.y += speed * MyTime::DeltaTime();
+		m_changed = true;
+	}
+
+	if (Input::IsKeyHeld(DirectX::Keyboard::Keys::PageDown))
+	{
+		info.position.y -= speed * MyTime::DeltaTime();
+		m_changed = true;
+	}
+
+	if (m_changed)
+	{
+		info.aabb = DirectX::BoundingBox(info.position, info.scale * 0.5f + Vector3(0.1f));
+		m_bvh.ChangeAABB(0, info.aabb);
+		if (m_currentMethodIndex == 0)
+		{
+			m_bvh.FullyRebuild();
+		}
+		else if (m_currentMethodIndex == 1)
+		{
+			m_bvh.Refit();
+		}
+
+		m_changed = false;
+	}
 }
 
 void BVHApp::OnRender()
@@ -141,9 +196,21 @@ void BVHApp::OnRender()
 
 	const auto& nodes = m_bvh.GetNodes();
 
+	const int n = 20;
+	const float frequency = DirectX::XM_2PI / n;
+
+	const int step = 5;
+
+	int i = 0;
 	for (const auto& node : nodes)
 	{
-		DX::Draw(m_batch.get(), node.aabb, DirectX::Colors::Yellow);
+		float r = 0.5f + 0.5f * std::sin(frequency * (i * step) + 0.0f);
+		float g = 0.5f + 0.5f * std::sin(frequency * (i * step) + 2.0f);
+		float b = 0.5f + 0.5f * std::sin(frequency * (i * step) + 4.0f);
+
+		DX::Draw(m_batch.get(), node.aabb, { r, g, b, 1.0f });
+
+		i++;
 	}
 
 	m_batch->End();
@@ -251,7 +318,15 @@ void BVHApp::RenderImGui()
 	ImGui::NewLine();
 
 	ImGui::SeparatorText("Object");
-
+	ImGui::Text("MoveCube");
+	ImGui::Text("+X: ArrowRight / -X: ArrowLeft");
+	ImGui::Text("+Z: ArrowUp / -Z: ArrowDown");
+	ImGui::Text("+Y: PageUp / -Y: PageDown");
+	const char* items[]{ "Fully Rebuild", "Refit Only" };
+	if (ImGui::Combo("BVH Update Method", &m_currentMethodIndex, items, 2))
+	{
+		m_changed = true;
+	}
 
 	ImGui::NewLine();
 
@@ -360,12 +435,22 @@ void BVHApp::InitializeScene()
 
 		m_cubeInfo.reserve(20);
 		std::vector<DirectX::BoundingBox> aabbs;
+
+		{
+			Vector3 position{};
+			Vector3 scale{ 1.0f, 1.0f, 1.0f };
+			DirectX::BoundingBox aabb{ position, 0.5f * scale + Vector3(0.1f) };
+			m_cubeInfo.push_back({ position, scale, aabb });
+			aabbs.push_back(aabb);
+		}
+
 		float areaSize = 20.0f;
-		for (int i = 0; i < 20; ++i)
+		float maxCubeSize = 3.0f;
+		for (int i = 1; i < (int)areaSize; ++i)
 		{
 			Vector3 position{ RandomFloat(-areaSize, areaSize), RandomFloat(-areaSize, areaSize), RandomFloat(-areaSize, areaSize) };
-			Vector3 scale{ RandomFloat(1, 3), RandomFloat(1, 3), RandomFloat(1, 3) };
-			DirectX::BoundingBox aabb{ position, 0.5f * scale + Vector3(0.1f, 0.1f, 0.1f) };
+			Vector3 scale{ RandomFloat(1, maxCubeSize), RandomFloat(1, maxCubeSize), RandomFloat(1, maxCubeSize) };
+			DirectX::BoundingBox aabb{ position, 0.5f * scale + Vector3(0.1f) };
 
 			m_cubeInfo.push_back({ position, scale, aabb });
 			aabbs.push_back(aabb);
