@@ -1,0 +1,7 @@
+1. 동적 트리 갱신 작업과정 중 Insert/Remove , Rotation 과정
+
+
+2. 공간분할(Quad/Octree)와 비교하여 BVH는 어떤 장단점, 상황에서의 유리함이 있는지
+
+
+3. BVH가 응용 되어 사용되는 곳
