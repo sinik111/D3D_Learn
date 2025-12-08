@@ -7,6 +7,11 @@ Texture2D g_texOpacity : register(t4);
 Texture2D g_texMetalness : register(t5);
 Texture2D g_texRoughness : register(t6);
 Texture2D g_texShadowMap : register(t7);
+TextureCube g_texIblIrradiance : register(t8);
+TextureCube g_texIblSpecular : register(t9);
+Texture2D g_texIBLSpecularBrdfLut : register(t10);
+
+SamplerState g_samClamp : register(s2);
 
 static const float3 DielectricFactor = 0.04f;
 
@@ -46,7 +51,7 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
     float3 texEmsvColor = pow(g_texEmissive.Sample(g_samLinear, input.tex).rgb, 2.2f);
     float metalnessFactor = g_texMetalness.Sample(g_samLinear, input.tex).r;
     float roughnessFactor = g_texRoughness.Sample(g_samLinear, input.tex).r;
-    
+        
     if (g_overrideMaterial)
     {
         texDiffColor = (float3) g_overrideBaseColor;
@@ -128,22 +133,52 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
         }
     }
     
-    float d = NDFGGXTR(nDotH, roughnessFactor);
-    
     float3 f0 = lerp(DielectricFactor, texDiffColor, metalnessFactor);
-    
-    float3 f = FresnelSchlick(f0, hDotV);
     
     float g = GAFSchlickGGX(nDotV, nDotL, roughnessFactor);
     
-    float3 kd = lerp(1.0f - f, 0.0f, metalnessFactor);
+    float3 directLighting = 0.0f;
+    {
+        float d = NDFGGXTR(nDotH, roughnessFactor);
+        
+        float3 f = FresnelSchlick(f0, hDotV);
+        
+        float3 kd = lerp(1.0f - f, 0.0f, metalnessFactor);
+        
+        float3 diffuseBRDF = kd * texDiffColor / PI;
+        float3 specularBRDF = (f * d * g) / max(EPSILON, 4.0f * nDotL * nDotV);
     
-    float3 diffuseBRDF = kd * texDiffColor / PI;
-    float3 specularBRDF = (f * d * g) / max(EPSILON, 4.0f * nDotL * nDotV);
+        directLighting = (diffuseBRDF + specularBRDF) * (float3) g_lightColor * nDotL * shadowFactor;
+    }
     
-    float3 directLighting = (diffuseBRDF + specularBRDF) * (float3) g_lightColor * nDotL * shadowFactor;
+    float3 ambientLighting = 0.0f;
+    if (g_useIBL)
+    {
+        float3 f = FresnelSchlick(f0, nDotV);
+        
+        float3 kd = lerp(1.0f - f, 0.0f, metalnessFactor);
+        
+        float3 irradiance = g_texIblIrradiance.Sample(g_samLinear, n).rgb;
     
-    float3 final = directLighting + texEmsvColor;
+        float3 diffuseIBL = kd * texDiffColor * PI * irradiance;
+    
+        uint specularTextureLevels, width, height;
+        g_texIblSpecular.GetDimensions(0, width, height, specularTextureLevels);
+    
+        float3 viewReflect = -(v - 2.0 * nDotV * n);
+    
+        float3 prefilteredColor = g_texIblSpecular.SampleLevel(g_samLinear, viewReflect, roughnessFactor * specularTextureLevels).rgb;
+    
+        float2 specularBRDF = g_texIBLSpecularBrdfLut.Sample(g_samClamp, float2(nDotV, roughnessFactor)).rg;
+    
+        float3 specularIBL = prefilteredColor * (f0 * specularBRDF.x + specularBRDF.y);
+        
+        ambientLighting = (diffuseIBL + specularIBL) * g_ambientOcclusion;
+    }
+    
+    float3 final = directLighting + ambientLighting + texEmsvColor;
+    
+    final = max(0.0f, final);
     
     return float4(pow(final, 1.0f / 2.2f), 1.0f);
 }

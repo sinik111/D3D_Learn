@@ -22,6 +22,12 @@
 #include "../Common/RasterizerState.h"
 #include "../Common/DepthStencilState.h"
 #include "../Common/DebugDraw.h"
+#include "../Common/SamplerState.h"
+#include "../Common/VertexBuffer.h"
+#include "../Common/IndexBuffer.h"
+#include "../Common/VertexShader.h"
+#include "../Common/PixelShader.h"
+#include "../Common/InputLayout.h"
 
 #include "StaticMesh.h"
 
@@ -194,6 +200,14 @@ void PBRApp::OnRender()
 	environmentBuffer.ambientLightColor = m_ambientLightColor;
 	environmentBuffer.shadowMapSize = m_shadowMapWidth;// * m_shadowMapHeight;
 	environmentBuffer.useShadowPCF = m_useShadowPCF;
+	if (m_useIBL)
+	{
+		environmentBuffer.useIBL = 1;
+	}
+	else
+	{
+		environmentBuffer.useIBL = 0;
+	}
 
 	deviceContext->UpdateSubresource(m_environmentBuffer->GetRawBuffer(), 0, nullptr, &environmentBuffer, 0, 0);
 
@@ -282,7 +296,39 @@ void PBRApp::RenderFinal()
 {
 	const auto& deviceContext = m_graphicsDevice.GetDeviceContext();
 
+	// skybox
+	deviceContext->OMSetDepthStencilState(m_skyboxDSState->GetRawDepthStencilState(), 0);
+	deviceContext->RSSetState(m_skyboxRSState->GetRawRasterizerState());
+
+	const UINT stride = m_cubeVertexBuffer->GetBufferStride();
+	const UINT offset = 0;
+	deviceContext->IASetVertexBuffers(0, 1, m_cubeVertexBuffer->GetBuffer().GetAddressOf(), &stride, &offset);
+	deviceContext->IASetIndexBuffer(m_cubeIndexBuffer->GetRawBuffer(), DXGI_FORMAT_R32_UINT, 0);
+	deviceContext->IASetInputLayout(m_cubeInputLayout->GetRawInputLayout());
+	deviceContext->VSSetShader(m_skyboxVertexShader->GetRawShader(), nullptr, 0);
+	deviceContext->PSSetShader(m_skyboxPixelShader->GetRawShader(), nullptr, 0);
+	deviceContext->PSSetSamplers(0, 1, m_samplerState->GetSamplerState().GetAddressOf());
+	deviceContext->PSSetShaderResources(0, 1, m_cubeMapSRV->GetShaderResourceView().GetAddressOf());
+	deviceContext->RSSetState(m_skyboxRSState->GetRawRasterizerState());
+	deviceContext->OMSetDepthStencilState(m_skyboxDSState->GetRawDepthStencilState(), 0);
+
+	WorldTransformBuffer transformBuffer{};
+	transformBuffer.world = Matrix::CreateRotationY(ToRadian(125.5f));
+
+	//deviceContext->UpdateSubresource(m_worldTransformBuffer->GetRawBuffer(), 0, nullptr, &transformBuffer, 0, 0);
+	deviceContext->DrawIndexed(m_indexCount, 0, 0);
+
+	deviceContext->RSSetState(nullptr);
+	deviceContext->OMSetDepthStencilState(nullptr, 0);
+
+	// mesh
+
 	deviceContext->PSSetShaderResources(7, 1, m_shadowMapSRV->GetShaderResourceView().GetAddressOf());
+	deviceContext->PSSetShaderResources(8, 1, m_irradianceMapSRV->GetShaderResourceView().GetAddressOf());
+	deviceContext->PSSetShaderResources(9, 1, m_specularMapSRV->GetShaderResourceView().GetAddressOf());
+	deviceContext->PSSetShaderResources(10, 1, m_brdfLutSRV->GetShaderResourceView().GetAddressOf());
+
+	deviceContext->PSSetSamplers(2, 1, m_clampSampler->GetSamplerState().GetAddressOf());
 
 	for (auto& mesh : m_staticMeshes)
 	{
@@ -374,7 +420,8 @@ void PBRApp::RenderImGui()
 	ImGui::ColorEdit3("BaseColor", &m_overrideMaterialCB.baseColor.x);
 	ImGui::SliderFloat("Metalness", &m_overrideMaterialCB.metalness, 0.0f, 1.0f);
 	ImGui::SliderFloat("Roughness", &m_overrideMaterialCB.roughness, 0.0f, 1.0f);
-
+	ImGui::Checkbox("Use IBL", &m_useIBL);
+	ImGui::SliderFloat("Ambient Occlusion", &m_overrideMaterialCB.ambientOcclusion, 0.0f, 1.0f);
 
 	ImGui::NewLine();
 
@@ -421,45 +468,6 @@ void PBRApp::RenderImGui()
 		m_dxgiDevice->Trim();
 	}
 
-	/*if (ImGui::Button("Add Static Mesh"))
-	{
-		auto size = m_staticMeshes.size();
-		m_staticMeshes.emplace_back(L"zeldaPosed001.fbx");
-
-		float x = (size % 5) * 200.0f + 100.0f;
-		float z = (size / 5) * 200.0f;
-
-		m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(x, 0.0f, z).Transpose());
-	}
-
-	if (ImGui::Button("Remove Static Mesh"))
-	{
-		if (!m_staticMeshes.empty())
-		{
-			m_staticMeshes.pop_back();
-		}
-	}
-
-	if (ImGui::Button("Add Skeletal Mesh"))
-	{
-		auto size = m_skeletalMeshes.size();
-		m_skeletalMeshes.emplace_back(L"SkinningTest.fbx");
-
-		float x = (size % 5) * -200.0f - 100.0f;
-		float z = (size / 5) * 200.0f;
-
-		m_skeletalMeshes.back().PlayAnimation(0);
-		m_skeletalMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(x, 0.0f, z).Transpose());
-	}
-
-	if (ImGui::Button("Remove Skeletal Mesh"))
-	{
-		if (!m_skeletalMeshes.empty())
-		{
-			m_skeletalMeshes.pop_back();
-		}
-	}*/
-
 	ImGui::End();
 
 	ImGui::Render();
@@ -485,6 +493,7 @@ void PBRApp::InitializeScene()
 	m_transformBuffer = D3DResourceManager::Get().GetOrCreateConstantBuffer(L"Transform", sizeof(TransformBuffer));
 	m_environmentBuffer = D3DResourceManager::Get().GetOrCreateConstantBuffer(L"Environment", sizeof(EnvironmentBuffer));
 	m_overrideMatBuffer = D3DResourceManager::Get().GetOrCreateConstantBuffer(L"OverrideMat", sizeof(OverrideMaterial));
+	m_worldTransformBuffer = D3DResourceManager::Get().GetOrCreateConstantBuffer(L"WorldTransform", sizeof(WorldTransformBuffer));
 
 	m_staticMeshes.emplace_back(L"char.fbx", L"PBRPS.hlsl");
 	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(0.0f, 30.0f, 0.0f).Transpose());
@@ -494,6 +503,9 @@ void PBRApp::InitializeScene()
 
 	m_staticMeshes.emplace_back(L"treasure_chest_2k.fbx", L"PBRPS.hlsl");
 	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(200.0f, 30.0f, 0.0f).Transpose());
+
+	m_staticMeshes.emplace_back(L"brass_goblets_2k.fbx", L"PBRPS.hlsl");
+	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(-300.0f, 30.0f, 0.0f).Transpose());
 
 	m_staticMeshes.emplace_back(L"Floor.fbx");
 
@@ -545,6 +557,117 @@ void PBRApp::InitializeScene()
 		rsDesc.DepthClipEnable = true;
 
 		m_shadowMapRSS = D3DResourceManager::Get().GetOrCreateRasterizerState(L"ShadowMap", rsDesc);
+	}
+
+	{
+		m_cubeMapSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"DaySkyEnvHDR.dds", TextureType::TextureCube);
+		m_irradianceMapSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"DaySkyDiffuseHDR.dds", TextureType::TextureCube);
+		m_specularMapSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"DaySkySpecularHDR.dds", TextureType::TextureCube);
+		m_brdfLutSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"DaySkyBrdf.dds", TextureType::Texture2D);
+
+		D3D11_SAMPLER_DESC samplerDesc{};
+		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.MaxAnisotropy = 1;
+		samplerDesc.MinLOD = 0;
+		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+		m_clampSampler = D3DResourceManager::Get().GetOrCreateSamplerState(L"Clamp", samplerDesc);
+	}
+
+	// cube
+	{
+		std::vector<PositionVertex3D> vertices{
+			// position
+			{ { -0.5f,  0.5f, -0.5f } }, // 0 - 0
+			{ {  0.5f,  0.5f, -0.5f } }, // 1 - 1
+			{ { -0.5f, -0.5f, -0.5f } }, // 2 - 2
+			{ {  0.5f, -0.5f, -0.5f } }, // 3 - 3
+
+			{ {  0.5f,  0.5f,  0.5f } }, // 4 - 4
+			{ { -0.5f,  0.5f,  0.5f } }, // 5 - 5
+			{ {  0.5f, -0.5f,  0.5f } }, // 6 - 6
+			{ { -0.5f, -0.5f,  0.5f } }, // 7 - 7
+
+			{ { -0.5f,  0.5f,  0.5f } }, // 5 - 8
+			{ { -0.5f,  0.5f, -0.5f } }, // 0 - 9
+			{ { -0.5f, -0.5f,  0.5f } }, // 7 - 10
+			{ { -0.5f, -0.5f, -0.5f } }, // 2 - 11
+
+			{ {  0.5f,  0.5f, -0.5f } }, // 1 - 12
+			{ {  0.5f,  0.5f,  0.5f } }, // 4 - 13
+			{ {  0.5f, -0.5f, -0.5f } }, // 3 - 14
+			{ {  0.5f, -0.5f,  0.5f } }, // 6 - 15
+
+			{ { -0.5f, -0.5f, -0.5f } }, // 2 - 16
+			{ {  0.5f, -0.5f, -0.5f } }, // 3 - 17
+			{ { -0.5f, -0.5f,  0.5f } }, // 7 - 18
+			{ {  0.5f, -0.5f,  0.5f } }, // 6 - 19
+
+			{ { -0.5f,  0.5f,  0.5f } }, // 5 - 20
+			{ {  0.5f,  0.5f,  0.5f } }, // 4 - 21
+			{ { -0.5f,  0.5f, -0.5f } }, // 0 - 22
+			{ {  0.5f,  0.5f, -0.5f } }, // 1 - 23
+		};
+
+		std::vector<DWORD> indices{
+			0, 1, 2,
+			2, 1, 3,
+
+			4, 5, 6,
+			6, 5, 7,
+
+			8, 9, 10,
+			10, 9, 11,
+
+			12, 13, 14,
+			14, 13, 15,
+
+			16, 17, 18,
+			18, 17, 19,
+
+			20, 21, 22,
+			22, 21, 23,
+		};
+
+		m_indexCount = static_cast<UINT>(indices.size());
+		m_cubeVertexBuffer = D3DResourceManager::Get().GetOrCreateVertexBuffer(L"Cube", vertices);
+		m_cubeIndexBuffer = D3DResourceManager::Get().GetOrCreateIndexBuffer(L"Cube", indices);
+		auto layoutDesc = PositionNormalVertex3D::GetLayout();
+		m_cubeInputLayout = D3DResourceManager::Get().GetOrCreateInputLayout(L"SkyboxVS.hlsl",
+			layoutDesc.data(), static_cast<UINT>(layoutDesc.size()));
+		m_skyboxVertexShader = D3DResourceManager::Get().GetOrCreateVertexShader(L"SkyboxVS.hlsl");
+		m_skyboxPixelShader = D3DResourceManager::Get().GetOrCreatePixelShader(L"SkyboxPS.hlsl");
+
+		D3D11_RASTERIZER_DESC rasterizerDesc{};
+		rasterizerDesc.CullMode = D3D11_CULL_BACK;
+		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+		rasterizerDesc.DepthClipEnable = TRUE;
+		rasterizerDesc.FrontCounterClockwise = TRUE;
+
+		m_skyboxRSState = D3DResourceManager::Get().GetOrCreateRasterizerState(L"SkyboxRSS", rasterizerDesc);
+
+		D3D11_DEPTH_STENCIL_DESC depthStencilDesc{};
+		depthStencilDesc.DepthEnable = TRUE;
+		depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+		depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+
+		m_skyboxDSState = D3DResourceManager::Get().GetOrCreateDepthStencilState(L"SkyboxDSS", depthStencilDesc);
+
+		{
+			D3D11_SAMPLER_DESC samplerDesc{};
+			samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+			samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+			samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+			samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+			samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+			samplerDesc.MinLOD = 0;
+			samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+			m_samplerState = D3DResourceManager::Get().GetOrCreateSamplerState(L"Linear", samplerDesc);
+		}
 	}
 }
 

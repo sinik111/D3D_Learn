@@ -80,7 +80,11 @@ void ShaderResourceView::Create(const Microsoft::WRL::ComPtr<ID3D11Device>& devi
                 &m_shaderResourceView
             );
         }
-		else
+        else if (extension == ".dds" || extension == ".DDS")
+        {
+            DirectX::CreateDDSTextureFromFile(device.Get(), filePath.c_str(), nullptr, &m_shaderResourceView);
+        }
+        else
 		{
 			DirectX::CreateWICTextureFromFile(device.Get(), filePath.c_str(), nullptr, &m_shaderResourceView);
 		}

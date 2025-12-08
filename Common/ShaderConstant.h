@@ -38,7 +38,7 @@ struct EnvironmentBuffer
 	int shadowMapSize;
 	int useShadowPCF = 1;
 	int pcfSize = 1;
-	float __pad3;
+	int useIBL = 1;
 };
 
 struct MaterialBuffer

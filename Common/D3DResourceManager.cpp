@@ -86,6 +86,26 @@ std::shared_ptr<VertexBuffer> D3DResourceManager::GetOrCreateVertexBuffer(const 
 	return vertexBuffer;
 }
 
+std::shared_ptr<VertexBuffer> D3DResourceManager::GetOrCreateVertexBuffer(const std::wstring& filePath,
+	const std::vector<PositionVertex3D>& vertices)
+{
+	VertexBufferKey key{ filePath, VertexFormat::Position3D };
+	if (auto find = m_vertexBuffers.find(key); find != m_vertexBuffers.end())
+	{
+		if (!find->second.expired())
+		{
+			return find->second.lock();
+		}
+	}
+
+	std::shared_ptr<VertexBuffer> vertexBuffer = std::make_shared<VertexBuffer>();
+	vertexBuffer->Create(m_graphicsDevice->GetDevice(), vertices);
+
+	m_vertexBuffers[key] = vertexBuffer;
+
+	return vertexBuffer;
+}
+
 std::shared_ptr<IndexBuffer> D3DResourceManager::GetOrCreateIndexBuffer(const std::wstring& filePath,
 	const std::vector<DWORD>& indices)
 {

@@ -18,6 +18,7 @@ public:
     void Create(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const std::vector<CommonVertex3D>& vertices);
     void Create(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const std::vector<BoneWeightVertex3D>& vertices);
     void Create(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const std::vector<PositionNormalVertex3D>& vertices);
+    void Create(const Microsoft::WRL::ComPtr<ID3D11Device>& device, const std::vector<PositionVertex3D>& vertices);
 
 public:
     const Microsoft::WRL::ComPtr<ID3D11Buffer>& GetBuffer() const;

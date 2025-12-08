@@ -23,7 +23,7 @@ cbuffer Environment : register(b1)
     int g_shadowMapSize;
     int g_useShadowPCF;
     int g_pcfSize;
-    float __pad5;
+    int g_useIBL;
 }
 
 cbuffer Material : register(b2)
@@ -58,7 +58,7 @@ cbuffer OverrideMaterial : register(b6)
     float g_overrideMetalness;
     float g_overrideRoughness;
     int g_overrideMaterial;
-    float __pad6;
+    float g_ambientOcclusion;
 }
 
 struct VS_INPUT_SKINNING
