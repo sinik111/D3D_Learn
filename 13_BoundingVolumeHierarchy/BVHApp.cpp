@@ -92,7 +92,7 @@ void BVHApp::OnUpdate()
 	m_lightDirection.Normalize();
 
 	
-	auto& info = m_cubeInfo.front();
+	auto& info = *(m_cubeInfo.begin());
 	float speed = 25.0f;
 	if (Input::IsKeyHeld(DirectX::Keyboard::Keys::Up))
 	{
@@ -133,14 +133,26 @@ void BVHApp::OnUpdate()
 	if (m_changed)
 	{
 		info.aabb = DirectX::BoundingBox(info.position, info.scale * 0.5f + Vector3(0.1f));
-		m_bvh.ChangeAABB(0, info.aabb);
+		m_bvh.ChangeAABB(info.bvhId, info.aabb);
 		if (m_currentMethodIndex == 0)
 		{
-			m_bvh.FullyRebuild();
+			m_bvh.FullyRebuild(false);
 		}
 		else if (m_currentMethodIndex == 1)
 		{
+			m_bvh.FullyRebuild();
+		}
+		else if (m_currentMethodIndex == 2)
+		{
 			m_bvh.Refit();
+		}
+		else if (m_currentMethodIndex == 3)
+		{
+			m_bvh.RefitWithRotation();
+		}
+		else if (m_currentMethodIndex == 4)
+		{
+			m_bvh.OptimizeObject(info.bvhId);
 		}
 
 		m_changed = false;
@@ -199,7 +211,7 @@ void BVHApp::OnRender()
 	const int n = 20;
 	const float frequency = DirectX::XM_2PI / n;
 
-	const int step = 5;
+	const int step = 7;
 
 	int i = 0;
 	for (const auto& node : nodes)
@@ -322,8 +334,8 @@ void BVHApp::RenderImGui()
 	ImGui::Text("+X: ArrowRight / -X: ArrowLeft");
 	ImGui::Text("+Z: ArrowUp / -Z: ArrowDown");
 	ImGui::Text("+Y: PageUp / -Y: PageDown");
-	const char* items[]{ "Fully Rebuild", "Refit Only" };
-	if (ImGui::Combo("BVH Update Method", &m_currentMethodIndex, items, 2))
+	const char* items[]{ "Fully rebuild(median)", "Fully rebuild(Full sweep SAH)", "Refit only", "Refit with rotation", "Remove/Insert"};
+	if (ImGui::Combo("BVH Update Method", &m_currentMethodIndex, items, 5))
 	{
 		m_changed = true;
 	}
@@ -456,7 +468,12 @@ void BVHApp::InitializeScene()
 			aabbs.push_back(aabb);
 		}
 
-		m_bvh.Insert(aabbs);
+		auto ids = m_bvh.Insert(aabbs);
+
+		for (size_t i = 0; i < ids.size(); ++i)
+		{
+			m_cubeInfo[i].bvhId = ids[i];
+		}
 	}
 }
 

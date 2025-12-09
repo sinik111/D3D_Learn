@@ -26,6 +26,7 @@ struct CubeInfo
 	DirectX::SimpleMath::Vector3 position;
 	DirectX::SimpleMath::Vector3 scale;
 	DirectX::BoundingBox aabb;
+	std::uint32_t bvhId;
 };
 
 class BVHApp :
