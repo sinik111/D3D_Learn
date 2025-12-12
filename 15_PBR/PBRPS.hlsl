@@ -6,10 +6,11 @@ Texture2D g_texEmissive : register(t3);
 Texture2D g_texOpacity : register(t4);
 Texture2D g_texMetalness : register(t5);
 Texture2D g_texRoughness : register(t6);
-Texture2D g_texShadowMap : register(t7);
-TextureCube g_texIblIrradiance : register(t8);
-TextureCube g_texIblSpecular : register(t9);
-Texture2D g_texIBLSpecularBrdfLut : register(t10);
+Texture2D g_texAmbientOcclusion : register(t7);
+Texture2D g_texShadowMap : register(t8);
+TextureCube g_texIblIrradiance : register(t9);
+TextureCube g_texIblSpecular : register(t10);
+Texture2D g_texIBLSpecularBrdfLut : register(t11);
 
 SamplerState g_samClamp : register(s2);
 
@@ -51,6 +52,7 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
     float3 texEmsvColor = pow(g_texEmissive.Sample(g_samLinear, input.tex).rgb, 2.2f);
     float metalnessFactor = g_texMetalness.Sample(g_samLinear, input.tex).r;
     float roughnessFactor = g_texRoughness.Sample(g_samLinear, input.tex).r;
+    float ambientOcclusionFactor = g_texAmbientOcclusion.Sample(g_samLinear, input.tex).r;
         
     if (g_overrideMaterial)
     {
@@ -173,7 +175,7 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
     
         float3 specularIBL = prefilteredColor * (f0 * specularBRDF.x + specularBRDF.y);
         
-        ambientLighting = (diffuseIBL + specularIBL) * g_ambientOcclusion;
+        ambientLighting = (diffuseIBL + specularIBL) * (ambientOcclusionFactor * g_ambientOcclusion);
     }
     
     float3 final = directLighting + ambientLighting + texEmsvColor;

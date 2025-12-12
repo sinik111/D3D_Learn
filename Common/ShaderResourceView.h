@@ -40,8 +40,9 @@ struct TextureSRVs
     std::shared_ptr<ShaderResourceView> opacityTextureSRV;
     std::shared_ptr<ShaderResourceView> metalnessTextureSRV;
     std::shared_ptr<ShaderResourceView> roughnessTextureSRV;
+    std::shared_ptr<ShaderResourceView> ambientOcclusionTextureSRV;
 
-    std::array<ID3D11ShaderResourceView*, 7> AsRawArray() const
+    std::array<ID3D11ShaderResourceView*, 8> AsRawArray() const
     {
         return {
             diffuseTextureSRV->GetRawShaderResourceView(),
@@ -51,6 +52,7 @@ struct TextureSRVs
             opacityTextureSRV->GetRawShaderResourceView(),
             metalnessTextureSRV->GetRawShaderResourceView(),
             roughnessTextureSRV->GetRawShaderResourceView(),
+            ambientOcclusionTextureSRV->GetRawShaderResourceView()
         };
     }
 };

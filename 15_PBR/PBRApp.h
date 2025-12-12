@@ -32,7 +32,7 @@ struct OverrideMaterial
 	float metalness = 0.0f;
 	float roughness = 0.0f;
 	int overrideMaterial = 0;
-	float ambientOcclusion = 0.5f;
+	float ambientOcclusion = 1.0f;
 };
 
 class PBRApp :

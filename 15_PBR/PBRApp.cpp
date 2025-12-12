@@ -323,10 +323,10 @@ void PBRApp::RenderFinal()
 
 	// mesh
 
-	deviceContext->PSSetShaderResources(7, 1, m_shadowMapSRV->GetShaderResourceView().GetAddressOf());
-	deviceContext->PSSetShaderResources(8, 1, m_irradianceMapSRV->GetShaderResourceView().GetAddressOf());
-	deviceContext->PSSetShaderResources(9, 1, m_specularMapSRV->GetShaderResourceView().GetAddressOf());
-	deviceContext->PSSetShaderResources(10, 1, m_brdfLutSRV->GetShaderResourceView().GetAddressOf());
+	deviceContext->PSSetShaderResources(8, 1, m_shadowMapSRV->GetShaderResourceView().GetAddressOf());
+	deviceContext->PSSetShaderResources(9, 1, m_irradianceMapSRV->GetShaderResourceView().GetAddressOf());
+	deviceContext->PSSetShaderResources(10, 1, m_specularMapSRV->GetShaderResourceView().GetAddressOf());
+	deviceContext->PSSetShaderResources(11, 1, m_brdfLutSRV->GetShaderResourceView().GetAddressOf());
 
 	deviceContext->PSSetSamplers(2, 1, m_clampSampler->GetSamplerState().GetAddressOf());
 
@@ -341,7 +341,7 @@ void PBRApp::RenderFinal()
 	}
 
 	ID3D11ShaderResourceView* nullSRV[]{ nullptr };
-	deviceContext->PSSetShaderResources(7, 1, nullSRV);
+	deviceContext->PSSetShaderResources(8, 1, nullSRV);
 }
 
 void PBRApp::RenderImGui()

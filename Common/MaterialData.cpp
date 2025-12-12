@@ -80,6 +80,12 @@ void MaterialData::Create(const aiScene* scene)
 			material.materialFlags |= static_cast<unsigned long long>(MaterialKey::ROUGHNESS_TEXTURE);
 		}
 
+		if (aiReturn_SUCCESS == aiMaterial->GetTexture(aiTextureType_AMBIENT, 0, &path))
+		{
+			material.texturePaths[MaterialKey::AMBOCC_TEXTURE] = fs::path(ToWideCharStr(path.C_Str())).filename();
+			material.materialFlags |= static_cast<unsigned long long>(MaterialKey::AMBOCC_TEXTURE);
+		}
+
 		if (aiReturn_SUCCESS == aiMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, color))
 		{
 			material.vectorValues[MaterialKey::DIFFUSE_COLOR] = { color.r, color.g, color.b, color.a };

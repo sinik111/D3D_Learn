@@ -5,7 +5,7 @@ Texture2D g_texNormal : register(t1);
 Texture2D g_texSpecular : register(t2);
 Texture2D g_texEmissive : register(t3);
 Texture2D g_texOpacity : register(t4);
-Texture2D g_texShadowMap : register(t7);
+Texture2D g_texShadowMap : register(t8);
 
 float4 main(PS_INPUT_SHADOW input) : SV_Target
 {
