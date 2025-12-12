@@ -80,7 +80,7 @@ void MaterialData::Create(const aiScene* scene)
 			material.materialFlags |= static_cast<unsigned long long>(MaterialKey::ROUGHNESS_TEXTURE);
 		}
 
-		if (aiReturn_SUCCESS == aiMaterial->GetTexture(aiTextureType_AMBIENT, 0, &path))
+		if (aiReturn_SUCCESS == aiMaterial->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &path))
 		{
 			material.texturePaths[MaterialKey::AMBOCC_TEXTURE] = fs::path(ToWideCharStr(path.C_Str())).filename();
 			material.materialFlags |= static_cast<unsigned long long>(MaterialKey::AMBOCC_TEXTURE);
