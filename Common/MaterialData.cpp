@@ -85,6 +85,11 @@ void MaterialData::Create(const aiScene* scene)
 			material.texturePaths[MaterialKey::AMBOCC_TEXTURE] = fs::path(ToWideCharStr(path.C_Str())).filename();
 			material.materialFlags |= static_cast<unsigned long long>(MaterialKey::AMBOCC_TEXTURE);
 		}
+		else if (aiReturn_SUCCESS == aiMaterial->Get("$raw.AmbientOcclusionTexture", 0, 0, path))
+		{
+			material.texturePaths[MaterialKey::AMBOCC_TEXTURE] = fs::path(ToWideCharStr(path.C_Str())).filename();
+			material.materialFlags |= static_cast<unsigned long long>(MaterialKey::AMBOCC_TEXTURE);
+		}
 
 		if (aiReturn_SUCCESS == aiMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, color))
 		{

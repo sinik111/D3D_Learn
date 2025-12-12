@@ -501,10 +501,10 @@ void PBRApp::InitializeScene()
 	m_staticMeshes.emplace_back(L"BarberShopChair_01_2k.fbx", L"PBRPS.hlsl");
 	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(-200.0f, 30.0f, 0.0f).Transpose());
 
-	m_staticMeshes.emplace_back(L"treasure_chest_2k.fbx", L"PBRPS.hlsl");
+	m_staticMeshes.emplace_back(L"treasure_chest_2k_m.fbx", L"PBRPS.hlsl");
 	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(200.0f, 30.0f, 0.0f).Transpose());
 
-	m_staticMeshes.emplace_back(L"brass_goblets_2k.fbx", L"PBRPS.hlsl");
+	m_staticMeshes.emplace_back(L"brass_goblets_2k_m.fbx", L"PBRPS.hlsl");
 	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(-300.0f, 30.0f, 0.0f).Transpose());
 
 	m_staticMeshes.emplace_back(L"Floor.fbx");
