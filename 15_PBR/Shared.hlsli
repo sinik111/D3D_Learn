@@ -61,6 +61,12 @@ cbuffer OverrideMaterial : register(b6)
     float g_ambientOcclusion;
 }
 
+cbuffer HDR : register(b7)
+{
+    float g_exposure;
+    float g_maxHDRNits;
+}
+
 struct VS_INPUT_SKINNING
 {
     float3 pos : POSITION;
@@ -113,6 +119,18 @@ struct PS_INPUT_SKYBOX
     float3 localPos : TEXCOORD0;
 };
 
+struct VS_INPUT_QUAD
+{
+    float3 pos : POSITION;
+    float2 tex : TEXCOORD0;
+};
+
+struct PS_INPUT_QUAD
+{
+    float4 pos : SV_Position;
+    float2 tex : TEXCOORD0;
+};
+
 static const float PI = 3.141592f;
 static const float EPSILON = 0.00001f;
 
@@ -124,6 +142,18 @@ float3 EncodeNormal(float3 n)
 float3 DecodeNormal(float3 n)
 {
     return n * 2.0f - 1.0f;
+}
+
+// 입력: x는 모니터 Max Nits를 기준으로 정규화된 선형 RGB 값 (float3)
+// 출력: 0.0 ~ 1.0 범위의 압축된 선형 RGB 값 (float3)
+float3 ACESFilm(float3 x)
+{
+    float a = 2.51f;
+    float b = 0.03f;
+    float c = 2.43f;
+    float d = 0.59f;
+    float e = 0.14f;
+    return saturate(x * (a * x + b) / (x * (c * x + d) + e));
 }
 
 #endif //SHARED_HLSLI__

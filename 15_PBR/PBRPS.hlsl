@@ -141,7 +141,7 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
     
     float3 directLighting = 0.0f;
     {
-        float d = NDFGGXTR(nDotH, roughnessFactor);
+        float d = NDFGGXTR(nDotH, max(0.1f, roughnessFactor));
         
         float3 f = FresnelSchlick(f0, hDotV);
         
@@ -162,7 +162,7 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
         
         float3 irradiance = g_texIblIrradiance.Sample(g_samLinear, n).rgb;
     
-        float3 diffuseIBL = kd * texDiffColor * PI * irradiance;
+        float3 diffuseIBL = kd * texDiffColor / PI * irradiance;
     
         uint specularTextureLevels, width, height;
         g_texIblSpecular.GetDimensions(0, width, height, specularTextureLevels);
@@ -182,5 +182,6 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
     
     final = max(0.0f, final);
     
-    return float4(pow(final, 1.0f / 2.2f), 1.0f);
+    //return float4(pow(final, 1.0f / 2.2f), 1.0f);
+    return float4(final, 1.0f);
 }

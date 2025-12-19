@@ -60,6 +60,15 @@
     <FxCompile Include="PBRPS.hlsl">
       <Filter>03_Shader\Pixel</Filter>
     </FxCompile>
+    <FxCompile Include="FullScreenQuadVS.hlsl">
+      <Filter>03_Shader\Vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="QuadHDRPS.hlsl">
+      <Filter>03_Shader\Pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="QuadLDRPS.hlsl">
+      <Filter>03_Shader\Pixel</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">

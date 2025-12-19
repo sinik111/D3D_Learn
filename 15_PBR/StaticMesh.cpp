@@ -51,7 +51,7 @@ StaticMesh::StaticMesh(const std::wstring& filePath, const std::wstring& psFileP
 		MaterialHelper::SetupTextureSRV(srvs.emissiveTextureSRV, material, MaterialKey::EMISSIVE_TEXTURE, L"DummyTexBlack", MaterialHelper::BLACK_DATA);
 		MaterialHelper::SetupTextureSRV(srvs.opacityTextureSRV, material, MaterialKey::OPACITY_TEXTURE, L"DummyTexWhite", MaterialHelper::WHITE_DATA);
 		MaterialHelper::SetupTextureSRV(srvs.metalnessTextureSRV, material, MaterialKey::METALNESS_TEXTURE, L"DummyTexBlack", MaterialHelper::BLACK_DATA);
-		MaterialHelper::SetupTextureSRV(srvs.roughnessTextureSRV, material, MaterialKey::ROUGHNESS_TEXTURE, L"DummyTexBlack", MaterialHelper::BLACK_DATA);
+		MaterialHelper::SetupTextureSRV(srvs.roughnessTextureSRV, material, MaterialKey::ROUGHNESS_TEXTURE, L"DummyTexWhite", MaterialHelper::WHITE_DATA);
 		MaterialHelper::SetupTextureSRV(srvs.ambientOcclusionTextureSRV, material, MaterialKey::AMBOCC_TEXTURE, L"DummyTexWhite", MaterialHelper::WHITE_DATA);
 
 		MaterialHelper::SetupMaterialVector(materialCB.diffuse, material, MaterialKey::DIFFUSE_COLOR);
@@ -158,7 +158,7 @@ void StaticMesh::DrawShadowMap(const Microsoft::WRL::ComPtr<ID3D11DeviceContext>
 	{
 		auto textureSRV = m_textureSRVs[meshSection.materialIndex].opacityTextureSRV;
 
-		deviceContext->PSSetShaderResources(4, 1, textureSRV->GetShaderResourceView().GetAddressOf());
+		deviceContext->PSSetShaderResources(0, 1, textureSRV->GetShaderResourceView().GetAddressOf());
 
 		deviceContext->DrawIndexed(meshSection.indexCount, meshSection.indexOffset, meshSection.vertexOffset);
 	}

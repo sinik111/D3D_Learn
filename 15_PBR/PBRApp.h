@@ -35,6 +35,13 @@ struct OverrideMaterial
 	float ambientOcclusion = 1.0f;
 };
 
+struct HDRConstant
+{
+	float exposure = 0.0f;
+	float maxHDRNits = 100;
+	float pad[2];
+};
+
 class PBRApp :
 	public WinApp
 {
@@ -47,6 +54,7 @@ private:
 	std::shared_ptr<ConstantBuffer> m_environmentBuffer;
 	std::shared_ptr<ConstantBuffer> m_overrideMatBuffer;
 	std::shared_ptr<ConstantBuffer> m_worldTransformBuffer;
+	std::shared_ptr<ConstantBuffer> m_hdrConstantBuffer;
 
 	Microsoft::WRL::ComPtr<IDXGIAdapter3> m_dxgiAdapter;
 	Microsoft::WRL::ComPtr<IDXGIDevice3> m_dxgiDevice;
@@ -102,6 +110,8 @@ private:
 	OverrideMaterial m_overrideMaterialCB;
 	bool m_overrideMaterial = false;
 
+	HDRConstant m_hdrCB;
+
 	float m_lightNear = 90000.0f;
 	float m_lightFar = 100000.0f;
 	float m_lightFOV = 2.0f;
@@ -109,11 +119,15 @@ private:
 	int m_shadowMapWidth = 8192;
 	int m_shadowMapHeight = 8192;
 	int m_pcfSize = 1;
+	int m_hdriIndex = 2;
 	bool m_useShadowPCF = true;
 	bool m_useIBL = true;
 
+	bool m_forceLDR = false;
+
 public:
 	void Initialize() override;
+	void SetForceLDR(bool forceLDR);
 
 private:
 	void OnUpdate() override;

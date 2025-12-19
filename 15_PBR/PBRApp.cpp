@@ -63,8 +63,11 @@ void PBRApp::Initialize()
 	m_width = 1600;
 	m_height = 900;
 
+	m_graphicsDevice.SetForceLDR(m_forceLDR);
+
 	WinApp::Initialize();
 
+	m_hdrCB.maxHDRNits = m_graphicsDevice.GetMonitorMaxNits();
 	D3DResourceManager::Get().SetGraphicsDevice(&m_graphicsDevice);
 
 	auto device = m_graphicsDevice.GetDevice();
@@ -103,6 +106,11 @@ void PBRApp::Initialize()
 			shaderByteCode, byteCodeLength,
 			m_inputLayout.ReleaseAndGetAddressOf());
 	}
+}
+
+void PBRApp::SetForceLDR(bool forceLDR)
+{
+	m_forceLDR = forceLDR;
 }
 
 void PBRApp::OnUpdate()
@@ -235,9 +243,7 @@ void PBRApp::OnRender()
 	// final
 	deviceContext->RSSetViewports(1, &m_graphicsDevice.GetViewport());
 
-	deviceContext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
-	deviceContext->ClearRenderTargetView(renderTargetView.Get(), Color{ 0.5f, 0.8f, 1.0f, 1.0f });
-	deviceContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+	m_graphicsDevice.BeginDraw(Color{ 0.5f, 0.8f, 1.0f, 1.0f });
 
 	RenderFinal();
 
@@ -260,6 +266,11 @@ void PBRApp::OnRender()
 	DX::Draw(m_batch.get(), frustum, DirectX::Colors::Blue);
 
 	m_batch->End();
+
+	deviceContext->PSSetConstantBuffers(7, 1, m_hdrConstantBuffer->GetBuffer().GetAddressOf());
+	deviceContext->UpdateSubresource(m_hdrConstantBuffer->GetRawBuffer(), 0, nullptr, &m_hdrCB, 0, 0);
+
+	m_graphicsDevice.BackBufferDraw();
 
 	RenderImGui();
 
@@ -446,6 +457,32 @@ void PBRApp::RenderImGui()
 	ImGui::NewLine();
 	ImGui::SeparatorText("Info");
 
+	//const char* items[]{ "Outdoor", "Sun", "Room" };
+	//if (ImGui::Combo("skybox", &m_hdriIndex, items, 3))
+	//{
+	//	if (m_hdriIndex == 0)
+	//	{
+	//		m_cubeMapSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"OutdoorEnvHDR.dds", TextureType::TextureCube);
+	//		m_irradianceMapSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"OutDoorDiffuseHDR.dds", TextureType::TextureCube);
+	//		m_specularMapSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"OutDoorSpecularHDR.dds", TextureType::TextureCube);
+	//		m_brdfLutSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"OutDoorBrdf.dds", TextureType::Texture2D);
+	//	}
+	//	else if (m_hdriIndex == 1)
+	//	{
+	//		m_cubeMapSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"DaySkyEnvHDR.dds", TextureType::TextureCube);
+	//		m_irradianceMapSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"DaySkyDiffuseHDR.dds", TextureType::TextureCube);
+	//		m_specularMapSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"DaySkySpecularHDR.dds", TextureType::TextureCube);
+	//		m_brdfLutSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"DaySkyBrdf.dds", TextureType::Texture2D);
+	//	}
+	//	else
+	//	{
+	//		m_cubeMapSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"MirroredHallEnvHDR.dds", TextureType::TextureCube);
+	//		m_irradianceMapSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"MirroredHallDiffuseHDR.dds", TextureType::TextureCube);
+	//		m_specularMapSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"MirroredHallSpecularHDR.dds", TextureType::TextureCube);
+	//		m_brdfLutSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"MirroredHallBrdf.dds", TextureType::Texture2D);
+	//	}
+	//}
+	ImGui::SliderFloat("Exposure", &m_hdrCB.exposure, -5.0f, 5.0f);
 	ImGui::Checkbox("Use Shadow PCF", &m_useShadowPCF);
 	ImGui::Image((ImTextureID)(intptr_t)m_shadowMapSRV->GetRawShaderResourceView(), ImVec2(300.0f, 300.0f));
 
@@ -494,6 +531,7 @@ void PBRApp::InitializeScene()
 	m_environmentBuffer = D3DResourceManager::Get().GetOrCreateConstantBuffer(L"Environment", sizeof(EnvironmentBuffer));
 	m_overrideMatBuffer = D3DResourceManager::Get().GetOrCreateConstantBuffer(L"OverrideMat", sizeof(OverrideMaterial));
 	m_worldTransformBuffer = D3DResourceManager::Get().GetOrCreateConstantBuffer(L"WorldTransform", sizeof(WorldTransformBuffer));
+	m_hdrConstantBuffer = D3DResourceManager::Get().GetOrCreateConstantBuffer(L"HDRConstant", sizeof(HDRConstant));
 
 	m_staticMeshes.emplace_back(L"char.fbx", L"PBRPS.hlsl");
 	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(0.0f, 30.0f, 0.0f).Transpose());
@@ -507,7 +545,7 @@ void PBRApp::InitializeScene()
 	m_staticMeshes.emplace_back(L"brass_goblets_2k_m.fbx", L"PBRPS.hlsl");
 	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(-300.0f, 30.0f, 0.0f).Transpose());
 
-	m_staticMeshes.emplace_back(L"Floor.fbx");
+	m_staticMeshes.emplace_back(L"Floor.fbx", L"PBRPS.hlsl");
 
 	//m_skeletalMeshes.emplace_back(L"SkinningTest.fbx");
 	//m_skeletalMeshes.back().PlayAnimation(0);
@@ -560,10 +598,10 @@ void PBRApp::InitializeScene()
 	}
 
 	{
-		m_cubeMapSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"DaySkyEnvHDR.dds", TextureType::TextureCube);
-		m_irradianceMapSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"DaySkyDiffuseHDR.dds", TextureType::TextureCube);
-		m_specularMapSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"DaySkySpecularHDR.dds", TextureType::TextureCube);
-		m_brdfLutSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"DaySkyBrdf.dds", TextureType::Texture2D);
+		m_cubeMapSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"MirroredHallEnvHDR.dds", TextureType::TextureCube);
+		m_irradianceMapSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"MirroredHallDiffuseHDR.dds", TextureType::TextureCube);
+		m_specularMapSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"MirroredHallSpecularHDR.dds", TextureType::TextureCube);
+		m_brdfLutSRV = D3DResourceManager::Get().GetOrCreateShaderResourceView(L"MirroredHallBrdf.dds", TextureType::Texture2D);
 
 		D3D11_SAMPLER_DESC samplerDesc{};
 		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
