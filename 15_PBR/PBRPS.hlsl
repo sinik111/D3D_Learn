@@ -1,12 +1,11 @@
 #include "Shared.hlsli"
 
-Texture2D g_texDiffuse : register(t0);
-Texture2D g_texNormal : register(t1);
-Texture2D g_texEmissive : register(t3);
-Texture2D g_texOpacity : register(t4);
-Texture2D g_texMetalness : register(t5);
-Texture2D g_texRoughness : register(t6);
-Texture2D g_texAmbientOcclusion : register(t7);
+Texture2D g_gBufferBaseColor : register(t0);
+Texture2D g_gBufferPosition : register(t1);
+Texture2D g_gBufferNormal : register(t2);
+Texture2D g_gBufferEmissive : register(t3);
+Texture2D g_gBufferORM : register(t4);
+
 Texture2D g_texShadowMap : register(t8);
 TextureCube g_texIblIrradiance : register(t9);
 TextureCube g_texIblSpecular : register(t10);
@@ -44,15 +43,16 @@ float GAFSchlickGGX(float nDotV, float nDotL, float roughness)
     return GAFSchlickGGXSub(nDotV, k) * GAFSchlickGGXSub(nDotL, k);
 }
 
-float4 main(PS_INPUT_SHADOW input) : SV_Target
+float4 main(PS_INPUT_QUAD input) : SV_Target
 {
-    float3 texDiffColor = pow(g_texDiffuse.Sample(g_samLinear, input.tex).rgb, 2.2f);
-    float3 texNormColor = g_texNormal.Sample(g_samLinear, input.tex).rgb;
-    float opacityFactor = g_texOpacity.Sample(g_samLinear, input.tex).a;
-    float3 texEmsvColor = pow(g_texEmissive.Sample(g_samLinear, input.tex).rgb, 2.2f);
-    float metalnessFactor = g_texMetalness.Sample(g_samLinear, input.tex).r;
-    float roughnessFactor = g_texRoughness.Sample(g_samLinear, input.tex).r;
-    float ambientOcclusionFactor = g_texAmbientOcclusion.Sample(g_samLinear, input.tex).r;
+    float3 texDiffColor = g_gBufferBaseColor.Sample(g_samLinear, input.tex).rgb;
+    float3 texNormColor = g_gBufferNormal.Sample(g_samLinear, input.tex).rgb;
+    float3 worldPos = g_gBufferPosition.Sample(g_samLinear, input.tex).rgb;
+    float3 texEmsvColor = g_gBufferEmissive.Sample(g_samLinear, input.tex).rgb;
+    float3 orm = g_gBufferORM.Sample(g_samLinear, input.tex).rgb;
+    float ambientOcclusionFactor = orm.r;
+    float roughnessFactor = orm.g;
+    float metalnessFactor = orm.b;
         
     if (g_overrideMaterial)
     {
@@ -63,14 +63,11 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
     
     roughnessFactor = max(EPSILON, roughnessFactor);
     
-    clip(opacityFactor - 0.5f);
-    
     // normal
-    float3x3 tbn = float3x3(normalize(input.tan), normalize(input.binorm), normalize(input.norm));
-    float3 n = normalize(mul(DecodeNormal(texNormColor), tbn));
+    float3 n = DecodeNormal(texNormColor);
     
     // view
-    float3 v = normalize(g_cameraPos - input.worldPos);
+    float3 v = normalize(g_cameraPos - worldPos);
     
     // light
     float3 l = -g_lightDir;
@@ -87,14 +84,16 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
     float hDotV = max(0.0f, dot(h, v));
     
     // shadow
+    float4 lightClipPos = mul(float4(worldPos, 1.0f), g_lightViewProjection);
+    
     float shadowFactor = 1.0f;
-    float currentShadowDepth = input.lightViewPos.z / input.lightViewPos.w;
-    float2 shadowMapUV = input.lightViewPos.xy / input.lightViewPos.w;
+    float currentShadowDepth = lightClipPos.z / lightClipPos.w;
+    float2 shadowMapUV = lightClipPos.xy / lightClipPos.w;
     
     shadowMapUV.y = -shadowMapUV.y;
     shadowMapUV = shadowMapUV * 0.5f + 0.5f;
     
-    if (all(shadowMapUV >= 0.0f) && all(shadowMapUV.x <= 1.0f))
+    if (all(shadowMapUV >= 0.0f) && all(shadowMapUV <= 1.0f))
     {
         if (g_useShadowPCF)
         {
@@ -128,7 +127,7 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
             {
                 shadowFactor = 1.0f;
             }
-            else if (currentShadowDepth > sampleShadowDepth + 0.0001f)
+            else if (currentShadowDepth > sampleShadowDepth + 0.001f)
             {
                 shadowFactor = 0.0f;
             }
@@ -150,7 +149,7 @@ float4 main(PS_INPUT_SHADOW input) : SV_Target
         float3 diffuseBRDF = kd * texDiffColor / PI;
         float3 specularBRDF = (f * d * g) / max(EPSILON, 4.0f * nDotL * nDotV);
     
-        directLighting = (diffuseBRDF + specularBRDF) * (float3) g_lightColor * nDotL * shadowFactor;
+        directLighting = (diffuseBRDF + specularBRDF) * (float3) g_lightColor * g_lightIntensity * nDotL * shadowFactor;
     }
     
     float3 ambientLighting = 0.0f;

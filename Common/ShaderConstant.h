@@ -25,6 +25,7 @@ struct TransformBuffer
 	DirectX::SimpleMath::Matrix projection;
 	DirectX::SimpleMath::Matrix lightView;
 	DirectX::SimpleMath::Matrix lightProjection;
+	DirectX::SimpleMath::Matrix lightViewProjection;
 };
 
 struct EnvironmentBuffer
@@ -32,7 +33,7 @@ struct EnvironmentBuffer
 	DirectX::SimpleMath::Vector3 cameraPos;
 	float __pad1;
 	DirectX::SimpleMath::Vector3 lightDirection;
-	float __pad2;
+	float lightIntensity;
 	DirectX::SimpleMath::Vector4 lightColor;
 	DirectX::SimpleMath::Vector4 ambientLightColor;
 	int shadowMapSize;

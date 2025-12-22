@@ -5,6 +5,17 @@
 #include <dxgi1_6.h>
 #include <string>
 #include <directxtk/SimpleMath.h>
+#include <array>
+
+enum class GBufferType
+{
+	BaseColor,
+	WorldPosition,
+	worldNormal,
+	Emissive,
+	ORM,
+	Count
+};
 
 class GraphicsDevice
 {
@@ -15,7 +26,12 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_backBufferRTV;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_gameRTV;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_gameDSV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_gameDepthSRV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_gameSRV;
+
+	static constexpr UINT s_gBufferCount = static_cast<UINT>(GBufferType::Count);
+	std::array<Microsoft::WRL::ComPtr<ID3D11RenderTargetView>, s_gBufferCount> m_gBufferRTVs;
+	std::array<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>, s_gBufferCount> m_gBufferSRVs;
 
 	// game render target quad
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> m_quadVS;
@@ -48,11 +64,17 @@ public:
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> GetDepthStencilView() const;
 	const D3D11_VIEWPORT& GetViewport() const;
 	float GetMonitorMaxNits() const;
+	const std::array<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>, s_gBufferCount>& GetGBufferSRVs() const;
+	const Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>& GetDepthSRV() const;
 
 	void SetForceLDR(bool forceLDR);
 
-	void BeginDraw(const DirectX::SimpleMath::Color& clearColor);
-	void BackBufferDraw();
+	void RenderFullScreenQuad();
+
+	void BeginDrawGeometryPass();
+	void BeginDrawDirectLightPass();
+	void BeginDrawForwardPass();
+	void BeginDrawPostProcessPass();
 	void EndDraw();
 
 private:

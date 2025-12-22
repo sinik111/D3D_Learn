@@ -32,12 +32,12 @@ struct OverrideMaterial
 	float metalness = 0.0f;
 	float roughness = 0.0f;
 	int overrideMaterial = 0;
-	float ambientOcclusion = 1.0f;
+	float ambientOcclusion = 0.7f;
 };
 
 struct HDRConstant
 {
-	float exposure = 0.0f;
+	float exposure = -2.5f;
 	float maxHDRNits = 100;
 	float pad[2];
 };
@@ -70,6 +70,9 @@ private:
 	std::shared_ptr<ShaderResourceView> m_specularMapSRV;
 	std::shared_ptr<ShaderResourceView> m_brdfLutSRV;
 	std::shared_ptr<SamplerState> m_clampSampler;
+	std::shared_ptr<SamplerState> m_comparisonSamplerState;
+
+	std::shared_ptr<PixelShader> m_directLightingPS;
 
 	//skybox
 	UINT m_indexCount = 0;
@@ -101,7 +104,7 @@ private:
 	Matrix m_lightRotationMatrix;
 	const Vector3 m_originalLightDir{ 0.0f, -1.0f, 0.0f };
 	Vector3 m_lightDirection;
-	Vector3 m_lightRotation{ -40.0f, 88.0f, 0.0f };
+	Vector3 m_lightRotation{ -50.0f, -50.0f, 0.0f };
 	Vector4 m_lightColor{ 1.0f, 1.0f, 1.0f, 1.0f };
 	Vector4 m_ambientLightColor{ 0.1f, 0.1f, 0.1f, 1.0f };
 
@@ -116,6 +119,7 @@ private:
 	float m_lightFar = 100000.0f;
 	float m_lightFOV = 2.0f;
 	float m_lightForwardDistFromCam = 1000.0f;
+	float m_lightIntensity = 10.0f;
 	int m_shadowMapWidth = 8192;
 	int m_shadowMapHeight = 8192;
 	int m_pcfSize = 1;
@@ -135,7 +139,9 @@ private:
 	void OnShutdown() override;
 
 	void RenderShadowMap();
-	void RenderFinal();
+	void RenderGeometryPass();
+	void RenderLightPass();
+	void RenderForwardPass();
 	void RenderImGui();
 
 private:

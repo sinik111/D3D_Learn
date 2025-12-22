@@ -79,7 +79,6 @@ StaticMesh::StaticMesh(const std::wstring& filePath, const std::wstring& psFileP
 
 		m_samplerState = D3DResourceManager::Get().GetOrCreateSamplerState(L"Linear", samplerDesc);
 	}
-
 	{
 		D3D11_SAMPLER_DESC samplerDesc{};
 		samplerDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
@@ -90,6 +89,7 @@ StaticMesh::StaticMesh(const std::wstring& filePath, const std::wstring& psFileP
 
 		m_comparisonSamplerState = D3DResourceManager::Get().GetOrCreateSamplerState(L"Comparison", samplerDesc);
 	}
+
 }
 
 void StaticMesh::SetWorld(const DirectX::SimpleMath::Matrix& world)

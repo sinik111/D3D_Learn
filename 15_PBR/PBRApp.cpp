@@ -188,6 +188,7 @@ void PBRApp::OnRender()
 	auto depthStencilView = m_graphicsDevice.GetDepthStencilView();
 
 	deviceContext->VSSetConstantBuffers(static_cast<UINT>(ConstantBufferSlot::Transform), 1, m_transformBuffer->GetBuffer().GetAddressOf());
+	deviceContext->PSSetConstantBuffers(static_cast<UINT>(ConstantBufferSlot::Transform), 1, m_transformBuffer->GetBuffer().GetAddressOf());
 	deviceContext->VSSetConstantBuffers(static_cast<UINT>(ConstantBufferSlot::Environment), 1, m_environmentBuffer->GetBuffer().GetAddressOf());
 	deviceContext->PSSetConstantBuffers(static_cast<UINT>(ConstantBufferSlot::Environment), 1, m_environmentBuffer->GetBuffer().GetAddressOf());
 	deviceContext->PSSetConstantBuffers(6, 1, m_overrideMatBuffer->GetBuffer().GetAddressOf());
@@ -198,12 +199,14 @@ void PBRApp::OnRender()
 	transformBuffer.projection = m_projection.Transpose();
 	transformBuffer.lightView = m_lightView.Transpose();
 	transformBuffer.lightProjection = m_lightProjection.Transpose();
+	transformBuffer.lightViewProjection = (m_lightView * m_lightProjection).Transpose();
 
 	deviceContext->UpdateSubresource(m_transformBuffer->GetRawBuffer(), 0, nullptr, &transformBuffer, 0, 0);
 
 	EnvironmentBuffer environmentBuffer{};
 	environmentBuffer.cameraPos = m_camera.GetPosition();
 	environmentBuffer.lightDirection = m_lightDirection;
+	environmentBuffer.lightIntensity = m_lightIntensity;
 	environmentBuffer.lightColor = m_lightColor;
 	environmentBuffer.ambientLightColor = m_ambientLightColor;
 	environmentBuffer.shadowMapSize = m_shadowMapWidth;// * m_shadowMapHeight;
@@ -243,9 +246,17 @@ void PBRApp::OnRender()
 	// final
 	deviceContext->RSSetViewports(1, &m_graphicsDevice.GetViewport());
 
-	m_graphicsDevice.BeginDraw(Color{ 0.5f, 0.8f, 1.0f, 1.0f });
+	m_graphicsDevice.BeginDrawGeometryPass();
 
-	RenderFinal();
+	RenderGeometryPass();
+
+	m_graphicsDevice.BeginDrawDirectLightPass();
+
+	RenderLightPass();
+
+	m_graphicsDevice.BeginDrawForwardPass();
+
+	RenderForwardPass();
 
 	deviceContext->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
 	//deviceContext->OMSetDepthStencilState(m_states->DepthNone(), 0);
@@ -270,7 +281,7 @@ void PBRApp::OnRender()
 	deviceContext->PSSetConstantBuffers(7, 1, m_hdrConstantBuffer->GetBuffer().GetAddressOf());
 	deviceContext->UpdateSubresource(m_hdrConstantBuffer->GetRawBuffer(), 0, nullptr, &m_hdrCB, 0, 0);
 
-	m_graphicsDevice.BackBufferDraw();
+	m_graphicsDevice.BeginDrawPostProcessPass();
 
 	RenderImGui();
 
@@ -303,7 +314,55 @@ void PBRApp::RenderShadowMap()
 	deviceContext->OMSetDepthStencilState(nullptr, 0);
 }
 
-void PBRApp::RenderFinal()
+void PBRApp::RenderGeometryPass()
+{
+	const auto& deviceContext = m_graphicsDevice.GetDeviceContext();
+
+	// mesh
+	for (auto& mesh : m_staticMeshes)
+	{
+		mesh.Draw(deviceContext);
+	}
+
+	for (auto& mesh : m_skeletalMeshes)
+	{
+		mesh.Draw(deviceContext);
+	}
+
+	ID3D11ShaderResourceView* nullSRV[]{ nullptr };
+	deviceContext->PSSetShaderResources(8, 1, nullSRV);
+}
+
+void PBRApp::RenderLightPass()
+{
+	const auto& deviceContext = m_graphicsDevice.GetDeviceContext();
+
+	const auto& gBufferSRVs = m_graphicsDevice.GetGBufferSRVs();
+	ID3D11ShaderResourceView* srvs[]{
+		gBufferSRVs[0].Get(),
+		gBufferSRVs[1].Get(),
+		gBufferSRVs[2].Get(),
+		gBufferSRVs[3].Get(),
+		gBufferSRVs[4].Get(),
+	};
+	deviceContext->PSSetShaderResources(0, 5, srvs);
+
+	deviceContext->PSSetShaderResources(8, 1, m_shadowMapSRV->GetShaderResourceView().GetAddressOf());
+	deviceContext->PSSetShaderResources(9, 1, m_irradianceMapSRV->GetShaderResourceView().GetAddressOf());
+	deviceContext->PSSetShaderResources(10, 1, m_specularMapSRV->GetShaderResourceView().GetAddressOf());
+	deviceContext->PSSetShaderResources(11, 1, m_brdfLutSRV->GetShaderResourceView().GetAddressOf());
+	deviceContext->PSSetSamplers(1, 1, m_comparisonSamplerState->GetSamplerState().GetAddressOf());
+	deviceContext->PSSetSamplers(2, 1, m_clampSampler->GetSamplerState().GetAddressOf());
+	deviceContext->PSSetShader(m_directLightingPS->GetRawShader(), nullptr, 0);
+
+	m_graphicsDevice.RenderFullScreenQuad();
+
+	// SRV 해제 (필수)
+	ID3D11ShaderResourceView* nullSRVs[12] = { nullptr, };
+	deviceContext->PSSetShaderResources(0, 12, nullSRVs);
+}
+
+void PBRApp::RenderForwardPass()
 {
 	const auto& deviceContext = m_graphicsDevice.GetDeviceContext();
 
@@ -331,28 +390,6 @@ void PBRApp::RenderFinal()
 
 	deviceContext->RSSetState(nullptr);
 	deviceContext->OMSetDepthStencilState(nullptr, 0);
-
-	// mesh
-
-	deviceContext->PSSetShaderResources(8, 1, m_shadowMapSRV->GetShaderResourceView().GetAddressOf());
-	deviceContext->PSSetShaderResources(9, 1, m_irradianceMapSRV->GetShaderResourceView().GetAddressOf());
-	deviceContext->PSSetShaderResources(10, 1, m_specularMapSRV->GetShaderResourceView().GetAddressOf());
-	deviceContext->PSSetShaderResources(11, 1, m_brdfLutSRV->GetShaderResourceView().GetAddressOf());
-
-	deviceContext->PSSetSamplers(2, 1, m_clampSampler->GetSamplerState().GetAddressOf());
-
-	for (auto& mesh : m_staticMeshes)
-	{
-		mesh.Draw(deviceContext);
-	}
-
-	for (auto& mesh : m_skeletalMeshes)
-	{
-		mesh.Draw(deviceContext);
-	}
-
-	ID3D11ShaderResourceView* nullSRV[]{ nullptr };
-	deviceContext->PSSetShaderResources(8, 1, nullSRV);
 }
 
 void PBRApp::RenderImGui()
@@ -441,7 +478,7 @@ void PBRApp::RenderImGui()
 	ImGui::DragFloat2("Rotation(x, y)##2", &m_lightRotation.x, 0.5f);
 	ImGui::InputFloat3("Direction", &m_lightDirection.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
 	ImGui::ColorEdit3("Direct", &m_lightColor.x);
-	ImGui::ColorEdit3("Ambient", &m_ambientLightColor.x);
+	ImGui::DragFloat("LightIntensity", &m_lightIntensity, 0.05f, 0.0f, 100.0f);
 	ImGui::DragFloat("LightNear", &m_lightNear);
 	ImGui::DragFloat("LightFar", &m_lightFar);
 	ImGui::DragFloat("LightFOV", &m_lightFOV, 0.0001f);
@@ -507,6 +544,49 @@ void PBRApp::RenderImGui()
 
 	ImGui::End();
 
+	const auto& buffers = m_graphicsDevice.GetGBufferSRVs();
+	const auto& depthSRV = m_graphicsDevice.GetDepthSRV();
+
+	ImGui::Begin("G-Buffer");
+
+	ImGui::BeginGroup();
+	ImGui::Text("Color");
+	ImGui::Image((ImTextureID)buffers[0].Get(), ImVec2(256, 256));
+	ImGui::EndGroup();
+
+	ImGui::SameLine();
+
+	ImGui::BeginGroup();
+	ImGui::Text("Position");
+	ImGui::Image((ImTextureID)buffers[1].Get(), ImVec2(256, 256));
+	ImGui::EndGroup();
+
+	ImGui::BeginGroup();
+	ImGui::Text("Normal");
+	ImGui::Image((ImTextureID)buffers[2].Get(), ImVec2(256, 256));
+	ImGui::EndGroup();
+
+	ImGui::SameLine();
+
+	ImGui::BeginGroup();
+	ImGui::Text("Emissive");
+	ImGui::Image((ImTextureID)buffers[3].Get(), ImVec2(256, 256));
+	ImGui::EndGroup();
+
+	ImGui::BeginGroup();
+	ImGui::Text("AO/Roughness/Metalness");
+	ImGui::Image((ImTextureID)buffers[4].Get(), ImVec2(256, 256));
+	ImGui::EndGroup();
+
+	ImGui::SameLine();
+
+	//ImGui::BeginGroup();
+	//ImGui::Text("Depth");
+	//ImGui::Image((ImTextureID)depthSRV.Get(), ImVec2(256, 256));
+	//ImGui::EndGroup();
+
+	ImGui::End();
+
 	ImGui::Render();
 
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
@@ -533,19 +613,31 @@ void PBRApp::InitializeScene()
 	m_worldTransformBuffer = D3DResourceManager::Get().GetOrCreateConstantBuffer(L"WorldTransform", sizeof(WorldTransformBuffer));
 	m_hdrConstantBuffer = D3DResourceManager::Get().GetOrCreateConstantBuffer(L"HDRConstant", sizeof(HDRConstant));
 
-	m_staticMeshes.emplace_back(L"char.fbx", L"PBRPS.hlsl");
+	m_staticMeshes.emplace_back(L"char.fbx", L"GBufferPS.hlsl");
 	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(0.0f, 30.0f, 0.0f).Transpose());
 
-	m_staticMeshes.emplace_back(L"BarberShopChair_01_2k.fbx", L"PBRPS.hlsl");
+	m_staticMeshes.emplace_back(L"BarberShopChair_01_2k.fbx", L"GBufferPS.hlsl");
 	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(-200.0f, 30.0f, 0.0f).Transpose());
 
-	m_staticMeshes.emplace_back(L"treasure_chest_2k_m.fbx", L"PBRPS.hlsl");
+	m_staticMeshes.emplace_back(L"treasure_chest_2k_m.fbx", L"GBufferPS.hlsl");
 	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(200.0f, 30.0f, 0.0f).Transpose());
 
-	m_staticMeshes.emplace_back(L"brass_goblets_2k_m.fbx", L"PBRPS.hlsl");
+	m_staticMeshes.emplace_back(L"brass_goblets_2k_m.fbx", L"GBufferPS.hlsl");
 	m_staticMeshes.back().SetWorld(DirectX::SimpleMath::Matrix::CreateTranslation(-300.0f, 30.0f, 0.0f).Transpose());
 
-	m_staticMeshes.emplace_back(L"Floor.fbx", L"PBRPS.hlsl");
+	m_staticMeshes.emplace_back(L"Floor.fbx", L"GBufferPS.hlsl");
+
+	m_directLightingPS = D3DResourceManager::Get().GetOrCreatePixelShader(L"PBRPS.hlsl");
+	{
+		D3D11_SAMPLER_DESC samplerDesc{};
+		samplerDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
+
+		m_comparisonSamplerState = D3DResourceManager::Get().GetOrCreateSamplerState(L"Comparison", samplerDesc);
+	}
 
 	//m_skeletalMeshes.emplace_back(L"SkinningTest.fbx");
 	//m_skeletalMeshes.back().PlayAnimation(0);

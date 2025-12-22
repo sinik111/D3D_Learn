@@ -121,6 +121,7 @@ void GraphicsDevice::Initialize(HWND hWnd, UINT width, UINT height)
 		depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 		depthStencilViewDesc.Texture2D.MipSlice = 0;
 
+		//m_d3d11Device->CreateShaderResourceView(depthStencilTexture.Get(), nullptr, &m_gameDepthSRV);
 		m_d3d11Device->CreateDepthStencilView(depthStencilTexture.Get(), &depthStencilViewDesc, &m_gameDSV);
 	}
 
@@ -143,6 +144,36 @@ void GraphicsDevice::Initialize(HWND hWnd, UINT width, UINT height)
 		m_d3d11Device->CreateTexture2D(&texDesc, nullptr, &gameRenderTargetTexture);
 		m_d3d11Device->CreateRenderTargetView(gameRenderTargetTexture.Get(), nullptr, &m_gameRTV);
 		m_d3d11Device->CreateShaderResourceView(gameRenderTargetTexture.Get(), nullptr, &m_gameSRV);
+	}
+
+	//GBuffer
+	{
+		DXGI_FORMAT formats[s_gBufferCount]{
+			{ DXGI_FORMAT_R8G8B8A8_UNORM_SRGB }, // base color
+			{ DXGI_FORMAT_R16G16B16A16_FLOAT }, // world position
+			{ DXGI_FORMAT_R10G10B10A2_UNORM }, // world normal
+			{ DXGI_FORMAT_R8G8B8A8_UNORM_SRGB }, // emissive
+			{ DXGI_FORMAT_R8G8B8A8_UNORM }, // ao, roughness, metalness
+		};
+
+		for (size_t i = 0; i < s_gBufferCount; ++i)
+		{
+			D3D11_TEXTURE2D_DESC td = {};
+			td.Width = m_width;
+			td.Height = m_height;
+			td.MipLevels = 1;
+			td.ArraySize = 1;
+			td.Format = formats[i];
+			td.SampleDesc.Count = 1;
+			td.Usage = D3D11_USAGE_DEFAULT;
+			td.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+
+			ComPtr<ID3D11Texture2D> texture;
+
+			m_d3d11Device->CreateTexture2D(&td, nullptr, &texture);
+			m_d3d11Device->CreateRenderTargetView(texture.Get(), nullptr, &m_gBufferRTVs[i]);
+			m_d3d11Device->CreateShaderResourceView(texture.Get(), nullptr, &m_gBufferSRVs[i]);
+		}
 	}
 
 	// quad 임시로 여기서 만듦
@@ -287,20 +318,70 @@ float GraphicsDevice::GetMonitorMaxNits() const
 	return m_monitorMaxNits;
 }
 
+const std::array<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>, GraphicsDevice::s_gBufferCount>& GraphicsDevice::GetGBufferSRVs() const
+{
+	return m_gBufferSRVs;
+}
+
+const Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>& GraphicsDevice::GetDepthSRV() const
+{
+	return m_gameDepthSRV;
+}
+
 void GraphicsDevice::SetForceLDR(bool forceLDR)
 {
 	m_forceLDR = forceLDR;
 }
 
-void GraphicsDevice::BeginDraw(const DirectX::SimpleMath::Color& clearColor)
+void GraphicsDevice::RenderFullScreenQuad()
 {
-	m_d3d11DeviceContext->OMSetRenderTargets(1, m_gameRTV.GetAddressOf(), m_gameDSV.Get());
+	m_d3d11DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	m_d3d11DeviceContext->IASetInputLayout(m_quadInputLayout.Get());
+	m_d3d11DeviceContext->IASetVertexBuffers(0, 1, m_quadVertexBuffer.GetAddressOf(), &m_quadVertexBufferStride, &m_quadVertexBufferOffset);
+	m_d3d11DeviceContext->IASetIndexBuffer(m_quadIndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0);
 
-	m_d3d11DeviceContext->ClearRenderTargetView(m_gameRTV.Get(), clearColor);
+	m_d3d11DeviceContext->VSSetShader(m_quadVS.Get(), nullptr, 0);
+
+	m_d3d11DeviceContext->DrawIndexed(m_quadIndexCount, 0, 0);
+}
+
+void GraphicsDevice::BeginDrawGeometryPass()
+{
+	ID3D11RenderTargetView* rtvs[s_gBufferCount]{
+		m_gBufferRTVs[0].Get(),
+		m_gBufferRTVs[1].Get(),
+		m_gBufferRTVs[2].Get(),
+		m_gBufferRTVs[3].Get(),
+		m_gBufferRTVs[4].Get(),
+	};
+
+	float clearColor[4]{ 0.0f, 0.0f, 0.0f, 1.0f };
+
+	m_d3d11DeviceContext->OMSetRenderTargets(s_gBufferCount, rtvs, m_gameDSV.Get());
+
+	m_d3d11DeviceContext->ClearRenderTargetView(m_gBufferRTVs[0].Get(), clearColor);
+	m_d3d11DeviceContext->ClearRenderTargetView(m_gBufferRTVs[1].Get(), clearColor);
+	m_d3d11DeviceContext->ClearRenderTargetView(m_gBufferRTVs[2].Get(), clearColor);
+	m_d3d11DeviceContext->ClearRenderTargetView(m_gBufferRTVs[3].Get(), clearColor);
+	m_d3d11DeviceContext->ClearRenderTargetView(m_gBufferRTVs[4].Get(), clearColor);
 	m_d3d11DeviceContext->ClearDepthStencilView(m_gameDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
-void GraphicsDevice::BackBufferDraw()
+void GraphicsDevice::BeginDrawDirectLightPass()
+{
+	m_d3d11DeviceContext->OMSetRenderTargets(1, m_gameRTV.GetAddressOf(), nullptr);
+
+	float clearColor[4]{ 0.0f, 0.0f, 0.0f, 1.0f };
+
+	m_d3d11DeviceContext->ClearRenderTargetView(m_gameRTV.Get(), clearColor);
+}
+
+void GraphicsDevice::BeginDrawForwardPass()
+{
+	m_d3d11DeviceContext->OMSetRenderTargets(1, m_gameRTV.GetAddressOf(), m_gameDSV.Get());
+}
+
+void GraphicsDevice::BeginDrawPostProcessPass()
 {
 	m_d3d11DeviceContext->OMSetRenderTargets(1, m_backBufferRTV.GetAddressOf(), nullptr);
 	m_d3d11DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

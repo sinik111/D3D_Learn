@@ -10,6 +10,7 @@ cbuffer Transform : register(b0)
     matrix g_projection;
     matrix g_lightView;
     matrix g_lightProjection;
+    matrix g_lightViewProjection;
 }
 
 cbuffer Environment : register(b1)
@@ -17,7 +18,7 @@ cbuffer Environment : register(b1)
     float3 g_cameraPos;
     float __pad3;
     float3 g_lightDir;
-    float __pad4;
+    float g_lightIntensity;
     float4 g_lightColor;
     float4 g_ambientLightColor;
     int g_shadowMapSize;
